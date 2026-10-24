@@ -107,8 +107,8 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .coach .alglist{grid-template-columns:1fr}
 .coach .illus{display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:.5rem}
 .coach .illus figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:.1rem}
-.coach .illus svg{width:8.6rem;height:auto;display:block}
-.coach .illus figcaption{font-size:.8rem;color:var(--muted)}
+.coach .illus svg{width:11rem;height:auto;display:block}
+.coach .illus figcaption{font-size:.8rem;color:var(--muted);text-align:center}
 .coach .illus .to{font-size:1.4rem;color:var(--muted)}
 .coach h2{margin:0;font-family:var(--font-display);font-size:1.45rem}
 .coach .kicker{margin:0;color:var(--good);font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.1em}
@@ -253,7 +253,6 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
 </style>
 </head><body>
 
-
 <div class="app" id="app">
   <header>
     <div class="brand">
@@ -289,18 +288,18 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
   <main id="main">
     <section class="middle">
       <div class="board" id="board" aria-label="Cube and turn buttons">
-      <button class="btn whole" type="button" data-move="y"><span class="in"><span class="g stack">⬌<br>⬌</span><span class="t">Spin left</span><span class="n" aria-hidden="true" title="left click / right click">y <small>/&nbsp;y′</small></span></span></button>
-      <button class="btn whole" type="button" data-move="x"><span class="in"><span class="g">⬍⬍</span><span class="t">Tip up</span><span class="n" aria-hidden="true" title="left click / right click">x <small>/&nbsp;x′</small></span></span></button>
-      <button class="btn whole" type="button" data-move="z'"><span class="in"><span class="g">⬍⬍</span><span class="t">Roll left</span><span class="n" aria-hidden="true" title="left click / right click">z′ <small>/&nbsp;z</small></span></span></button>
-      <button class="btn" type="button" data-move="L'"><span class="in"><span class="g">⬍</span><span class="t">Left</span><span class="n" aria-hidden="true" title="left click / right click">L′ <small>/&nbsp;L</small></span></span></button>
-      <button class="btn" type="button" data-move="M'"><span class="in"><span class="g">⬍</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="left click / right click">M′ <small>/&nbsp;M</small></span></span></button>
-      <button class="btn" type="button" data-move="R"><span class="in"><span class="g">⬍</span><span class="t">Right</span><span class="n" aria-hidden="true" title="left click / right click">R <small>/&nbsp;R′</small></span></span></button>
-      <button class="btn" type="button" data-move="U"><span class="in"><span class="g">⬌</span><span class="t">Top</span><span class="n" aria-hidden="true" title="left click / right click">U <small>/&nbsp;U′</small></span></span></button>
-      <button class="btn" type="button" data-move="E'"><span class="in"><span class="g">⬌</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="left click / right click">E′ <small>/&nbsp;E</small></span></span></button>
-      <button class="btn" type="button" data-move="D'"><span class="in"><span class="g">⬌</span><span class="t">Bottom</span><span class="n" aria-hidden="true" title="left click / right click">D′ <small>/&nbsp;D</small></span></span></button>
-      <button class="btn" type="button" data-move="B"><span class="in"><span class="g">⬍</span><span class="t">Back</span><span class="n" aria-hidden="true" title="left click / right click">B <small>/&nbsp;B′</small></span></span></button>
-      <button class="btn" type="button" data-move="S'"><span class="in"><span class="g">⬍</span><span class="t">Mid</span><span class="n" aria-hidden="true" title="left click / right click">S′ <small>/&nbsp;S</small></span></span></button>
-      <button class="btn" type="button" data-move="F'"><span class="in"><span class="g">⬍</span><span class="t">Front</span><span class="n" aria-hidden="true" title="left click / right click">F′ <small>/&nbsp;F</small></span></span></button>
+      <button class="btn whole" type="button" data-move="y"><span class="in"><span class="g stack">⬌<br>⬌</span><span class="t">Spin left</span><span class="n" aria-hidden="true" title="the turn and its reverse">y <small>/&nbsp;y′</small></span></span></button>
+      <button class="btn whole" type="button" data-move="x"><span class="in"><span class="g">⬍⬍</span><span class="t">Tip up</span><span class="n" aria-hidden="true" title="the turn and its reverse">x <small>/&nbsp;x′</small></span></span></button>
+      <button class="btn whole" type="button" data-move="z'"><span class="in"><span class="g">⬍⬍</span><span class="t">Roll left</span><span class="n" aria-hidden="true" title="the turn and its reverse">z <small>/&nbsp;z′</small></span></span></button>
+      <button class="btn" type="button" data-move="L'"><span class="in"><span class="g">⬍</span><span class="t">Left</span><span class="n" aria-hidden="true" title="the turn and its reverse">L <small>/&nbsp;L′</small></span></span></button>
+      <button class="btn" type="button" data-move="M'"><span class="in"><span class="g">⬍</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="the turn and its reverse">M <small>/&nbsp;M′</small></span></span></button>
+      <button class="btn" type="button" data-move="R"><span class="in"><span class="g">⬍</span><span class="t">Right</span><span class="n" aria-hidden="true" title="the turn and its reverse">R <small>/&nbsp;R′</small></span></span></button>
+      <button class="btn" type="button" data-move="U"><span class="in"><span class="g">⬌</span><span class="t">Top</span><span class="n" aria-hidden="true" title="the turn and its reverse">U <small>/&nbsp;U′</small></span></span></button>
+      <button class="btn" type="button" data-move="E'"><span class="in"><span class="g">⬌</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="the turn and its reverse">E <small>/&nbsp;E′</small></span></span></button>
+      <button class="btn" type="button" data-move="D'"><span class="in"><span class="g">⬌</span><span class="t">Bottom</span><span class="n" aria-hidden="true" title="the turn and its reverse">D <small>/&nbsp;D′</small></span></span></button>
+      <button class="btn" type="button" data-move="B"><span class="in"><span class="g">⬍</span><span class="t">Back</span><span class="n" aria-hidden="true" title="the turn and its reverse">B <small>/&nbsp;B′</small></span></span></button>
+      <button class="btn" type="button" data-move="S'"><span class="in"><span class="g">⬍</span><span class="t">Mid</span><span class="n" aria-hidden="true" title="the turn and its reverse">S <small>/&nbsp;S′</small></span></span></button>
+      <button class="btn" type="button" data-move="F'"><span class="in"><span class="g">⬍</span><span class="t">Front</span><span class="n" aria-hidden="true" title="the turn and its reverse">F <small>/&nbsp;F′</small></span></span></button>
         <div class="scene" id="scene"><div class="shadow"></div><div class="cube" id="cube"></div></div>
         <div class="banner" id="banner" hidden>
           <h2>Solved!</h2>
@@ -348,7 +347,7 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
     <ul>
       <li>The buttons around the cube act on its <b>front</b>, the side facing you.</li>
       <li>Each button sits right against the edge it turns: the buttons along the left edge move a row, the buttons along the bottom edge move a column, and the buttons along the bottom of the right side twist the front, middle or back slice like a steering wheel (as seen from the front).</li>
-      <li><b>Left click</b> turns it one way (the first letter on the button). <b>Right click</b> turns it the other way (the second letter).</li>
+      <li><b>Left click</b> turns it one way. <b>Right click</b> turns it the other way.</li>
       <li>Point at any button first: the pieces it will move get a pink outline, so there are no surprises.</li>
     </ul>
     <h3>Seeing other sides</h3>
@@ -356,7 +355,7 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
     <h3>No rush</h3>
     <p>Every action is a single click or a single key. Nothing needs to be held, dragged or pressed together, and nothing times out. Made a mistake? <b>Undo</b> takes it back, as many times as you like. Your game is saved in this browser automatically.</p>
     <h3>Letters on the buttons</h3>
-    <p>Each turn button also shows its letter in standard cube notation: <b>R</b> right, <b>L</b> left, <b>U</b> up (top), <b>D</b> down (bottom), <b>F</b> front, <b>B</b> back, <b>M</b>, <b>E</b> and <b>S</b> for the three middle slices, and <b>x</b>, <b>y</b>, <b>z</b> for turning the whole cube. The first letter is what a left click does and the second is the right click; a mark (′) means the other way round. On the turn buttons the letters replace the words; turn the letters off in Settings to see words instead.</p>
+    <p>Each turn button also shows its letter in standard cube notation: <b>R</b> right, <b>L</b> left, <b>U</b> up (top), <b>D</b> down (bottom), <b>F</b> front, <b>B</b> back, <b>M</b>, <b>E</b> and <b>S</b> for the three middle slices, and <b>x</b>, <b>y</b>, <b>z</b> for turning the whole cube. Each button shows the turn and its reverse; a mark (′) means the other way round. On the turn buttons the letters replace the words; turn the letters off in Settings to see words instead.</p>
     <h3>Algorithms and the solver</h3>
     <p><b>Algorithms</b> teaches a recipe one turn at a time on the real cube. <b>Solve it with me</b> walks you through solving your own cube, stage by stage. In both, the button for the next turn glows green: press it yourself, or press <b>Next move</b>. Undo and Redo step back and forward too.</p>
     <h3>Keys and QuadStick</h3>
@@ -565,14 +564,23 @@ function explainTok(tok){
 // setup 'solved': start from a solved cube and watch what it does.
 // setup 'case': start from the position the algorithm fixes, so playing it solves the cube.
 const ALGS=[
-  {group:'Basics',name:'Sexy move',alg:"R U R' U'",setup:'solved',about:'The most used four-move trigger. Do it six times and the cube is back where it started.'},
-  {group:'Basics',name:'Sledgehammer',alg:"R' F R F'",setup:'solved',about:'Another short trigger, used for corner and edge tricks.'},
-  {group:'Basics',name:'Corner trick (beginner)',alg:"R' D' R D",setup:'solved',about:'Used by the solver to place and twist corners. Repeat it until the corner sits right.'},
+  {group:'Basics',name:'Sexy move',alg:"R U R' U'",setup:'case',show:"(R U R′ U′) ×3",
+    about:'Drops a white corner into the bottom layer. The corner sits right above its spot (top front right): repeat the move until it drops in with white on the bottom. Here it takes three goes. Only the top layer gets mixed, and you solve that later.',
+    steps:[1,2,3].map(n=>({text:`Sexy move, go ${n} of 3`,alg:"R U R' U'"}))},
+  {group:'Basics',name:'Sledgehammer',pic:'orient',alg:"R' F R F'",setup:'case',show:"R U R′ U′ + R′ F R F′",
+    about:'Almost always played straight after a Sexy move. Together they fix this top-layer pattern: two yellow edges and two corners are turned the wrong way, and they come out with the top all yellow.',
+    steps:[{text:'First the Sexy move',alg:"R U R' U'"},{text:'Then the Sledgehammer',alg:"R' F R F'"}]},
+  {group:'Basics',name:'Corner trick (beginner)',alg:"R' D' R D",setup:'case',show:"(R′ D′ R D) ×2, U, ×4, U′",
+    about:'Turns top corners so yellow faces up, one corner at a time. Keep the twisted corner at the top front right and repeat the trick until its yellow is on top. The bottom looks scrambled halfway through; it comes back once every corner is done.',
+    steps:[{text:'Repeat the trick until this corner shows yellow on top: two times',alg:"R' D' R D R' D' R D"},
+      {text:'Turn only the top to bring the other twisted corner to the front right',alg:'U'},
+      {text:'Repeat the trick until this one shows yellow on top: four times. The bottom comes back too',alg:"R' D' R D R' D' R D R' D' R D R' D' R D"},
+      {text:'Turn the top back to line it up',alg:"U'"}]},
   {group:'Basics',name:'Middle edge to the right',alg:"U R U' R' U' F' U F",setup:'case',about:'Moves the edge at the top front down into the middle layer on the right.'},
   {group:'Basics',name:'Middle edge to the left',alg:"U' L' U L U F U' F'",setup:'case',about:'Moves the edge at the top front down into the middle layer on the left.'},
-  {group:'Basics',name:'Yellow cross',alg:"F R U R' U' F'",setup:'case',about:'Flips top edges to build the cross on the top face.'},
-  {group:'Basics',name:'Sune',alg:"R U R' U R U2 R'",setup:'case',about:'Twists three top corners. Also swaps top edges, which the beginner method uses.'},
-  {group:'Basics',name:'Anti-Sune',alg:"R U2 R' U' R U' R'",setup:'case',about:'The Sune played backwards: twists three top corners the other way.'},
+  {group:'Basics',name:'Yellow cross',pic:'orient',alg:"F R U R' U' F'",setup:'case',about:'Flips top edges to build the cross on the top face.'},
+  {group:'Basics',name:'Sune',pic:'orient',alg:"R U R' U R U2 R'",setup:'case',about:'Twists three top corners. Also swaps top edges, which the beginner method uses.'},
+  {group:'Basics',name:'Anti-Sune',pic:'orient',alg:"R U2 R' U' R U' R'",setup:'case',about:'The Sune played backwards: twists three top corners the other way.'},
   {group:'Basics',name:'Corner swap (Niklas)',alg:"U R U' L' U R' U' L",setup:'case',about:'Cycles three top corners while the front-right one stays put.'},
   {group:'Advanced: last layer',name:'T-perm',alg:"R U R' U' R' F R2 U' R' U' R U R' F'",setup:'case',about:'Swaps two top corners and two top edges in a T shape.'},
   {group:'Advanced: last layer',name:'Y-perm',alg:"F R U' R' U' R U R' F' R U R' U' R' F R F'",setup:'case',about:'Swaps two diagonal top corners and two top edges.'},
@@ -585,10 +593,15 @@ const ALGS=[
   {group:'Advanced: last layer',name:'Jb-perm',alg:"R U R' F' R U R' U' R' F R2 U' R' U'",setup:'case',about:'Swaps two corners and two edges on the right side.'},
   {group:'Advanced: last layer',name:'Ra-perm',alg:"R U' R' U' R U R D R' U' R D' R' U2 R' U'",setup:'case',about:'Swaps two corners and two edges, shaped like an R.'},
   {group:'Advanced: last layer',name:'F-perm',alg:"R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R",setup:'case',about:'Swaps two corners and two edges along one side.'},
-  {group:'Advanced: orient',name:'OLL: Pi',alg:"R U2 R2 U' R2 U' R2 U2 R",setup:'case',about:'Turns a top with two pairs of twisted corners all yellow.'},
-  {group:'Advanced: orient',name:'OLL: Headlights',alg:"R2 D R' U2 R D' R' U2 R'",setup:'case',about:'Twists two neighbouring top corners.'}
+  {group:'Advanced: orient',name:'OLL: Pi',pic:'orient',alg:"R U2 R2 U' R2 U' R2 U2 R",setup:'case',about:'Turns a top with two pairs of twisted corners all yellow.'},
+  {group:'Advanced: orient',name:'OLL: Headlights',pic:'orient',alg:"R2 D R' U2 R D' R' U2 R'",setup:'case',about:'Twists two neighbouring top corners.'}
 ];
-ALGS.forEach(a=>{a.moves=expandAlg(a.alg);a.toks=tokens(a.alg);});
+ALGS.forEach(a=>{
+  // an algorithm taught in parts (repeats, or two triggers in a row) plays all its parts in order
+  const parts=a.steps||[{text:'',alg:a.alg}];
+  parts.forEach(st=>{st.moves=expandAlg(st.alg);st.toks=tokens(st.alg);});
+  a.moves=parts.flatMap(st=>st.moves);a.toks=parts.flatMap(st=>st.toks);a.parts=parts;
+});
 
 // ---------- beginner solver ----------
 const UP=[0,1,0];
@@ -1296,7 +1309,7 @@ function startAlgLesson(a){
     putGameAside();
     // yellow on top, the way cubers hold it for these; for a case, set up the position the algorithm fixes
     setCube(applyAll(solvedState(),a.setup==='case'?['x','x',...invertAlg(a.moves)]:['x','x']));
-    lesson=makeLesson('alg',a.name,a.about,[{text:a.setup==='case'?'The cube is set up in the position this algorithm is for. Play it and the cube comes out solved.':'The cube starts solved. Play it and watch what it changes.',moves:a.moves,toks:a.toks,alg:a.name}]);
+    lesson=makeLesson('alg',a.name,a.about,a.parts.map(st=>({text:st.text,moves:st.moves.slice(),toks:st.toks,alg:a.name})));
     lesson.alg=a;
     render();showCoach();
   });
@@ -1418,7 +1431,7 @@ function updateCoach(){
   if(L.kind==='alg'){
     $('coachKicker').textContent='Algorithm tutor';$('coachTitle').textContent=L.title;
     $('coachAbout').innerHTML=L.about+(L.pic||(L.pic=algPicture(L.alg,L.start)));
-    $('coachStep').innerHTML='';
+    $('coachStep').innerHTML=L.steps.length>1?`Part ${si+1} of ${L.steps.length}: ${st.text}`:'';
   } else {
     $('coachKicker').textContent=`Solver · stage ${st.stageNo} of ${st.stages}`;$('coachTitle').textContent=st.stage;
     $('coachAbout').textContent=st.intro;
@@ -1450,8 +1463,9 @@ function updateCoach(){
   $('lessonPlay').querySelector('.g').textContent=L.auto?'⏸':'⏵';
   applyPreview();updateStats();
 }
-// ---------- algorithm pictures: the cube before and after, with arrows for the pieces that move ----------
+// ---------- algorithm pictures: the case the algorithm fixes, with arrows for where pieces go ----------
 // Drawn as a small 3D view (top, front and right sides), the same way round as the big cube.
+// Pieces the algorithm moves or twists stay bright; the rest are dimmed so the eye goes to what matters.
 const ISO=(x,y,z)=>({x:(x-z)*.866*14,y:(-y+(x+z)*.5)*14});
 function stickerPts(p,d,inset=.44){
   const c=[p[0]+d[0]*.5,p[1]+d[1]*.5,p[2]+d[2]*.5],ax=[0,1,2].filter(i=>!d[i]);
@@ -1462,44 +1476,90 @@ function pieceSpot(p){
   const d=p[1]===1?[0,1,0]:p[2]===1?[0,0,1]:p[0]===1?[1,0,0]:null;if(!d)return null;
   return ISO(p[0]+d[0]*.5,p[1]+d[1]*.5,p[2]+d[2]*.5);
 }
-function cubePic(cs,arrows,label){
+const f1=v=>v.toFixed(1);
+function arrowHead(tip,dir){
+  const n=Math.hypot(dir.x,dir.y)||1,ux=dir.x/n,uy=dir.y/n,L=5.2,W=3.4;
+  return `<polygon points="${f1(tip.x)},${f1(tip.y)} ${f1(tip.x-ux*L-uy*W)},${f1(tip.y-uy*L+ux*W)} ${f1(tip.x-ux*L+uy*W)},${f1(tip.y-uy*L-ux*W)}" fill="#fff" stroke="#07080b" stroke-width="1" stroke-linejoin="round"/>`;
+}
+function picArrow(a,b,both,C=ISO(0,1.5,0)){
+  const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,ux=dx/n,uy=dy/n,sh=3;
+  const A={x:a.x+ux*sh,y:a.y+uy*sh},B={x:b.x-ux*sh,y:b.y-uy*sh},bow=both?0:Math.max(5,n*.35);
+  const mid={x:(A.x+B.x)/2,y:(A.y+B.y)/2};
+  let ox=-uy,oy=ux;if(ox*(mid.x-C.x)+oy*(mid.y-C.y)<0){ox=-ox;oy=-oy;}
+  const M={x:mid.x+ox*bow,y:mid.y+oy*bow};
+  const d=`M${f1(A.x)},${f1(A.y)} Q${f1(M.x)},${f1(M.y)} ${f1(B.x)},${f1(B.y)}`;
+  // shaft ends short of each tip so the head sits cleanly on it
+  return `<path d="${d}" fill="none" stroke="#07080b" stroke-width="4.6" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>`+
+    arrowHead(B,{x:B.x-M.x,y:B.y-M.y})+(both?arrowHead(A,{x:A.x-M.x,y:A.y-M.y}):'');
+}
+function twistMark(at){
+  const r=4.2;
+  return `<path d="M${f1(at.x+r)},${f1(at.y)} A${r},${r} 0 1 1 ${f1(at.x)},${f1(at.y-r)}" fill="none" stroke="#07080b" stroke-width="4.2" stroke-linecap="round"/><path d="M${f1(at.x+r)},${f1(at.y)} A${r},${r} 0 1 1 ${f1(at.x)},${f1(at.y-r)}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`+arrowHead({x:at.x+2.6,y:at.y-r},{x:1,y:0});
+}
+function cubePic(cs,keep,marks,label){
   const faces=[[0,1,0],[0,0,1],[1,0,0]],shade={'0,1,0':1,'0,0,1':.86,'1,0,0':.72};
   let polys='';
-  faces.forEach(d=>cs.forEach(c=>{
+  faces.forEach(d=>cs.forEach((c,i)=>{
     if(c.p[0]*d[0]+c.p[1]*d[1]+c.p[2]*d[2]!==1)return;
     const col=c.s[key(d)];if(!col)return;
-    const pts=stickerPts(c.p,d).map(q=>q.x.toFixed(1)+','+q.y.toFixed(1)).join(' ');
-    polys+=`<polygon points="${pts}" fill="${COLORS[col]}" fill-opacity="${shade[key(d)]}" stroke="#07080b" stroke-width="1.2"/>`;
+    const dim=keep&&!keep.has(i);
+    const pts=stickerPts(c.p,d).map(q=>f1(q.x)+','+f1(q.y)).join(' ');
+    polys+=`<polygon points="${pts}" fill="${COLORS[col]}" fill-opacity="${dim?shade[key(d)]*.3:shade[key(d)]}" stroke="#07080b" stroke-width="1.2"/>`;
   }));
   const body=['0,1,0','0,0,1','1,0,0'].map(k=>{const d=k.split(',').map(Number);
-    return `<polygon points="${stickerPts([d[0],d[1],d[2]],d,1.5).map(q=>q.x.toFixed(1)+','+q.y.toFixed(1)).join(' ')}" fill="#07080b"/>`;}).join('');
-  // a swap is one straight two-headed arrow; a longer cycle uses gently bowed one-way arrows
-  const arr=(arrows||[]).map(([a,b,both])=>{
-    const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,sh=3.5,ax=a.x+dx/n*sh,ay=a.y+dy/n*sh,bx=b.x-dx/n*sh,by=b.y-dy/n*sh,bow=both?0:4;
-    const mx=(ax+bx)/2-dy/n*bow,my=(ay+by)/2+dx/n*bow;
-    return `<path d="M${ax.toFixed(1)},${ay.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)}" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" marker-end="url(#ah)"${both?' marker-start="url(#ah)"':''}/>`;
-  }).join('');
-  return `<figure><svg viewBox="-42 -46 84 92" role="img" aria-label="${label}"><defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="3.2" markerHeight="3.2" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#fff"/></marker></defs>${body}${polys}<g style="filter:drop-shadow(0 0 1.5px #000)">${arr}</g></svg><figcaption>${label}</figcaption></figure>`;
+    return `<polygon points="${stickerPts([d[0],d[1],d[2]],d,1.5).map(q=>f1(q.x)+','+f1(q.y)).join(' ')}" fill="#07080b"/>`;}).join('');
+  return `<figure><svg viewBox="-42 -46 84 92" role="img" aria-label="${label}">${body}${polys}${marks}</svg>${label?`<figcaption>${label}</figcaption>`:''}</figure>`;
+}
+// the top layer seen from straight above, front side at the bottom, with the side colours as thin strips;
+// the usual way last-layer swaps are drawn
+function topPic(cs,keep,moved){
+  const U=cs.filter(c=>c.p[1]===1),S=20,h=9;
+  let g='';
+  const rect=(x,y,w,hh,col,dim)=>g+=`<rect x="${f1(x)}" y="${f1(y)}" width="${w}" height="${hh}" rx="2.5" fill="${COLORS[col]}" fill-opacity="${dim?.3:1}" stroke="#07080b" stroke-width="1.2"/>`;
+  U.forEach(c=>{
+    const i=cs.indexOf(c),dim=!keep.has(i),x=c.p[0]*S,y=c.p[2]*S;
+    rect(x-h,y-h,18,18,c.s['0,1,0'],dim);
+    if(c.p[2]===1)rect(x-h,31,18,6,c.s['0,0,1'],dim);
+    if(c.p[2]===-1)rect(x-h,-37,18,6,c.s['0,0,-1'],dim);
+    if(c.p[0]===1)rect(31,y-h,6,18,c.s['1,0,0'],dim);
+    if(c.p[0]===-1)rect(-37,y-h,6,18,c.s['-1,0,0'],dim);
+  });
+  const spot=p=>({x:p[0]*S,y:p[2]*S});let marks='';const seen=new Set();
+  moved.forEach(m=>{
+    if(seen.has(m.i))return;
+    const back=moved.find(o=>o.from.join()===m.to.join()&&o.to.join()===m.from.join());if(back)seen.add(back.i);
+    marks+=picArrow(spot(m.from),spot(m.to),!!back,{x:0,y:0});
+  });
+  return `<figure><svg viewBox="-42 -42 84 84" role="img" aria-label="Top layer from above">${g}${marks}</svg><figcaption>Seen from above, front at the bottom</figcaption></figure>`;
 }
 function algPicture(a,start){
   const before=cloneState(start),after=applyAll(cloneState(start),a.moves);
-  // arrows only where they tell the story: a piece dropping out of the top layer if there is one,
-  // otherwise the pieces swapped around the top. A recipe shown from a solved cube gets none.
-  let moved=a.setup==='solved'?[]:before.map((c,i)=>({i,from:c.p,to:after[i].p})).filter(m=>m.from.join()!==m.to.join()&&m.from.filter(v=>v).length>1);
+  if(a.pic==='orient'){
+    // orientation algorithms: what matters is which top stickers aren't yellow yet, not where pieces travel
+    const up=key([0,1,0]),keep=new Set(before.map((c,i)=>i).filter(i=>before[i].p[1]===1&&before[i].p.filter(v=>v).length>1&&before[i].s[up]!=='Y'));
+    return `<div class="illus">${cubePic(before,keep,'','Bright pieces don\'t have yellow on top yet')}</div>`;
+  }
+  const sameSt=(x,y)=>Object.keys(x).length===Object.keys(y).length&&Object.keys(x).every(k=>x[k]===y[k]);
+  let moved=before.map((c,i)=>({i,from:c.p,to:after[i].p})).filter(m=>m.from.join()!==m.to.join()&&m.from.filter(v=>v).length>1);
+  // a piece dropping out of the top layer tells the story on its own; otherwise show what moves around the top
   const drops=moved.filter(m=>m.from[1]===1&&m.to[1]<1);
   moved=drops.length?drops:moved.filter(m=>m.from[1]===1&&m.to[1]===1);
-  const arrows=[],seen=new Set();
+  const twisted=drops.length?[]:before.map((c,i)=>i).filter(i=>before[i].p.join()===after[i].p.join()&&before[i].p[1]===1&&before[i].p.filter(v=>v).length>1&&!sameSt(before[i].s,after[i].s));
+  const keep=new Set([...moved.map(m=>m.i),...twisted]);
+  if(moved.length&&!drops.length)return `<div class="illus">${topPic(before,keep,moved)}</div>`;
+  let marks='';const seen=new Set();
   moved.forEach(m=>{
     if(seen.has(m.i))return;
     const back=moved.find(o=>o.from.join()===m.to.join()&&o.to.join()===m.from.join());
     if(back)seen.add(back.i);
-    const A=pieceSpot(m.from),B=pieceSpot(m.to);if(A&&B)arrows.push([A,B,!!back]);
+    const A=pieceSpot(m.from),B=pieceSpot(m.to);if(A&&B)marks+=picArrow(A,B,!!back);
   });
-  return `<div class="illus">${cubePic(before,arrows,'Before')}<span class="to" aria-hidden="true">→</span>${cubePic(after,[],'After')}</div>`;
+  twisted.forEach(i=>{const at=pieceSpot(before[i].p);if(at)marks+=twistMark(at);});
+  return `<div class="illus">${cubePic(before,keep.size?keep:null,marks,'')}</div>`;
 }
 function renderAlgList(){
   const groups=[...new Set(ALGS.map(a=>a.group))];
-  $('algList').innerHTML=groups.map(g=>`<h3>${g}</h3><div class="alglist">`+ALGS.map((a,i)=>a.group!==g?'':`<button class="btn algpick" type="button" data-alg="${i}"><b>${a.name}</b><span class="nt">${a.toks.map(pretty).join(' ')}</span></button>`).join('')+'</div>').join('');
+  $('algList').innerHTML=groups.map(g=>`<h3>${g}</h3><div class="alglist">`+ALGS.map((a,i)=>a.group!==g?'':`<button class="btn algpick" type="button" data-alg="${i}"><b>${a.name}</b><span class="nt">${a.show||a.toks.map(pretty).join(' ')}</span></button>`).join('')+'</div>').join('');
 }
 renderAlgList();
 $('algList').addEventListener('click',e=>{const b=e.target.closest('[data-alg]');if(!b||!pointerOk(b))return;startAlgLesson(ALGS[+b.dataset.alg]);});
@@ -1520,7 +1580,7 @@ $('lessonReplay').onclick=()=>{if(pointerOk($('lessonReplay')))lessonReplay();};
 $('lessonExit').onclick=()=>{if(pointerOk($('lessonExit')))stopLesson(lesson&&lesson.kind==='solve');};
 
 // ---------- persistence ----------
-const STORE='easy-reach-cube-v1';
+const STORE='easy-reach-cube-v1'; // the test copy keeps its own save, apart from the live game
 function save(){
   // during an algorithm lesson the cube on screen is borrowed; save the game that was put aside instead
   const g=lessonSnap||{c:cubies.map(c=>({p:c.p,s:c.s})),history,redo,scrambled,elapsed:elapsed(),running:timerStart!==null};
