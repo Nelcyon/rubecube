@@ -62,9 +62,10 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
    rows along the left edge, columns along the bottom edge, front-to-back slices along the right face's bottom edge */
 .board{position:relative;--b:4.4rem;width:20rem;height:20rem}
 .board .btn{position:absolute;min-height:0;z-index:2;background:color-mix(in srgb,var(--raised) 92%,transparent)}
-.board .btn{--m:none;--mi:none;transform-origin:0 0;transform:var(--m);border-radius:10px;padding:.2rem;gap:0}
+.board .btn{--m:none;transform-origin:0 0;transform:var(--m);border-radius:10px;padding:.2rem;gap:0}
 .board .btn:active{transform:var(--m) translate(2%,2%) scale(.96)}
-.board .btn>.in{display:flex;flex-direction:column;align-items:center;gap:.05rem;transform:var(--mi)}
+/* the label is sheared with its button, so text lies in the cube's perspective */
+.board .btn>.in{display:flex;flex-direction:column;align-items:center;gap:.05rem}
 .board .btn.flat>.in{flex-direction:row;gap:.4rem}
 .board .btn.narrow .t{font-size:.7rem;line-height:1.1}
 .scene{position:absolute;left:0;top:0;width:0;height:0;perspective:calc(var(--s) * 13);perspective-origin:0 0;z-index:1;pointer-events:none}
@@ -756,7 +757,7 @@ function layoutBoard(){
   probe.remove();
   // whole-cube turns sit one ring further out, each one long button spanning all three layer buttons on its side:
   // spin along the rows, tip under the columns, roll under the depth slices
-  const by=m=>placed.find(q=>q.el===btn(m)),d=b*.8;
+  const by=m=>placed.find(q=>q.el===btn(m)),d=b*1.05;
   const U=by('U'),D=by("D'"),ur=unit(U.u);
   put(btn('y'),add(U.p,ur,-(gap+d)),add({x:0,y:0},ur,d),sub(add(D.p,D.v),U.p));
   const L=by("L'"),R=by('R');put(btn('x'),add(L.p,down,b+gap),sub(add(R.p,R.u),L.p),add({x:0,y:0},down,d));
@@ -770,12 +771,11 @@ function layoutBoard(){
   board.style.width=(r-l)+'px';board.style.height=(bt-t)+'px';
   scene.style.left=(-l)+'px';scene.style.top=(-t)+'px';
   placed.forEach(q=>{
-    // lay the button out as a plain box, then shear it onto its parallelogram; the label is sheared back upright
-    const W=len(q.u),H=len(q.v),A=q.u.x/W,B=q.u.y/W,C=q.v.x/H,D=q.v.y/H,det=A*D-B*C;
+    // lay the button out as a plain box, then shear it onto its parallelogram, label and all
+    const W=len(q.u),H=len(q.v),A=q.u.x/W,B=q.u.y/W,C=q.v.x/H,D=q.v.y/H;
     q.el.classList.toggle('narrow',W<b*.75);q.el.classList.toggle('flat',q.el.classList.contains('whole')&&W>H*1.8&&Math.abs(B/A)<.6);
     Object.assign(q.el.style,{left:(q.p.x-l)+'px',top:(q.p.y-t)+'px',width:W+'px',height:H+'px'});
-    q.el.style.setProperty('--m',`matrix(${A},${B},${C},${D},0,0)`);
-    q.el.style.setProperty('--mi',`matrix(${D/det},${-B/det},${-C/det},${A/det},0,0)`);});
+    q.el.style.setProperty('--m',`matrix(${A},${B},${C},${D},0,0)`);});
   layoutPending=false;
   return {w:r-l,h:bt-t};
 }
