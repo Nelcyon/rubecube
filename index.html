@@ -43,8 +43,16 @@ body{
   padding-block:.9rem 1.2rem;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));}
 
 /* header */
-header{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"brand bar";align-items:start;gap:.8rem 1.25rem}
-.brand{grid-area:brand;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem}
+header{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"brand bar tools";align-items:start;gap:.8rem 1.25rem}
+.tools{grid-area:tools;display:flex;justify-content:flex-end}
+.tools .btn{min-height:3.3rem;padding:.3rem 1rem;border-radius:16px;border-color:color-mix(in srgb,var(--good) 45%,var(--line));color:#c9f5d6;white-space:nowrap}
+.tools .btn[aria-expanded="true"]{background:color-mix(in srgb,var(--good) 18%,var(--raised));border-color:var(--good)}
+.brand{grid-area:brand;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;width:max-content}
+/* the two small buttons together are exactly as wide as the logo above them */
+.brand .head-btns{width:0;min-width:100%;display:flex;gap:.35rem}
+.brand .head-btns .btn{flex:1 1 auto}
+.brand .head-btns .btn{min-width:0;min-height:2.4rem;padding:.2rem .15rem;font-size:.72rem;gap:.2rem;border-radius:10px;white-space:nowrap}
+.brand .head-btns .btn .g{font-size:.9rem}
 header .gamebar{grid-area:bar;justify-self:center;align-self:center}
 h1{font-family:var(--font-display);font-weight:800;font-size:1.55rem;margin:0;letter-spacing:-.01em;display:flex;align-items:center;gap:.6rem}
 h1 .logo{display:grid;grid-template-columns:repeat(3,.42rem);gap:2px}
@@ -82,12 +90,21 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .board>.btn>.in{position:absolute;display:flex;flex-direction:column;align-items:center;gap:.1rem;transform-origin:0 0;white-space:normal;pointer-events:none}
 .board>.btn .t{font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.01em;text-shadow:0 1px 2px rgba(0,0,0,.6)}
 .board>.btn.flat>.in{flex-direction:row;gap:.4rem}
-.board>.btn .n{font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--accent);margin-top:.05rem;white-space:nowrap}
+.board>.btn .g.stack{line-height:.85;text-align:center}
+/* Roll: arrows up and to the right of the letters, following the slant of its shape */
+.board>.btn.diag>.in{flex-direction:column;align-items:flex-start;gap:.15rem}
+.board>.btn.diag>.in .g{align-self:flex-end;margin-left:1rem}
+.board>.btn .n{font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--accent);margin-top:.05rem;white-space:normal;text-align:center}
 .board>.btn .n small{font-size:.8em;font-weight:500;color:var(--muted)}
 /* lessons: the button for the next turn glows */
 .board>.btn.next .shape polygon{stroke:var(--good);stroke-width:5;stroke-dasharray:none;fill:color-mix(in srgb,var(--good) 18%,var(--raised))}
 .btn.learn{border-color:color-mix(in srgb,var(--good) 45%,var(--line))}
 .coach{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.6rem;width:100%;max-width:40rem}
+.coach .coachlesson,.coach .coachlist{display:flex;flex-direction:column;gap:.6rem}
+.coach .listhead{display:flex;align-items:center;justify-content:space-between;gap:.5rem}
+.coach .listhead .btn{min-height:2.6rem;padding:.2rem .8rem;font-size:.9rem}
+.coach h3{margin:.4rem 0 0;font-family:var(--font-display);font-size:.95rem;color:var(--accent)}
+.coach .alglist{grid-template-columns:1fr}
 .coach h2{margin:0;font-family:var(--font-display);font-size:1.45rem}
 .coach .kicker{margin:0;color:var(--good);font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.1em}
 .coach .about{margin:0;color:var(--muted)}
@@ -98,7 +115,9 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .chip{font-family:var(--font-display);font-weight:700;font-size:1.15rem;min-width:2.4rem;text-align:center;padding:.2rem .45rem;border-radius:9px;border:2px solid var(--line);background:var(--raised);color:var(--muted)}
 .chip.done{opacity:.45}
 .chip.cur{border-color:var(--good);color:#fff;background:color-mix(in srgb,var(--good) 25%,var(--raised))}
-.coach .now{font-size:1.1rem;line-height:1.45;min-height:3.2rem}
+.coach .now{font-size:1.05rem;line-height:1.4;height:9.4rem;overflow:auto;background:var(--bg);border:2px solid var(--good);border-radius:14px;padding:.6rem .75rem}
+.coach .now>b:first-child{font-family:var(--font-display);font-size:1.3rem;color:var(--good)}
+.coach .steptext:empty{display:none}
 .coach .now .how{display:block;margin-top:.35rem;color:var(--muted);font-size:.95rem}
 .coach .prog{margin:0;color:var(--muted);font-size:.9rem}
 .coach .ctl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem}
@@ -213,9 +232,9 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* narrow: side cards move under the board, side by side */
-@media (max-width:1360px){header{grid-template-columns:1fr;grid-template-areas:"brand" "bar"}.brand{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;width:100%}}
+@media (max-width:1250px){header{grid-template-columns:1fr auto;grid-template-areas:"brand tools" "bar bar"}.brand{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;width:100%}.brand .head-btns{width:auto;min-width:0;grid-template-columns:auto auto}.brand .head-btns .btn{min-height:2.7rem;padding:.25rem .7rem;font-size:.9rem}}
 @media (max-width:1000px){.gamebar{flex-wrap:wrap;row-gap:.4rem}.gamebar .grp{flex:1 1 auto;justify-content:center}.gamebar .grp+.grp{border-left:0;padding-left:.3rem}}
-@media (max-width:620px){.gamebar .grp+.grp{border-left:0;padding-left:.3rem}.gamebar .grp{flex:1 1 auto;justify-content:center}}
+@media (max-width:620px){header{grid-template-columns:minmax(0,1fr) auto}.brand{flex-direction:column;align-items:flex-start;width:auto}.tools{align-self:start}.tools .btn{min-height:2.7rem;padding:.25rem .7rem;font-size:.9rem}header .gamebar{justify-self:stretch}.gamebar .grp+.grp{border-left:0;padding-left:.3rem}.gamebar .grp{flex:1 1 auto;justify-content:center}}
 @media (max-width:620px){
   .head-btns{width:100%}
   .head-btns .btn{flex:1}
@@ -254,27 +273,29 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         <button class="btn wide" type="button" data-act="reset" id="resetBtn"><span class="g" aria-hidden="true">⟲</span><span class="lbl">Reset</span></button>
       </div>
       <div class="grp learn-grp">
-        <button class="btn wide learn" type="button" id="learnBtn"><span class="g" aria-hidden="true">☰</span><span class="lbl">Algorithms</span></button>
         <button class="btn wide learn" type="button" id="solveBtn"><span class="g" aria-hidden="true">✓</span><span class="lbl">Solve with me</span></button>
       </div>
     </nav>
+    <div class="tools">
+      <button class="btn wide" type="button" id="learnBtn" aria-expanded="false" aria-controls="coach"><span class="g" aria-hidden="true">☰</span>Algorithms</button>
+    </div>
   </header>
 
   <main id="main">
     <section class="middle">
       <div class="board" id="board" aria-label="Cube and turn buttons">
-      <button class="btn whole" type="button" data-move="y"><span class="in"><span class="g">⬌⬌</span><span class="t">Spin left</span><span class="n" aria-hidden="true" title="left click / right click">y <small>/ y′</small></span></span></button>
-      <button class="btn whole" type="button" data-move="x"><span class="in"><span class="g">⬍⬍</span><span class="t">Tip up</span><span class="n" aria-hidden="true" title="left click / right click">x <small>/ x′</small></span></span></button>
-      <button class="btn whole" type="button" data-move="z'"><span class="in"><span class="g">⬍⬍</span><span class="t">Roll left</span><span class="n" aria-hidden="true" title="left click / right click">z′ <small>/ z</small></span></span></button>
-      <button class="btn" type="button" data-move="L'"><span class="in"><span class="g">⬍</span><span class="t">Left</span><span class="n" aria-hidden="true" title="left click / right click">L′ <small>/ L</small></span></span></button>
-      <button class="btn" type="button" data-move="M'"><span class="in"><span class="g">⬍</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="left click / right click">M′ <small>/ M</small></span></span></button>
-      <button class="btn" type="button" data-move="R"><span class="in"><span class="g">⬍</span><span class="t">Right</span><span class="n" aria-hidden="true" title="left click / right click">R <small>/ R′</small></span></span></button>
-      <button class="btn" type="button" data-move="U"><span class="in"><span class="g">⬌</span><span class="t">Top</span><span class="n" aria-hidden="true" title="left click / right click">U <small>/ U′</small></span></span></button>
-      <button class="btn" type="button" data-move="E'"><span class="in"><span class="g">⬌</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="left click / right click">E′ <small>/ E</small></span></span></button>
-      <button class="btn" type="button" data-move="D'"><span class="in"><span class="g">⬌</span><span class="t">Bottom</span><span class="n" aria-hidden="true" title="left click / right click">D′ <small>/ D</small></span></span></button>
-      <button class="btn" type="button" data-move="B"><span class="in"><span class="g">⬍</span><span class="t">Back</span><span class="n" aria-hidden="true" title="left click / right click">B <small>/ B′</small></span></span></button>
-      <button class="btn" type="button" data-move="S'"><span class="in"><span class="g">⬍</span><span class="t">Mid</span><span class="n" aria-hidden="true" title="left click / right click">S′ <small>/ S</small></span></span></button>
-      <button class="btn" type="button" data-move="F'"><span class="in"><span class="g">⬍</span><span class="t">Front</span><span class="n" aria-hidden="true" title="left click / right click">F′ <small>/ F</small></span></span></button>
+      <button class="btn whole" type="button" data-move="y"><span class="in"><span class="g stack">⬌<br>⬌</span><span class="t">Spin left</span><span class="n" aria-hidden="true" title="left click / right click">y <small>/&nbsp;y′</small></span></span></button>
+      <button class="btn whole" type="button" data-move="x"><span class="in"><span class="g">⬍⬍</span><span class="t">Tip up</span><span class="n" aria-hidden="true" title="left click / right click">x <small>/&nbsp;x′</small></span></span></button>
+      <button class="btn whole" type="button" data-move="z'"><span class="in"><span class="g">⬍⬍</span><span class="t">Roll left</span><span class="n" aria-hidden="true" title="left click / right click">z′ <small>/&nbsp;z</small></span></span></button>
+      <button class="btn" type="button" data-move="L'"><span class="in"><span class="g">⬍</span><span class="t">Left</span><span class="n" aria-hidden="true" title="left click / right click">L′ <small>/&nbsp;L</small></span></span></button>
+      <button class="btn" type="button" data-move="M'"><span class="in"><span class="g">⬍</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="left click / right click">M′ <small>/&nbsp;M</small></span></span></button>
+      <button class="btn" type="button" data-move="R"><span class="in"><span class="g">⬍</span><span class="t">Right</span><span class="n" aria-hidden="true" title="left click / right click">R <small>/&nbsp;R′</small></span></span></button>
+      <button class="btn" type="button" data-move="U"><span class="in"><span class="g">⬌</span><span class="t">Top</span><span class="n" aria-hidden="true" title="left click / right click">U <small>/&nbsp;U′</small></span></span></button>
+      <button class="btn" type="button" data-move="E'"><span class="in"><span class="g">⬌</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="left click / right click">E′ <small>/&nbsp;E</small></span></span></button>
+      <button class="btn" type="button" data-move="D'"><span class="in"><span class="g">⬌</span><span class="t">Bottom</span><span class="n" aria-hidden="true" title="left click / right click">D′ <small>/&nbsp;D</small></span></span></button>
+      <button class="btn" type="button" data-move="B"><span class="in"><span class="g">⬍</span><span class="t">Back</span><span class="n" aria-hidden="true" title="left click / right click">B <small>/&nbsp;B′</small></span></span></button>
+      <button class="btn" type="button" data-move="S'"><span class="in"><span class="g">⬍</span><span class="t">Mid</span><span class="n" aria-hidden="true" title="left click / right click">S′ <small>/&nbsp;S</small></span></span></button>
+      <button class="btn" type="button" data-move="F'"><span class="in"><span class="g">⬍</span><span class="t">Front</span><span class="n" aria-hidden="true" title="left click / right click">F′ <small>/&nbsp;F</small></span></span></button>
         <div class="scene" id="scene"><div class="shadow"></div><div class="cube" id="cube"></div></div>
         <div class="banner" id="banner" hidden>
           <h2>Solved!</h2>
@@ -283,14 +304,16 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         </div>
       </div>
     </section>
-    <aside class="coach" id="coach" hidden aria-label="Lesson">
+    <aside class="coach" id="coach" hidden aria-label="Algorithms and lessons">
+      <div class="coachlist" id="coachList" hidden>
+        <div class="listhead"><h2>Algorithms</h2><button class="btn wide" type="button" id="listClose"><span class="g" aria-hidden="true">✕</span>Close</button></div>
+        <p class="about">An algorithm is a short recipe of turns. Pick one to learn it one turn at a time. Your game is kept aside and comes back exactly as it was when you close this.</p>
+        <div id="algList"></div>
+      </div>
+      <div class="coachlesson" id="coachLesson">
       <p class="kicker" id="coachKicker"></p>
       <h2 id="coachTitle"></h2>
-      <button class="btn wide" type="button" id="coachPick">☰ Choose another algorithm ▾</button>
-      <div class="stepbox">
-        <p class="steptext" id="coachStep"></p>
-        <div class="chips" id="coachChips" aria-hidden="true"></div>
-      </div>
+      <p class="about" id="coachAbout"></p>
       <div class="now" id="coachNow" aria-live="polite"></div>
       <div class="ctl">
         <button class="btn wide" type="button" id="lessonBack"><span class="g" aria-hidden="true">◀</span>Back</button>
@@ -300,8 +323,13 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         <button class="btn wide" type="button" id="lessonReplay"><span class="g" aria-hidden="true">↺</span>Start over</button>
         <button class="btn wide" type="button" id="lessonExit"><span class="g" aria-hidden="true">✕</span><span class="lbl">Exit lesson</span></button>
       </div>
-      <p class="prog" id="coachProg"></p>
-      <p class="about" id="coachAbout"></p>
+      <div class="stepbox">
+        <p class="steptext" id="coachStep"></p>
+        <div class="chips" id="coachChips" aria-hidden="true"></div>
+        <p class="prog" id="coachProg"></p>
+      </div>
+      <button class="btn wide" type="button" id="coachPick">☰ Choose another algorithm</button>
+      </div>
     </aside>
   </main>
   <div class="sr" aria-live="polite" id="live"></div>
@@ -329,15 +357,6 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
     <h3>Keys and QuadStick</h3>
     <p>With a QuadStick in mouse mode, puff on the center tube to click a button and sip on it to turn that button the other way. In keyboard mode, move the yellow frame, sip right (Enter) to press the framed button and soft sip center (Ctrl-C) to press it the other way. Change any key under <b>Keys</b>.</p>
     <div class="keys" id="keysList"></div>
-    <button class="btn wide" type="button" data-close>Close</button>
-  </div>
-</div>
-
-<div class="overlay" id="algOv" hidden>
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="algTitle">
-    <h2 id="algTitle">Algorithms</h2>
-    <p>An algorithm is a short recipe of turns. Pick one and the cube shows you the position it is for, then walks you through it one turn at a time.</p>
-    <div id="algList"></div>
     <button class="btn wide" type="button" data-close>Close</button>
   </div>
 </div>
@@ -527,13 +546,13 @@ function explainTok(tok){
   const base=tok[0],mod=tok.slice(1);
   if(WIDE[base]){
     const L=LETTER[base.toUpperCase()],dir=mod==="'"?L[3]:L[2];
-    return `<b>${tok}</b>: turn ${L[1]} <b>and</b> the middle layer next to it together, ${dir}${mod==='2'?', twice (a half turn)':''}. A small letter means "two layers at once".`;
+    return `<b>${tok}</b>: turn ${L[1]} <b>and</b> the middle layer next to it together, ${dir}${mod==='2'?', twice (a half turn)':''}.`;
   }
   const L=LETTER[base];if(!L)return tok;
   const rotWhole='xyz'.includes(base);
   const dir=mod==="'"?L[3]:L[2];
   const what=rotWhole?`Turn ${L[1]}: ${dir}. Nothing gets mixed up, you just see it from a new side.`:`Turn ${L[1]} ${dir}.`;
-  const tail=mod==='2'?' Do it twice (a half turn).':mod==="'"?' The little mark (′) means "the other way".':'';
+  const tail=mod==='2'?' Do it twice (a half turn).':'';
   return `<b>${tok}</b> (${L[0]}): ${what}${tail}`;
 }
 
@@ -1221,16 +1240,21 @@ function layoutBoard(){
     const lab=el.querySelector('.in');
     // try the label on one line and wrapped narrow, and slide it around the middle of the shape;
     // keep whichever spot lets it stay biggest, so slanted shapes don't push it into an edge
-    const kAt=(lw,lh,x,y)=>{let k=1.25;
-      for(let i=0;i<24;i++){const hw=lw*k/2+8,hh=lh*k/2+5;
-        if([[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].every(([dx,dy])=>inside(lp,x+dx,y+dy)))return k;k*=.93;}
+    // the label's visible parts (arrow, letters, word) as boxes around its centre; each must fit inside the shape
+    const partsOf=(lw,lh)=>[...lab.children].filter(c=>c.offsetWidth>2).map(c=>[c.offsetLeft-lw/2,c.offsetTop-lh/2,c.offsetLeft+c.offsetWidth-lw/2,c.offsetTop+c.offsetHeight-lh/2]);
+    const kAt=(parts,x,y)=>{let k=1.25;
+      for(let i=0;i<24;i++){
+        if(parts.every(([l0,t0,r0,b0])=>[[l0*k-5,t0*k-3],[r0*k+5,t0*k-3],[r0*k+5,b0*k+3],[l0*k-5,b0*k+3]].every(([dx,dy])=>inside(lp,x+dx,y+dy))))return k;k*=.93;}
       return k;};
     let best={k:0};
-    const isWhole=el.classList.contains('whole'),flat0=el.classList.contains('flat');
-    (isWhole?[flat0,!flat0]:[flat0]).forEach(fl=>[Math.max(30,chord-10),30].forEach(mw=>{
-      el.classList.toggle('flat',fl);lab.style.maxWidth=mw+'px';lab.style.transform='none';const lw=lab.offsetWidth,lh=lab.offsetHeight;
-      for(let a=-2;a<=2;a++)for(let b=-2;b<=2;b++){const x=cx+a*w*.08,y=cy+b*h*.08;if(!inside(lp,x,y))continue;
-        const kk=Math.min(1,kAt(lw,lh,x,y)),score=kk-(Math.abs(a)+Math.abs(b))*.03; // prefer the centre when it's a tie
+    const isWhole=el.classList.contains('whole'),flat0=el.classList.contains('flat'),roll=el.dataset.move==="z'";
+    el.classList.toggle('diag',roll);
+    (roll?[false]:isWhole?[flat0,!flat0]:[flat0]).forEach(fl=>[400,Math.max(30,chord-10),30].forEach(mw=>{
+      el.classList.toggle('flat',fl);lab.style.left='0px';lab.style.top='0px';lab.style.width='max-content';lab.style.maxWidth=mw+'px';lab.style.transform='none';const lw=lab.offsetWidth,lh=lab.offsetHeight,parts=partsOf(lw,lh);
+      // whole-cube labels stay centred in their long shape (Roll may shift a little to clear its slanted edges)
+      const A=roll?[-1,1]:isWhole?[0,0]:[-2,2],B=roll?[-1,1]:isWhole?[0,0]:[-2,2];
+      for(let a=A[0];a<=A[1];a++)for(let b=B[0];b<=B[1];b++){const x=cx+a*w*.05,y=cy+b*h*.05;if(!inside(lp,x,y))continue;
+        const kk=Math.min(1,kAt(parts,x,y)),score=kk-(Math.abs(a)+Math.abs(b))*.03; // prefer the centre when it's a tie
         if(score>best.k)best={k:score,kk,mw,x,y,fl};}
     }));
     el.classList.toggle('flat',best.fl);lab.style.maxWidth=best.mw+'px';
@@ -1252,13 +1276,13 @@ const pretty=t=>t.replace(/'/g,'′');
 function makeLesson(kind,title,about,steps){
   const flat=[];
   steps.forEach((st,si)=>{let qi=0;st.toks.forEach((tok,ti)=>{const n=quarterTurns(tok).length;for(let k=0;k<n;k++)flat.push({t:st.moves[qi++],si,ti,part:k,of:n});});});
-  return {kind,title,about,steps,flat,pos:0,auto:false,start:cloneState(cubies)};
+  return {kind,title,about,steps,flat,pos:0,auto:false,view:[],start:cloneState(cubies)};
 }
 const setCube=state=>{state.forEach((c,i)=>{cubies[i].p=c.p.slice();cubies[i].s={...c.s};});};
 function putGameAside(){
   if(lessonSnap)return;
   lessonSnap={c:cubies.map(c=>({p:c.p.slice(),s:{...c.s}})),history:history.slice(),redo:redo.slice(),scrambled,elapsed:elapsed(),running:timerStart!==null};
-  timerStart=null;scrambled=false; // the lesson must not count as solving the game
+  timerElapsed=lessonSnap.elapsed;timerStart=null;scrambled=false; // the game clock pauses (showing its time) and the lesson can't count as solving the game
 }
 function startAlgLesson(a){
   if(lesson&&lesson.kind==='solve')stopLesson(true);
@@ -1287,8 +1311,20 @@ function startSolve(){
   });
   pump();
 }
+function setTab(open){$('learnBtn').setAttribute('aria-expanded',String(open));}
+// the Algorithms tab: a side panel listing the algorithms; a lesson picked from it runs on its own cube over the game
+function openAlgTab(){
+  $('coach').hidden=false;$('main').classList.add('lessoning');
+  $('coachList').hidden=false;$('coachLesson').hidden=true;setTab(true);
+  sizeCube();const f=document.querySelector('#algList [data-alg]');if(f)f.focus({preventScroll:true});
+}
+function closeAlgList(){
+  if(lesson){$('coachList').hidden=true;$('coachLesson').hidden=false;setTab(lesson.kind==='alg');updateCoach();$('lessonNext').focus({preventScroll:true});}
+  else{$('coach').hidden=true;$('main').classList.remove('lessoning');setTab(false);sizeCube();$('learnBtn').focus({preventScroll:true});}
+}
 function showCoach(){
   $('coach').hidden=false;$('main').classList.add('lessoning');
+  $('coachList').hidden=true;$('coachLesson').hidden=false;setTab(lesson.kind==='alg');
   $('coachPick').hidden=lesson.kind!=='alg';$('lessonReplay').hidden=lesson.kind!=='alg';
   updateCoach();sizeCube();
   $('lessonNext').focus({preventScroll:true});
@@ -1304,24 +1340,31 @@ function stopLesson(keepCube){
     lessonSnap=null;render();updateStats();save();
   });
   pump();
-  $('coach').hidden=true;$('main').classList.remove('lessoning');
+  $('coach').hidden=true;$('main').classList.remove('lessoning');setTab(false);
   document.querySelectorAll('#board .btn.next').forEach(b=>b.classList.remove('next'));
   applyPreview();updateStats();sizeCube();
 }
+// whole-cube turns the player makes to look around; undone before the lesson moves on so its moves still line up
+function restoreView(){
+  if(!lesson||!lesson.view.length)return;
+  lesson.view.slice().reverse().forEach(t=>queue.push(inv(t)));lesson.view=[];
+}
 function lessonNext(){
   if(!lesson||lesson.pos>=lesson.flat.length)return;
+  restoreView();
   const f=lesson.flat[lesson.pos++];
   queue.push(f.t);queue.push(updateCoach);pump();updateCoach();
 }
 function lessonBack(){
   if(!lesson||!lesson.pos)return;
-  stopAuto();
+  stopAuto();restoreView();
   const f=lesson.flat[--lesson.pos];
   queue.push(inv(f.t));queue.push(updateCoach);pump();updateCoach();
 }
 function lessonStep(){ // finish the current step in one go
   if(!lesson)return;stopAuto();
   const cur=lesson.flat[lesson.pos];if(!cur)return;
+  restoreView();
   while(lesson.pos<lesson.flat.length&&lesson.flat[lesson.pos].si===cur.si)queue.push(lesson.flat[lesson.pos++].t);
   queue.push(updateCoach);pump();updateCoach();
 }
@@ -1335,12 +1378,14 @@ function autoTick(){
 function lessonPlay(){if(!lesson)return;if(lesson.auto){stopAuto();updateCoach();}else{lesson.auto=true;updateCoach();autoTick();}}
 function lessonReplay(){
   if(!lesson||lesson.kind!=='alg')return;stopAuto();
-  queue.push(()=>{setCube(lesson.start);lesson.pos=0;render();updateCoach();});pump();
+  queue.push(()=>{setCube(lesson.start);lesson.pos=0;lesson.view=[];render();updateCoach();});pump();
 }
 // a turn pressed on the board during a lesson: the expected one counts as Next, anything else is held back
 function lessonPress(t){
   const cur=lesson.flat[lesson.pos];
-  if(cur&&t===cur.t){stopAuto();lessonNext();return;}
+  if(cur&&t===cur.t&&!lesson.view.length){stopAuto();lessonNext();return;}
+  if(isRot(t)){stopAuto();lesson.view.push(t);queue.push(t);queue.push(updateCoach);pump();updateCoach();return;}
+  if(lesson.view.length){stopAuto();restoreView();queue.push(updateCoach);pump();coachNote('Turned the cube back to the lesson view. Now press the glowing button.');return;}
   coachNote(cur?`That one isn't next. Press the glowing button (${pretty(cur.t)}), or Next move.`:'This lesson is finished. Press Exit lesson to play on.');
 }
 let noteTimer=null;
@@ -1367,8 +1412,8 @@ function updateCoach(){
   const si=cur?cur.si:L.steps.length-1,st=L.steps[si];
   if(L.kind==='alg'){
     $('coachKicker').textContent='Algorithm tutor';$('coachTitle').textContent=L.title;
-    $('coachAbout').innerHTML=`${L.about}<br><b class="nt">${L.alg.toks.map(pretty).join(' ')}</b>`;
-    $('coachStep').innerHTML=st.text;
+    $('coachAbout').innerHTML=L.about;
+    $('coachStep').innerHTML='';
   } else {
     $('coachKicker').textContent=`Solver · stage ${st.stageNo} of ${st.stages}`;$('coachTitle').textContent=st.stage;
     $('coachAbout').textContent=st.intro;
@@ -1386,12 +1431,13 @@ function updateCoach(){
       :'<b>Solved!</b> Every side is one color. Press Exit lesson to keep playing.';
     lessonTok=null;
   } else {
-    const tok=st.toks[cur.ti],hb=boardButtonFor(cur.t);
+    const tok=st.toks[cur.ti],hb=L.view.length?null:boardButtonFor(cur.t);
     const turnOf=cur.of>1?` <i>(turn ${cur.part+1} of ${cur.of})</i>`:'';
-    const how=hb?(hb.rev?'Right click (sip) the glowing button':'Click (puff) the glowing button'):'Press Next move';
-    $('coachNow').innerHTML=`Next: ${explainTok(cur.of>1&&WIDE[tok[0]]?tok:(cur.of>1?cur.t+(tok.endsWith('2')?'':''):tok))}${turnOf}<span class="how">${how}, or press Next move.</span>`;
+    const how=L.view.length?'You turned the cube to look around. Next move or Back turns it back'
+      :hb?(hb.rev?'Right click the glowing button':'Click the glowing button')+', or press Next move':'Press Next move';
+    $('coachNow').innerHTML=`${explainTok(cur.of>1&&WIDE[tok[0]]?tok:(cur.of>1?cur.t+(tok.endsWith('2')?'':''):tok))}${turnOf}<span class="how">${how}.</span>`;
     if(hb)hb.b.classList.add('next');
-    lessonTok=cur.t;
+    lessonTok=L.view.length?null:cur.t;
   }
   $('coachProg').textContent=`Turn ${Math.min(L.pos,L.flat.length)} of ${L.flat.length}`;
   $('lessonBack').disabled=!L.pos;$('lessonNext').disabled=done;$('lessonStep').disabled=done;$('lessonPlay').disabled=done&&!L.auto;
@@ -1404,9 +1450,15 @@ function renderAlgList(){
   $('algList').innerHTML=groups.map(g=>`<h3>${g}</h3><div class="alglist">`+ALGS.map((a,i)=>a.group!==g?'':`<button class="btn algpick" type="button" data-alg="${i}"><b>${a.name}</b><span class="nt">${a.toks.map(pretty).join(' ')}</span></button>`).join('')+'</div>').join('');
 }
 renderAlgList();
-$('algList').addEventListener('click',e=>{const b=e.target.closest('[data-alg]');if(!b||!pointerOk(b))return;closeOverlay();startAlgLesson(ALGS[+b.dataset.alg]);});
-$('learnBtn').onclick=()=>openOverlay('algOv');
-$('coachPick').onclick=()=>openOverlay('algOv');
+$('algList').addEventListener('click',e=>{const b=e.target.closest('[data-alg]');if(!b||!pointerOk(b))return;startAlgLesson(ALGS[+b.dataset.alg]);});
+// the top-right button opens the tab, and closes it again (ending a lesson, which brings the game back)
+$('learnBtn').onclick=()=>{
+  if(!pointerOk($('learnBtn')))return;
+  if($('learnBtn').getAttribute('aria-expanded')==='true'){if(lesson)stopLesson(lesson.kind==='solve');else closeAlgList();}
+  else openAlgTab();
+};
+$('coachPick').onclick=()=>{if(pointerOk($('coachPick')))openAlgTab();};
+$('listClose').onclick=()=>{if(pointerOk($('listClose')))closeAlgList();};
 $('solveBtn').onclick=()=>{if(pointerOk($('solveBtn')))startSolve();};
 $('lessonNext').onclick=()=>{if(pointerOk($('lessonNext'))){stopAuto();lessonNext();}};
 $('lessonBack').onclick=()=>{if(pointerOk($('lessonBack')))lessonBack();};
