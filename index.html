@@ -1673,46 +1673,41 @@ function pieceSpot(p){
   return ISO(p[0]+d[0]*.5,p[1]+d[1]*.5,p[2]+d[2]*.5);
 }
 const f1=v=>v.toFixed(1);
-// arrowhead triangle; drawn twice by each arrow: once in the outline colour with a thick edge, then plain white on top
-function headPts(tip,dir){
-  const n=Math.hypot(dir.x,dir.y)||1,ux=dir.x/n,uy=dir.y/n,L=7,W=4.4;
-  return `${f1(tip.x)},${f1(tip.y)} ${f1(tip.x-ux*L-uy*W)},${f1(tip.y-uy*L+ux*W)} ${f1(tip.x-ux*L+uy*W)},${f1(tip.y-uy*L-ux*W)}`;
+// one arrow = one closed outline: the shaft as a ribbon with its head(s) built in, filled white with a thin dark edge.
+// pts is the arrow's centre line, tail first; heads shrink on short arrows so they never crowd each other
+function arrowPath(pts,both=false){
+  const seg=[0];for(let i=1;i<pts.length;i++)seg.push(seg[i-1]+Math.hypot(pts[i].x-pts[i-1].x,pts[i].y-pts[i-1].y));
+  const len=seg[seg.length-1],L=Math.min(6,len*(both?.3:.42)),W=L*.62,w=1.35;
+  const at=s=>{let i=1;while(i<seg.length-1&&seg[i]<s)i++;const t=(s-seg[i-1])/((seg[i]-seg[i-1])||1);
+    return {x:pts[i-1].x+(pts[i].x-pts[i-1].x)*t,y:pts[i-1].y+(pts[i].y-pts[i-1].y)*t};};
+  const s0=both?L:0,s1=len-L,N=Math.max(2,Math.ceil((s1-s0)/2)),line=[];
+  for(let j=0;j<=N;j++)line.push(at(s0+(s1-s0)*j/N));
+  const nrm=i=>{const p=line[Math.max(0,i-1)],q=line[Math.min(line.length-1,i+1)],m=Math.hypot(q.x-p.x,q.y-p.y)||1;return {x:-(q.y-p.y)/m,y:(q.x-p.x)/m};};
+  const side=k=>line.map((p,i)=>{const n=nrm(i);return {x:p.x+n.x*w*k,y:p.y+n.y*w*k};});
+  const head=(base,tip)=>{const m=Math.hypot(tip.x-base.x,tip.y-base.y)||1,nx=-(tip.y-base.y)/m,ny=(tip.x-base.x)/m;
+    return [{x:base.x+nx*W,y:base.y+ny*W},tip,{x:base.x-nx*W,y:base.y-ny*W}];};
+  const left=side(1),right=side(-1).reverse();
+  const out=[...left,...head(line[line.length-1],pts[pts.length-1]),...right];
+  if(both)out.push(...head(line[0],pts[0]));
+  return `<path d="M${out.map(p=>f1(p.x)+','+f1(p.y)).join(' L')} Z" fill="#fff" stroke="#07080b" stroke-width="2.6" stroke-linejoin="round" paint-order="stroke"/>`;
 }
-// one arrow as a single shape with one outline: every dark part first, then every white part over it,
-// so there's no seam where the head meets the shaft; each arrow is drawn whole over the ones before it
-function arrowShape(d,heads,dOut=d,cap='butt'){
-  // two layers: the shaft, and the heads. Every arrow's shaft is drawn first and every head after (see arrowLayers),
-  // so a head that lands on another arrow always sits on top. Each head carries a short stub of its own shaft so it
-  // joins that shaft with no seam.
-  // the white stub starts a little further back than the dark one, so the dark one's cut edge never shows across the shaft
-  const stub=(h,back)=>{const [t,b1,b2]=h.split(' ').map(q=>q.split(',').map(Number)),m=[(b1[0]+b2[0])/2,(b1[1]+b2[1])/2],
-    v=[t[0]-m[0],t[1]-m[1]],n=Math.hypot(...v)||1,a=[m[0]-v[0]/n*back,m[1]-v[1]/n*back],e=[m[0]+v[0]/n,m[1]+v[1]/n];
-    return `M${f1(a[0])},${f1(a[1])} L${f1(e[0])},${f1(e[1])}`;};
-  const shaft=`<path d="${dOut}" fill="none" stroke="#07080b" stroke-width="5.6" stroke-linecap="${cap}"/><path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="butt"/>`;
-  const head=heads.map(h=>`<path d="${stub(h,3)}" fill="none" stroke="#07080b" stroke-width="5.6"/><polygon points="${h}" fill="#07080b" stroke="#07080b" stroke-width="2.6" stroke-linejoin="round"/>`+
-    `<path d="${stub(h,4.5)}" fill="none" stroke="#fff" stroke-width="3"/><polygon points="${h}" fill="#fff"/>`).join('');
-  return shaft+'\u0001'+head+'\u0002';
-}
-// put all the shafts down first, then all the heads
-const arrowLayers=m=>{const parts=m.split('\u0002').filter(Boolean).map(x=>x.split('\u0001'));return parts.map(x=>x[0]).join('')+parts.map(x=>x[1]||'').join('');};
+const arrowLayers=m=>m;
 function picArrow(a,b,both,C=ISO(0,1.5,0),straight=false){
-  const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,ux=dx/n,uy=dy/n,sh=straight?1:C.x===0&&C.y===0?Math.max(0,Math.min(6,(n-30)/3)):3; // top-down arrows stop inside their squares so heads that meet don't pile up, but short ones keep room for both heads
-  const A={x:a.x+ux*sh,y:a.y+uy*sh},B={x:b.x-ux*sh,y:b.y-uy*sh},bow=both||straight?0:Math.max(5,n*.35);
+  const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,ux=dx/n,uy=dy/n,top=C.x===0&&C.y===0;
+  // arrows stop short of the pieces they join, so a head never runs into the next arrow's tail
+  const gT=straight?1:top?4.5:3,gH=straight?1:top?4.5:3;
+  const A={x:a.x+ux*gT,y:a.y+uy*gT},B={x:b.x-ux*gH,y:b.y-uy*gH},bow=both||straight?0:Math.max(4,n*.22);
   const mid={x:(A.x+B.x)/2,y:(A.y+B.y)/2};
   let ox=-uy,oy=ux;if(ox*(mid.x-C.x)+oy*(mid.y-C.y)<0){ox=-ox;oy=-oy;}
-  const M={x:mid.x+ox*bow,y:mid.y+oy*bow};
-  // the shaft stops inside the arrowhead and has flat ends, so no round blobs show at either end
-  const pull=(P,from,k)=>{const vx=P.x-from.x,vy=P.y-from.y,m=Math.hypot(vx,vy)||1;return {x:P.x-vx/m*k,y:P.y-vy/m*k};};
-  const Bs=pull(B,M,5),As=both?pull(A,M,5):A;
-  const d=`M${f1(As.x)},${f1(As.y)} Q${f1(M.x)},${f1(M.y)} ${f1(Bs.x)},${f1(Bs.y)}`;
-  // the outline runs a little past a plain tail so that end is closed off too
-  const At=both?As:pull(A,M,-1.3),dOut=`M${f1(At.x)},${f1(At.y)} Q${f1(M.x)},${f1(M.y)} ${f1(Bs.x)},${f1(Bs.y)}`;
-  return arrowShape(d,[headPts(B,{x:B.x-M.x,y:B.y-M.y}),...(both?[headPts(A,{x:A.x-M.x,y:A.y-M.y})]:[])],dOut);
+  const M={x:mid.x+ox*bow,y:mid.y+oy*bow},pts=[];
+  for(let i=0;i<=24;i++){const t=i/24,s=1-t;pts.push({x:s*s*A.x+2*s*t*M.x+t*t*B.x,y:s*s*A.y+2*s*t*M.y+t*t*B.y});}
+  return arrowPath(pts,both);
 }
 function twistMark(at,cw=true){
-  // a three-quarter circle ending at the top with its head pointing the way the corner turns (as seen from outside it)
-  const r=5.4,k=cw?1:-1,d=`M${f1(at.x+k*r)},${f1(at.y)} A${r},${r} 0 1 ${cw?1:0} ${f1(at.x)},${f1(at.y-r)}`;
-  return arrowShape(d,[headPts({x:at.x+k*5,y:at.y-r},{x:k,y:0})],d,'square');
+  // a three-quarter circle ending at the top, its head pointing the way the corner turns (as seen from outside it)
+  const r=5.6,k=cw?1:-1,a0=cw?0:Math.PI,pts=[];
+  for(let i=0;i<=30;i++){const a=a0+k*1.5*Math.PI*i/30;pts.push({x:at.x+r*Math.cos(a),y:at.y+r*Math.sin(a)});}
+  return arrowPath(pts);
 }
 function cubePic(cs,keep,marks,label){
   const faces=[[0,1,0],[0,0,1],[1,0,0]],shade={'0,1,0':1,'0,0,1':.86,'1,0,0':.72};
