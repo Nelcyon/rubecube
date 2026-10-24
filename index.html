@@ -78,8 +78,6 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:cente
 .cube.previewing .cubie.hl .face{background:var(--outline)}
 .cube.previewing .cubie.hl .st.on{box-shadow:0 0 0 calc(var(--s) * .02) var(--plastic)}
 
-.facing{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;color:var(--muted);font-size:.95rem}
-.facing .chip{display:inline-flex;align-items:center;gap:.4rem;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.2rem .7rem}
 .dot{width:.9rem;height:.9rem;border-radius:50%;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
 .history{min-height:1.4rem;color:var(--muted);font-family:var(--font-display);font-size:.9rem;letter-spacing:.04em;overflow-wrap:anywhere}
 .history:empty::before{content:"Your moves will appear here"}
@@ -114,13 +112,12 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:cente
 .hint{min-height:2.6rem;width:100%;max-width:34rem;border-radius:12px;background:var(--panel);border:1px dashed var(--line);padding:.45rem .8rem;color:var(--muted);font-size:.95rem;display:flex;align-items:center;gap:.5rem}
 .hint b{color:var(--text)}
 
-.whole{display:grid;grid-template-columns:1fr;gap:.45rem}
-.whole .btn{min-height:4.4rem;justify-content:flex-start;padding-left:1rem}
-.whole .g{font-size:1.7rem;width:2rem}
-.wt{display:flex;flex-direction:column;align-items:flex-start;gap:.1rem}
-.whole .t{font-size:1rem}
-.game{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem}
-.game .btn{min-height:4rem}
+/* whole-cube turns sit around the cube too, drawn with a dashed edge so they read as "the whole cube" */
+.board .btn.whole{border-style:dashed;border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.board .btn.whole .t{font-size:.72rem}
+.gamebar{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.45rem}
+.gamebar .btn{min-height:3.4rem;padding:.3rem .9rem}
+.gamebar .history{flex-basis:100%;text-align:center}
 
 /* overlays */
 .overlay{position:fixed;inset:0;background:rgba(3,6,12,.78);display:grid;place-items:center;padding:1rem;z-index:20}
@@ -161,17 +158,15 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* narrow: side cards move under the board, side by side */
-main.stacked .middle{order:-1;flex-basis:100%}
 @media (max-width:1000px){.stats{margin-left:0}}
 @media (max-width:620px){
   .head-btns{width:100%}
   .head-btns .btn{flex:1}
-  .board{gap:.25rem;--b:3.4rem}
+  .board{--b:2.9rem}
   .board .btn{border-radius:10px;padding:.15rem}
   .board .btn .t{font-size:.62rem}
   .board .btn .g{font-size:1.25rem}
   .board .btn .alt{display:none}
-  .card{width:100%}
 }
 @media (prefers-reduced-motion:reduce){.btn{transition:none}.btn:active{transform:none}}
 </style>
@@ -195,18 +190,18 @@ main.stacked .middle{order:-1;flex-basis:100%}
   </header>
 
   <main id="main">
-    <section class="card" aria-label="Turn the whole cube">
-      <h2>Turn whole cube</h2>
-      <div class="whole">
-        <button class="btn wide" type="button" data-move="y"><span class="g">⇇</span><span class="wt"><span class="t">Spin left</span><span class="alt">right-click: spin right</span></span></button>
-        <button class="btn wide" type="button" data-move="x"><span class="g">⤒</span><span class="wt"><span class="t">Tip up</span><span class="alt">right-click: tip down</span></span></button>
-        <button class="btn wide" type="button" data-move="z'"><span class="g">⟲</span><span class="wt"><span class="t">Roll left</span><span class="alt">right-click: roll right</span></span></button>
-      </div>
-    </section>
-
     <section class="middle">
-      <div class="facing" id="facing"></div>
+      <div class="gamebar" aria-label="Game">
+        <button class="btn wide" type="button" data-act="undo" id="undoBtn"><span class="g" aria-hidden="true">↶</span>Undo</button>
+        <button class="btn wide" type="button" data-act="redo" id="redoBtn"><span class="g" aria-hidden="true">↷</span>Redo</button>
+        <button class="btn wide" type="button" data-act="scramble" id="scrambleBtn"><span class="g" aria-hidden="true">⇄</span><span class="lbl">Scramble</span></button>
+        <button class="btn wide" type="button" data-act="reset" id="resetBtn"><span class="g" aria-hidden="true">⟲</span><span class="lbl">Reset</span></button>
+        <div class="history" id="history" aria-hidden="true"></div>
+      </div>
       <div class="board" id="board" aria-label="Cube and turn buttons">
+      <button class="btn whole" type="button" data-move="y"><span class="g">⇇</span><span class="t">Spin cube left</span><span class="alt">right-click ⇉</span></button>
+      <button class="btn whole" type="button" data-move="x"><span class="g">⤒</span><span class="t">Tip cube up</span><span class="alt">right-click ⤓</span></button>
+      <button class="btn whole" type="button" data-move="z'"><span class="g">⟲</span><span class="t">Roll cube left</span><span class="alt">right-click ⟳</span></button>
       <button class="btn" type="button" data-move="L'"><span class="g">⬆</span><span class="t">Left</span><span class="alt">right-click ⬇</span></button>
       <button class="btn" type="button" data-move="M'"><span class="g">⬆</span><span class="t">Middle</span><span class="alt">right-click ⬇</span></button>
       <button class="btn" type="button" data-move="R"><span class="g">⬆</span><span class="t">Right</span><span class="alt">right-click ⬇</span></button>
@@ -225,16 +220,6 @@ main.stacked .middle{order:-1;flex-basis:100%}
       </div>
     </section>
 
-    <section class="card" aria-label="Game">
-      <h2>Game</h2>
-      <div class="game">
-        <button class="btn wide" type="button" data-act="undo" id="undoBtn"><span class="g" aria-hidden="true">↶</span>Undo</button>
-        <button class="btn wide" type="button" data-act="redo" id="redoBtn"><span class="g" aria-hidden="true">↷</span>Redo</button>
-        <button class="btn wide" type="button" data-act="scramble" id="scrambleBtn"><span class="g" aria-hidden="true">⇄</span><span class="lbl">Scramble</span></button>
-        <button class="btn wide" type="button" data-act="reset" id="resetBtn"><span class="g" aria-hidden="true">⟲</span><span class="lbl">Reset</span></button>
-      </div>
-      <div class="history" id="history" aria-hidden="true"></div>
-    </section>
   </main>
   <div class="sr" aria-live="polite" id="live"></div>
 </div>
@@ -251,7 +236,7 @@ main.stacked .middle{order:-1;flex-basis:100%}
       <li>Point at any button first: the pieces it will move get a pink outline, so there are no surprises.</li>
     </ul>
     <h3>Seeing other sides</h3>
-    <p>Use <b>Turn whole cube</b> to spin, tip or roll it (right click goes the other way). This never counts as a move.</p>
+    <p>The dashed buttons turn the whole cube: <b>Spin</b> on the left, <b>Tip</b> at the bottom left and <b>Roll</b> on the right (right click goes the other way). This never counts as a move.</p>
     <h3>No rush</h3>
     <p>Every action is a single click or a single key. Nothing needs to be held, dragged or pressed together, and nothing times out. Made a mistake? <b>Undo</b> takes it back, as many times as you like. Your game is saved in this browser automatically.</p>
     <h3>Keys and QuadStick</h3>
@@ -373,9 +358,6 @@ function render(){
       else st.classList.remove('on');
     });
   });
-  const center=d=>cubies.find(c=>key(c.p)===key(d)).s[key(d)];
-  const chip=(name,d)=>{const col=center(d);return `<span class="chip"><span class="dot" style="background:${COLORS[col]}"></span>${name}: ${CNAME[col]}</span>`;};
-  $('facing').innerHTML=chip('Front',[0,0,1])+chip('Top',[0,1,0])+chip('Right',[1,0,0]);
   applyPreview();
 }
 
@@ -724,20 +706,17 @@ $('keysBtn').onclick=()=>openOverlay('keysOv');
 let layoutPending=false;
 function sizeCube(){
   const main=$('main'),board=$('board'),rem=parseFloat(getComputedStyle(document.documentElement).fontSize);
-  const vw=main.clientWidth,cardW=document.querySelector('.card').getBoundingClientRect().width;
-  const side=vw-2*cardW-2*1.2*rem;
-  const stacked=side<30*rem;
-  main.classList.toggle('stacked',stacked);
-  const headH=document.querySelector('header').getBoundingClientRect().height;
-  const availW=(stacked?vw:side)-8;
-  const availH=Math.max(18*rem,window.innerHeight-headH-6*rem);
+  const vw=main.clientWidth;
+  const headH=document.querySelector('header').getBoundingClientRect().height+document.querySelector('.gamebar').getBoundingClientRect().height;
+  const availW=vw-8;
+  const availH=Math.max(18*rem,window.innerHeight-headH-4.6*rem);
   let sz=Math.min(125,Math.max(36,Math.min(availW,availH)/6));
   for(let k=0;k<4;k++){
     document.documentElement.style.setProperty('--s',sz.toFixed(1)+'px');
     const bb=layoutBoard();if(!bb||!isFinite(bb.w)||!isFinite(bb.h)||bb.w<=0)return;
     const f=Math.min(availW/bb.w,availH/bb.h);
     if(f>0.97&&(f<1.03||sz>=125))break;
-    sz=Math.min(125,Math.max(30,sz*(1+(f-1)*1.15)));
+    sz=Math.min(125,Math.max(22,sz*(1+(f-1)*1.15)));
   }
 }
 // place the turn buttons against the projected cube edges they act on
@@ -775,6 +754,16 @@ function layoutBoard(){
     off+=3;
   }
   sl.forEach(([m],i)=>put(btn(m),boxes[i].x,boxes[i].y,b,b));
+  // whole-cube turns: spin on the left (beside the middle row), tip at the bottom left, roll on the right
+  const all=()=>placed.map(q=>({x:q.x,y:q.y,w:q.w,h:q.h}));
+  const free=(x,y,w,h,step)=>{for(let k=0;k<200;k++){const q={x,y,w,h};if(!all().some(a=>hit(q,a)))return q;x+=step[0];y+=step[1];}return {x,y,w,h};};
+  const rowsBox=placed.slice(0,3),colsBox=placed.slice(3,6);
+  const mid=rowsBox[1];
+  let q=free(mid.x-gap-b,mid.y+mid.h/2-b/2,b,b,[-3,0]);put(btn('y'),q.x,q.y,q.w,q.h);
+  q=free(rowsBox[2].x+rowsBox[2].w/2-b/2,colsBox[0].y,b,b,[-3,0]);put(btn('x'),q.x,q.y,q.w,q.h);
+  const rf=[];for(const y of [1,0,-1])for(const z of [1,0,-1])rf.push(R([1,y,z],0));
+  const fr=Math.max(...rf.map(r=>r.r)),rmid=R([1,0,0],0);
+  q=free(fr+gap,rmid.cy-b/2-b*0.3,b,b,[3,0]);put(btn("z'"),q.x,q.y,q.w,q.h);
   // bounding box of cube faces and buttons
   let l=Infinity,t=Infinity,r=-Infinity,bt=-Infinity;
   const grow=(x1,y1,x2,y2)=>{l=Math.min(l,x1);t=Math.min(t,y1);r=Math.max(r,x2);bt=Math.max(bt,y2);};
