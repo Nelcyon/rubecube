@@ -12,9 +12,10 @@ no build step and nothing to install: open it in any modern browser, or send the
   front, top and right sides.
 - **Left click** turns a layer the way the big arrow points. **Right click** turns it the other way.
 - Hover over a button first and the pieces it will move get a pink outline.
-- **Turn whole cube** (left) spins, tips or rolls the cube to show other sides. This never counts as a move.
-- **Game** (right) has Undo, Redo, Scramble and Reset. Scramble and Reset ask for a second click while a
-  game is in progress.
+- The dashed buttons turn the whole cube to show other sides: Spin on the left, Tip at the bottom left and
+  Roll on the right. This never counts as a move.
+- The game bar at the top has Undo, Redo, Scramble and Reset. Scramble and Reset ask for a second click
+  while a game is in progress.
 - Nothing needs dragging, holding, or pressing two things together, and nothing times out.
 - The game is saved in the browser automatically.
 
