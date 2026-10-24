@@ -1,4 +1,4 @@
-# Easy-Reach Cube
+# RubeCube
 
 An accessible 3D Rubik's cube game built for playing with a [QuadStick](https://www.quadstick.com/)
 (a mouth-operated joystick with sip-and-puff switches). Everything is in one file, `index.html`, with
@@ -6,8 +6,9 @@ no build step and nothing to install: open it in any modern browser, or send the
 
 ## Playing
 
-- The cube sits in the middle. The buttons above it move a column, the buttons on its left move a row,
-  and the two top corners twist the front and back.
+- The cube sits in the middle. The buttons below it move a column, the buttons on its left move a row,
+  and the two bottom corners twist the front and back. The labels above the cube name the colors of the
+  front, top and right sides.
 - **Left click** turns a layer the way the big arrow points. **Right click** turns it the other way.
 - Hover over a button first and the pieces it will move get a pink outline.
 - **Turn whole cube** (left) spins, tips or rolls the cube to show other sides. This never counts as a move.
