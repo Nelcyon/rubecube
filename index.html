@@ -21,6 +21,9 @@
   --focus:#ffd23f;
   --warn:#ff9d5c;
   --good:#5ee39a;
+  --gold:#f5c542;
+  --silver:#cfd8e6;
+  --bronze:#d9925a;
   --plastic:#07080b;
   --outline:#ff4fd8; /* magenta: unlike any sticker colour */
   --font-display:"Lexend",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -44,16 +47,28 @@ body{
 
 /* header */
 header{display:grid;grid-template-columns:auto 1fr auto;grid-template-areas:"brand bar tools";align-items:start;gap:.8rem 1.25rem}
-.tools{grid-area:tools;display:flex;justify-content:flex-end}
+.side{grid-area:side;display:grid;grid-template-columns:max-content;gap:.5rem;justify-items:stretch}
+.side .brand{width:auto}
+.side h1{font-size:1.32rem;justify-content:center}
+.tools{display:flex;flex-direction:column;align-items:stretch;gap:.4rem}
+.tools .btn.chal{border-color:color-mix(in srgb,var(--gold) 55%,var(--line));color:var(--gold)}
+.tools .btn.chal.on{background:color-mix(in srgb,var(--gold) 16%,var(--raised));border-color:var(--gold)}
 .tools .btn{min-height:3.3rem;padding:.3rem 1rem;border-radius:16px;border-color:color-mix(in srgb,var(--good) 45%,var(--line));color:#c9f5d6;white-space:nowrap}
 .tools .btn[aria-expanded="true"]{background:color-mix(in srgb,var(--good) 18%,var(--raised));border-color:var(--good)}
-.brand{grid-area:brand;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem;width:max-content}
+.brand{display:flex;flex-direction:column;align-items:stretch;gap:.5rem}
 /* the two small buttons together are exactly as wide as the logo above them */
 .brand .head-btns{width:0;min-width:100%;display:flex;gap:.35rem}
 .brand .head-btns .btn{flex:1 1 auto}
 .brand .head-btns .btn{min-width:0;min-height:2.4rem;padding:.2rem .15rem;font-size:.72rem;gap:.2rem;border-radius:10px;white-space:nowrap}
 .brand .head-btns .btn .g{font-size:.9rem}
-header .gamebar{grid-area:bar;justify-self:center;align-self:center}
+header .gamebar{grid-area:bar;justify-self:center;align-self:start}
+/* wide: the game bar runs along the top; the logo, Settings, How to play, Algorithms and Challenge stack in one column at the top right */
+@media (min-width:1001px){
+  .app{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr;grid-template-areas:"bar side" "main side";column-gap:1.25rem}
+  header{display:contents}
+  header .side{grid-area:side;align-self:start}
+  main{grid-area:main}
+}
 h1{font-family:var(--font-display);font-weight:800;font-size:1.55rem;margin:0;letter-spacing:-.01em;display:flex;align-items:center;gap:.6rem}
 h1 .logo{display:grid;grid-template-columns:repeat(3,.42rem);gap:2px}
 h1 .logo i{width:.42rem;height:.42rem;border-radius:2px;display:block}
@@ -62,6 +77,23 @@ h1 .logo i{width:.42rem;height:.42rem;border-radius:2px;display:block}
 .stat b{font-family:var(--font-display);font-size:1.35rem;font-variant-numeric:tabular-nums}
 .stat span{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
 .stat.armed{border-color:var(--warn);color:var(--warn)}
+.gamebar .stats .stat.par b,.gamebar .stats .stat.par span{color:var(--gold)}
+.chal-moves b{color:var(--gold)}
+/* challenge */
+.levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:.5rem}
+.levels .btn{min-height:4.2rem;flex-direction:column;align-items:flex-start;gap:.1rem;padding:.45rem .8rem;border-color:color-mix(in srgb,var(--gold) 35%,var(--line));text-align:left}
+.levels .btn:hover{border-color:var(--gold)}
+.levels .btn b{font-family:var(--font-display);color:var(--gold)}
+.levels .btn small{color:var(--muted);font-size:.8rem}
+.medal{display:inline-block;width:1.05em;height:1.05em;border-radius:50%;vertical-align:-.15em;margin-right:.25em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
+.medal.gold{background:var(--gold)}.medal.silver{background:var(--silver)}.medal.bronze{background:var(--bronze)}
+.tiers{display:grid;grid-template-columns:auto 1fr;gap:.25rem .7rem;align-items:center}
+.sheet.chal-sheet{border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
+.sheet.chal-sheet h2{color:var(--gold)}
+.banner.gold{border-color:var(--gold)}.banner.gold h2{color:var(--gold)}
+.banner.silver{border-color:var(--silver)}.banner.silver h2{color:var(--silver)}
+.banner.bronze{border-color:var(--bronze)}.banner.bronze h2{color:var(--bronze)}
+.banner .row{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
 .stat.armed span{color:var(--warn)}
 .head-btns{display:flex;gap:.4rem}
 .head-btns .btn{white-space:nowrap;min-height:2.7rem;padding:.25rem .7rem;font-size:.9rem;border-radius:12px}
@@ -237,9 +269,9 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* narrow: side cards move under the board, side by side */
-@media (max-width:1250px){header{grid-template-columns:1fr auto;grid-template-areas:"brand tools" "bar bar"}.brand{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;width:100%}.brand .head-btns{width:auto;min-width:0;grid-template-columns:auto auto}.brand .head-btns .btn{min-height:2.7rem;padding:.25rem .7rem;font-size:.9rem}}
+@media (max-width:1000px){header{grid-template-columns:minmax(0,1fr);grid-template-areas:"side" "bar"}.side{grid-template-columns:auto auto;justify-content:space-between;align-items:center}.brand{flex-direction:row;align-items:center;gap:.8rem}.brand .head-btns{width:auto;min-width:0}.brand .head-btns .btn{min-height:2.7rem;padding:.25rem .7rem;font-size:.9rem}.tools{flex-direction:row}}
 @media (max-width:1000px){.gamebar{flex-wrap:wrap;row-gap:.4rem}.gamebar .grp{flex:1 1 auto;justify-content:center}.gamebar .grp+.grp{border-left:0;padding-left:.3rem}}
-@media (max-width:620px){header{grid-template-columns:minmax(0,1fr) auto}.brand{flex-direction:column;align-items:flex-start;width:auto}.tools{align-self:start}.tools .btn{min-height:2.7rem;padding:.25rem .7rem;font-size:.9rem}header .gamebar{justify-self:stretch}.gamebar .grp+.grp{border-left:0;padding-left:.3rem}.gamebar .grp{flex:1 1 auto;justify-content:center}}
+@media (max-width:620px){.side{grid-template-columns:minmax(0,1fr);justify-content:stretch}.brand{flex-direction:column;align-items:flex-start}.brand .head-btns{width:100%}.tools .btn{flex:1 1 0;min-height:2.7rem;padding:.25rem .7rem;font-size:.9rem}header .gamebar{justify-self:stretch}.gamebar .grp+.grp{border-left:0;padding-left:.3rem}.gamebar .grp{flex:1 1 auto;justify-content:center}}
 @media (max-width:620px){
   .head-btns{width:100%}
   .head-btns .btn{flex:1}
@@ -255,17 +287,12 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
 
 <div class="app" id="app">
   <header>
-    <div class="brand">
-    <h1><span class="logo" aria-hidden="true"><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i><i style="background:#16a34a"></i><i style="background:#ffd60a"></i><i style="background:#1d6fe0"></i><i style="background:#f97316"></i><i style="background:#16a34a"></i><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i></span>RubeCube</h1>
-    <div class="head-btns" aria-label="Help and settings">
-      <button class="btn wide" id="setBtn" type="button"><span class="g" aria-hidden="true">⚙</span>Settings</button>
-      <button class="btn wide" id="helpBtn" type="button"><span class="g" aria-hidden="true">?</span>How to play</button>
-    </div>
-    </div>
     <nav class="gamebar" aria-label="Game">
     <div class="grp stats">
       <div class="stat"><span>Moves</span><b id="moves">0</b></div>
       <div class="stat" id="timeStat"><span>Time</span><b id="time">0:00</b></div>
+      <div class="stat par" id="parStat" hidden><span>Par</span><b id="par">0</b></div>
+      <div class="stat" id="solvedStat" title="Games you solved yourself (Solve with me games don't count)"><span>Solved</span><b id="solvedCount">0</b></div>
       <div class="stat armed" id="armed" hidden><span>Next key</span><b>↺ reverse</b></div>
     </div>
       <div class="grp">
@@ -280,8 +307,18 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         <button class="btn wide learn" type="button" id="solveBtn"><span class="g" aria-hidden="true">✓</span><span class="lbl">Solve with me</span></button>
       </div>
     </nav>
+    <div class="side">
+    <div class="brand">
+    <h1><span class="logo" aria-hidden="true"><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i><i style="background:#16a34a"></i><i style="background:#ffd60a"></i><i style="background:#1d6fe0"></i><i style="background:#f97316"></i><i style="background:#16a34a"></i><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i></span>RubeCube</h1>
+    <div class="head-btns" aria-label="Help and settings">
+      <button class="btn wide" id="setBtn" type="button"><span class="g" aria-hidden="true">⚙</span>Settings</button>
+      <button class="btn wide" id="helpBtn" type="button"><span class="g" aria-hidden="true">?</span>How to play</button>
+    </div>
+    </div>
     <div class="tools">
       <button class="btn wide" type="button" id="learnBtn" aria-expanded="false" aria-controls="coach"><span class="g" aria-hidden="true">☰</span>Algorithms</button>
+      <button class="btn wide chal" type="button" id="chalBtn"><span class="g" aria-hidden="true">★</span>Challenge</button>
+    </div>
     </div>
   </header>
 
@@ -304,7 +341,11 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         <div class="banner" id="banner" hidden>
           <h2>Solved!</h2>
           <p id="bannerText"></p>
-          <button class="btn wide" type="button" data-act="scramble"><span class="g" aria-hidden="true">⇄</span>Play again</button>
+          <div class="row">
+          <button class="btn wide" type="button" data-act="scramble" id="againBtn"><span class="g" aria-hidden="true">⇄</span>Play again</button>
+          <button class="btn wide" type="button" id="chalAgain" hidden><span class="g" aria-hidden="true">★</span><span class="lbl">Same level again</span></button>
+          <button class="btn wide" type="button" id="chalNext" hidden><span class="g" aria-hidden="true">▲</span>Next level</button>
+          </div>
         </div>
       </div>
     </section>
@@ -356,11 +397,29 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
     <p>Every action is a single click or a single key. Nothing needs to be held, dragged or pressed together, and nothing times out. Made a mistake? <b>Undo</b> takes it back, as many times as you like. Your game is saved in this browser automatically.</p>
     <h3>Letters on the buttons</h3>
     <p>Each turn button also shows its letter in standard cube notation: <b>R</b> right, <b>L</b> left, <b>U</b> up (top), <b>D</b> down (bottom), <b>F</b> front, <b>B</b> back, <b>M</b>, <b>E</b> and <b>S</b> for the three middle slices, and <b>x</b>, <b>y</b>, <b>z</b> for turning the whole cube. Each button shows the turn and its reverse; a mark (′) means the other way round. On the turn buttons the letters replace the words; turn the letters off in Settings to see words instead.</p>
+    <h3>Challenge</h3>
+    <p><b>Challenge</b> mixes the cube with a few turns and gives a par: the fewest moves that solve it. Solve it in exactly par for gold; a few more earn silver or bronze. <b>Solved</b> counts the games you solved yourself; games finished with Solve it with me don't count.</p>
     <h3>Algorithms and the solver</h3>
     <p><b>Algorithms</b> teaches a recipe one turn at a time on the real cube. <b>Solve it with me</b> walks you through solving your own cube, stage by stage. In both, the button for the next turn glows green: press it yourself, or press <b>Next move</b>. Undo and Redo step back and forward too.</p>
     <h3>Keys and QuadStick</h3>
     <p>With a QuadStick in mouse mode, puff on the center tube to click a button and sip on it to turn that button the other way. In keyboard mode, move the yellow frame, sip right (Enter) to press the framed button and soft sip center (Ctrl-C) to press it the other way. Change any key under <b>Keys</b>.</p>
     <div class="keys" id="keysList"></div>
+    <button class="btn wide" type="button" data-close>Close</button>
+  </div>
+</div>
+
+<div class="overlay" id="chalOv" hidden>
+  <div class="sheet chal-sheet" role="dialog" aria-modal="true" aria-labelledby="chalTitle">
+    <h2 id="chalTitle">★ Challenge</h2>
+    <p>The cube is mixed with only a few turns. Solve it in as few moves as you can. <b>Par</b> is the fewest moves it can possibly be solved in.</p>
+    <div class="tiers">
+      <span><i class="medal gold"></i><b>Gold</b></span><span>solved in exactly par: a perfect score</span>
+      <span><i class="medal silver"></i><b>Silver</b></span><span>a few moves over par</span>
+      <span><i class="medal bronze"></i><b>Bronze</b></span><span>more over par, with more room on the harder levels</span>
+    </div>
+    <p class="muted">Every turn counts, Undo too. Turning the whole cube to look around is free.</p>
+    <p class="muted" id="chalWarn" hidden>Starting a challenge replaces the game you're playing now.</p>
+    <div class="levels" id="levels"></div>
     <button class="btn wide" type="button" data-close>Close</button>
   </div>
 </div>
@@ -451,6 +510,8 @@ function solvedState(){
 // ---------- state ----------
 let cubies=solvedState();
 let history=[],redo=[],scrambled=false,timerStart=null,timerElapsed=0,armed=false,confirmAct=null,animating=false;
+let chal=null; // {level,par,spent}: a challenge game in progress
+const record={solved:0,best:{}}; // games solved without help, and the best medal per challenge level
 const queue=[];
 const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on'};
 const SPEED={slow:520,normal:300,fast:140,instant:0};
@@ -849,10 +910,27 @@ async function pump(){
 function afterMove(t){
   if(scrambled&&!isRot(t)&&isSolved()){
     timerElapsed=elapsed();timerStart=null;scrambled=false;
-    const n=countMoves();
-    $('bannerText').textContent=`${n} move${n===1?'':'s'}${settings.timer==='on'?' in '+fmt(timerElapsed):''}. Nicely done.`;
-    $('banner').hidden=false;
-    say('Solved! Congratulations.');
+    record.solved++;
+    const time=settings.timer==='on'?' in '+fmt(timerElapsed):'';
+    const b=$('banner');b.classList.remove('gold','silver','bronze');
+    if(chal){
+      const c=chal,m=medalFor(c.par,c.spent),pl=n=>`${n} move${n===1?'':'s'}`;
+      if(m&&RANK[m]>RANK[record.best[c.level]||''])record.best[c.level]=m;
+      if(m)b.classList.add(m);
+      b.querySelector('h2').textContent=m==='gold'?'Gold! Perfect score':m?`${m[0].toUpperCase()+m.slice(1)} medal`:'Solved!';
+      $('bannerText').textContent=m==='gold'?`Level ${c.level}: ${pl(c.spent)}${time}, the fewest possible.`
+        :`Level ${c.level}: ${pl(c.spent)}${time}. Par is ${c.par}${m==='silver'?'; gold needs exactly par.':m==='bronze'?`; silver is ${tiers(c.par).silver} or fewer.`:`; bronze is ${tiers(c.par).bronze} or fewer.`}`;
+      $('chalAgain').hidden=false;$('chalNext').hidden=c.level>=LEVELS.length;
+      say((m?m+' medal. ':'Solved. ')+$('bannerText').textContent);
+      chalLast=c.level;chal=null;
+    }else{
+      b.querySelector('h2').textContent='Solved!';
+      const n=countMoves();
+      $('bannerText').textContent=`${n} move${n===1?'':'s'}${time}. Nicely done.`;
+      $('chalAgain').hidden=true;$('chalNext').hidden=true;
+      say('Solved! Congratulations.');
+    }
+    b.hidden=false;
   }
   save();updateStats();
 }
@@ -861,22 +939,22 @@ function afterMove(t){
 function doMove(t){
   if(lesson){lessonPress(t);return;}
   clearConfirm();$('banner').hidden=true;
-  history.push(t);redo=[];
+  history.push(t);redo=[];spend(t);
   if(scrambled&&timerStart===null&&!isRot(t))timerStart=Date.now()-timerElapsed;
   queue.push(t);pump();updateStats();announce(t);
 }
 function undo(){
   if(lesson){lessonBack();return;}
   clearConfirm();if(!history.length)return;
-  const t=history.pop();redo.push(t);queue.push(inv(t));pump();updateStats();say('Undo');
+  const t=history.pop();redo.push(t);spend(t);queue.push(inv(t));pump();updateStats();say('Undo');
 }
 function redoMove(){
   if(lesson){lessonNext();return;}
   clearConfirm();if(!redo.length)return;
-  const t=redo.pop();history.push(t);queue.push(t);pump();updateStats();announce(t);
+  const t=redo.pop();history.push(t);spend(t);queue.push(t);pump();updateStats();announce(t);
 }
 function needsConfirm(act){
-  if(scrambled&&countMoves()>0&&confirmAct!==act){
+  if(scrambled&&(countMoves()>0||chal&&chal.spent>0)&&confirmAct!==act){
     clearConfirm();confirmAct=act;
     const b=$(act+'Btn');b.classList.add('confirm');b.querySelector('.lbl').textContent='Click again to confirm';
     say('Your current game will be lost. Press again to confirm.');
@@ -902,7 +980,7 @@ function scramble(){
       const t=f+(Math.random()<.5?"'":"");list.push(t);applyMove(t);last=f;prevAxis=axisOf[f];
     }
     if(isSolved())applyMove('R');
-    history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;
+    history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;chal=null;
     render();save();updateStats();
     say('Cube scrambled. Good luck!');
   });
@@ -914,11 +992,99 @@ function reset(){
   $('banner').hidden=true;
   queue.push(()=>{
     cubies.forEach((c,i)=>{const s=solvedState()[i];c.p=s.p;c.s=s.s;});
-    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;
+    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;chal=null;
     render();save();updateStats();say('Cube reset to solved.');
   });
   pump();
 }
+
+// ---------- challenge ----------
+// Par is the true fewest moves, found by search. Turning the whole cube is free and slices count as one
+// move, so the search works with the centres held still: a slice is then the same as turning its two
+// outer faces opposite ways, and a whole-cube turn changes nothing.
+const LEVELS=[1,2,3,4,5,6,7,8];
+const RANK={'':0,bronze:1,silver:2,gold:3};
+const tiers=par=>({silver:par+Math.max(2,Math.ceil(par/2)),bronze:par*3+4}); // more room over par on the harder levels
+const medalFor=(par,n)=>n<=par?'gold':n<=tiers(par).silver?'silver':n<=tiers(par).bronze?'bronze':null;
+const PLAYER_MOVES=["R","R'","L","L'","M","M'","U","U'","D","D'","E","E'","F","F'","B","B'","S","S'"];
+let PERM=null,NEAR=null;
+function buildPerms(){
+  const ROTS=[[]];
+  for(let i=0;ROTS.length<24&&i<ROTS.length;i++)for(const r of ['x','y','z']){
+    const seq=[...ROTS[i],r],cs=applyAll(solvedState(),seq),k=JSON.stringify(cs.filter(c=>Object.keys(c.s).length===1).map(c=>c.p));
+    if(!ROTS.some(q=>JSON.stringify(applyAll(solvedState(),q).filter(c=>Object.keys(c.s).length===1).map(c=>c.p))===k))ROTS.push(seq);
+  }
+  // number every sticker that isn't a centre by where it sits on a solved cube
+  const loc={},lab=solvedState();let n=0;
+  lab.forEach(c=>{if(Object.keys(c.s).length<2)return;for(const d in c.s){loc[key(c.p)+'|'+d]=n;c.s[d]=n++;}});
+  const HOME={};solvedState().forEach(c=>{const k=Object.keys(c.s);if(k.length===1)HOME[k[0]]=c.s[k[0]];});
+  const centresHome=cs=>cs.every(c=>{const k=Object.keys(c.s);return k.length!==1||HOME[k[0]]===c.s[k[0]];});
+  PERM=PLAYER_MOVES.map(t=>{
+    const base=applyTo(cloneState(lab),t);
+    const r=ROTS.find(q=>centresHome(applyAll(cloneState(base),q)));
+    const cs=applyAll(base,r),src=new Array(n);
+    cs.forEach(c=>{for(const d in c.s)if(typeof c.s[d]==='number'&&loc[key(c.p)+'|'+d]!==undefined)src[loc[key(c.p)+'|'+d]]=c.s[d];});
+    return src;
+  });
+  // every position up to 4 moves from solved, with its distance
+  const id=[...Array(n).keys()],sk=a=>String.fromCharCode(...a.map(v=>v+48));
+  NEAR=new Map([[sk(id),0]]);let front=[id];
+  for(let d=1;d<=4;d++){const next=[];front.forEach(a=>PERM.forEach(p=>{const b=p.map(j=>a[j]),k=sk(b);if(!NEAR.has(k)){NEAR.set(k,d);next.push(b);}}));front=next;}
+  PERM.sk=sk;
+}
+function parOf(moves){
+  if(!PERM)buildPerms();
+  const idx=t=>PLAYER_MOVES.indexOf(t);
+  let a=[...Array(PERM[0].length).keys()];
+  moves.forEach(t=>{const p=PERM[idx(t)];a=p.map(j=>a[j]);});
+  let best=Infinity;
+  const dfs=(a,depth,max)=>{
+    const h=NEAR.get(PERM.sk(a));if(h!==undefined)best=Math.min(best,depth+h);
+    if(depth>=max||depth+1>=best)return;
+    PERM.forEach(p=>dfs(p.map(j=>a[j]),depth+1,max));
+  };
+  dfs(a,0,4);
+  return best; // exact up to 8 moves
+}
+function makeChallenge(par){
+  for(let tries=0;tries<400;tries++){
+    const list=[];
+    while(list.length<par){
+      const t=PLAYER_MOVES[Math.floor(Math.random()*PLAYER_MOVES.length)],l=list[list.length-1];
+      if(l&&(t===inv(l)||t[0]===l[0]&&list[list.length-2]===l))continue;
+      list.push(t);
+    }
+    if(parOf(list)===par)return list;
+  }
+  return null;
+}
+function startChallenge(level){
+  if(lesson)stopLesson(lesson.kind==='solve');
+  closeOverlay();clearConfirm();$('banner').hidden=true;
+  queue.push(()=>{
+    const list=makeChallenge(LEVELS[level-1]);if(!list)return;
+    cubies.forEach((c,i)=>{const s=solvedState()[i];c.p=s.p;c.s=s.s;});
+    list.forEach(applyMove);
+    history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;
+    chal={level,par:LEVELS[level-1],spent:0,mix:list};chalLast=level;
+    render();save();updateStats();
+    say(`Challenge level ${level}. Par is ${chal.par}. Good luck!`);
+  });
+  pump();
+}
+function spend(t){if(chal&&scrambled&&!isRot(t))chal.spent++;}
+function renderLevels(){
+  const inGame=scrambled&&(countMoves()>0||chal&&chal.spent>0);
+  $('chalWarn').hidden=!inGame;
+  $('levels').innerHTML=LEVELS.map((par,i)=>{const b=record.best[i+1],t=tiers(par);
+    return `<button class="btn" type="button" data-level="${i+1}"><b>Level ${i+1}</b><span>Par ${par} move${par===1?'':'s'}</span><small>${b?`<i class="medal ${b}"></i>Best: ${b}`:`Silver ≤ ${t.silver}, bronze ≤ ${t.bronze}`}</small></button>`;}).join('');
+  $('levels').querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>{if(pointerOk(b))startChallenge(+b.dataset.level);});
+}
+function openChallenge(){renderLevels();openOverlay('chalOv');}
+$('chalBtn').onclick=()=>{if(pointerOk($('chalBtn')))openChallenge();};
+$('chalAgain').onclick=()=>{if(pointerOk($('chalAgain'))&&chalLast)startChallenge(chalLast);};
+$('chalNext').onclick=()=>{if(pointerOk($('chalNext'))&&chalLast)startChallenge(Math.min(LEVELS.length,chalLast+1));};
+let chalLast=null;
 
 // ---------- stats ----------
 const countMoves=()=>history.filter(t=>!isRot(t)).length;
@@ -926,7 +1092,10 @@ const elapsed=()=>timerStart!==null?Date.now()-timerStart:timerElapsed;
 function fmt(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);
   return h?`${h}:${String(m%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:`${m}:${String(s%60).padStart(2,'0')}`;}
 function updateStats(){
-  $('moves').textContent=countMoves();
+  $('moves').textContent=chal?chal.spent:countMoves();
+  $('parStat').hidden=!chal;if(chal)$('par').textContent=chal.par;
+  $('moves').parentElement.classList.toggle('chal-moves',!!chal);$('chalBtn').classList.toggle('on',!!chal);
+  $('solvedCount').textContent=record.solved;
   $('time').textContent=fmt(elapsed());
   $('undoBtn').disabled=lesson?!lesson.pos:!history.length;$('redoBtn').disabled=lesson?lesson.pos>=lesson.flat.length:!redo.length;
   $('armed').hidden=!armed;
@@ -994,11 +1163,11 @@ const ACTION_GROUPS=[
     ['focusNext','Move frame to the next button'],['focusPrev','Move frame to the previous button'],['select','Press the framed button'],['selectReverse','Press the framed button the other way'],['cancel','Cancel or close']]],
   ['Turn a row, column or side',[...TURN_IDS.map(t=>['turn:'+t,plain(t)]),['reverseNext','Reverse the next turn key']]],
   ['Turn the whole cube',WHOLE_IDS.map(t=>['turn:'+t,plain(t)])],
-  ['Game',[['undo','Undo'],['redo','Redo'],['scramble','Scramble'],['reset','Reset'],['help','Open How to play'],['settings','Open Settings'],['keys','Open Keys']]]
+  ['Game',[['undo','Undo'],['redo','Redo'],['scramble','Scramble'],['reset','Reset'],['challenge','Open Challenge'],['help','Open How to play'],['settings','Open Settings'],['keys','Open Keys']]]
 ];
 const ACTION_LABEL={};ACTION_GROUPS.forEach(([,list])=>list.forEach(([id,l])=>ACTION_LABEL[id]=l));
 const LETTERS={R:'turn:R',L:'turn:L',U:'turn:U',D:'turn:D',F:"turn:F'",B:'turn:B',M:'turn:M',E:'turn:E',S:"turn:S'",
-  I:'reverseNext',"'":'reverseNext',Z:'undo',Y:'redo',N:'scramble',H:'help',Escape:'cancel'};
+  I:'reverseNext',"'":'reverseNext',Z:'undo',Y:'redo',N:'scramble',C:'challenge',H:'help',Escape:'cancel'};
 const PRESETS={
   quadstick:{...LETTERS,ArrowUp:'focusUp',ArrowDown:'focusDown',ArrowLeft:'focusLeft',ArrowRight:'focusRight',
     Tab:'focusNext','Shift+Tab':'focusPrev',Enter:'select',Backspace:'undo',Delete:'redo',Escape:'cancel',
@@ -1049,7 +1218,7 @@ function run(a){
   if(a==='cancel'){if(openOv)closeOverlay();else{clearConfirm();armed=false;$('banner').hidden=true;updateStats();}return;}
   if(a==='reverseNext'){armed=!armed;updateStats();say(armed?'Next turn will be reversed':'Reverse cancelled');return;}
   if(a.startsWith('turn:')){let t=a.slice(5);if(!isRot(t)&&armed){t=inv(t);armed=false;}doMove(t);updateStats();return;}
-  ({undo,redo:redoMove,scramble,reset,help:()=>openOverlay('helpOv'),settings:()=>openOverlay('setOv'),keys:()=>openOverlay('keysOv')})[a]?.();
+  ({undo,redo:redoMove,scramble,reset,challenge:openChallenge,help:()=>openOverlay('helpOv'),settings:()=>openOverlay('setOv'),keys:()=>openOverlay('keysOv')})[a]?.();
 }
 function handleName(name,e){
   if(capture){return;}
@@ -1299,8 +1468,8 @@ function makeLesson(kind,title,about,steps){
 const setCube=state=>{state.forEach((c,i)=>{cubies[i].p=c.p.slice();cubies[i].s={...c.s};});};
 function putGameAside(){
   if(lessonSnap)return;
-  lessonSnap={c:cubies.map(c=>({p:c.p.slice(),s:{...c.s}})),history:history.slice(),redo:redo.slice(),scrambled,elapsed:elapsed(),running:timerStart!==null};
-  timerElapsed=lessonSnap.elapsed;timerStart=null;scrambled=false; // the game clock pauses (showing its time) and the lesson can't count as solving the game
+  lessonSnap={c:cubies.map(c=>({p:c.p.slice(),s:{...c.s}})),history:history.slice(),redo:redo.slice(),scrambled,chal,elapsed:elapsed(),running:timerStart!==null};
+  timerElapsed=lessonSnap.elapsed;timerStart=null;scrambled=false;chal=null; // the game clock pauses (showing its time) and the lesson can't count as solving the game
 }
 function startAlgLesson(a){
   if(lesson&&lesson.kind==='solve')stopLesson(true);
@@ -1323,7 +1492,7 @@ function startSolve(){
     const steps=[];
     r.stages.forEach((stg,k)=>stg.steps.forEach(st=>steps.push({...st,stage:stg.name,intro:stg.intro,stageNo:k+1,stages:r.stages.length})));
     // helping with a solve ends the timed game; the moves made from here are the lesson's
-    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;
+    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;chal=null;
     lesson=makeLesson('solve','Solve it with me','',steps);
     showCoach();
   });
@@ -1353,7 +1522,7 @@ function stopLesson(keepCube){
   lesson=null;lessonTok=null;
   queue.push(()=>{
     if(snap&&!keepCube){
-      setCube(snap.c);history=snap.history;redo=snap.redo;scrambled=snap.scrambled;timerElapsed=snap.elapsed;timerStart=snap.running?Date.now()-timerElapsed:null;
+      setCube(snap.c);history=snap.history;redo=snap.redo;scrambled=snap.scrambled;chal=snap.chal||null;timerElapsed=snap.elapsed;timerStart=snap.running?Date.now()-timerElapsed:null;
     }
     lessonSnap=null;render();updateStats();save();
   });
@@ -1583,15 +1752,16 @@ $('lessonExit').onclick=()=>{if(pointerOk($('lessonExit')))stopLesson(lesson&&le
 const STORE='easy-reach-cube-v1'; // the test copy keeps its own save, apart from the live game
 function save(){
   // during an algorithm lesson the cube on screen is borrowed; save the game that was put aside instead
-  const g=lessonSnap||{c:cubies.map(c=>({p:c.p,s:c.s})),history,redo,scrambled,elapsed:elapsed(),running:timerStart!==null};
-  try{localStorage.setItem(STORE,JSON.stringify({...g,settings}));}catch(e){}
+  const g=lessonSnap||{c:cubies.map(c=>({p:c.p,s:c.s})),history,redo,scrambled,chal,elapsed:elapsed(),running:timerStart!==null};
+  try{localStorage.setItem(STORE,JSON.stringify({...g,settings,record}));}catch(e){}
 }
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(STORE)||'null');if(!d)return;
     if(d.settings)Object.assign(settings,d.settings);
+    if(d.record){record.solved=d.record.solved||0;Object.assign(record.best,d.record.best||{});}
     if(Array.isArray(d.c)&&d.c.length===26){d.c.forEach((x,i)=>{cubies[i].p=x.p;cubies[i].s=x.s;});
-      history=d.history||[];redo=d.redo||[];scrambled=!!d.scrambled;timerElapsed=d.elapsed||0;timerStart=d.running?Date.now()-timerElapsed:null;}
+      history=d.history||[];redo=d.redo||[];scrambled=!!d.scrambled;chal=d.scrambled&&d.chal||null;if(chal)chalLast=chal.level;timerElapsed=d.elapsed||0;timerStart=d.running?Date.now()-timerElapsed:null;}
   }catch(e){}
 }
 window.addEventListener('beforeunload',save);
@@ -1603,7 +1773,7 @@ if(!scrambled&&!history.length&&isSolved()){
   // open in a playable state: first visit starts scrambled
   try{if(!localStorage.getItem(STORE))scramble();}catch(e){scramble();}
 }
-window.__cube={cubies,applyMove,isSolved,doMove};
+window.__cube={cubies,applyMove,isSolved,doMove,parOf,makeChallenge,get chal(){return chal;},record};
 })();
 </script>
 
