@@ -1681,11 +1681,20 @@ function headPts(tip,dir){
 // one arrow as a single shape with one outline: every dark part first, then every white part over it,
 // so there's no seam where the head meets the shaft; each arrow is drawn whole over the ones before it
 function arrowShape(d,heads,dOut=d,cap='butt'){
-  return `<g><path d="${dOut}" fill="none" stroke="#07080b" stroke-width="5.6" stroke-linecap="${cap}"/>`+
-    heads.map(h=>`<polygon points="${h}" fill="#07080b" stroke="#07080b" stroke-width="2.6" stroke-linejoin="round"/>`).join('')+
-    `<path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="butt"/>`+
-    heads.map(h=>`<polygon points="${h}" fill="#fff"/>`).join('')+'</g>';
+  // two layers: the shaft, and the heads. Every arrow's shaft is drawn first and every head after (see arrowLayers),
+  // so a head that lands on another arrow always sits on top. Each head carries a short stub of its own shaft so it
+  // joins that shaft with no seam.
+  // the white stub starts a little further back than the dark one, so the dark one's cut edge never shows across the shaft
+  const stub=(h,back)=>{const [t,b1,b2]=h.split(' ').map(q=>q.split(',').map(Number)),m=[(b1[0]+b2[0])/2,(b1[1]+b2[1])/2],
+    v=[t[0]-m[0],t[1]-m[1]],n=Math.hypot(...v)||1,a=[m[0]-v[0]/n*back,m[1]-v[1]/n*back],e=[m[0]+v[0]/n,m[1]+v[1]/n];
+    return `M${f1(a[0])},${f1(a[1])} L${f1(e[0])},${f1(e[1])}`;};
+  const shaft=`<path d="${dOut}" fill="none" stroke="#07080b" stroke-width="5.6" stroke-linecap="${cap}"/><path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="butt"/>`;
+  const head=heads.map(h=>`<path d="${stub(h,3)}" fill="none" stroke="#07080b" stroke-width="5.6"/><polygon points="${h}" fill="#07080b" stroke="#07080b" stroke-width="2.6" stroke-linejoin="round"/>`+
+    `<path d="${stub(h,4.5)}" fill="none" stroke="#fff" stroke-width="3"/><polygon points="${h}" fill="#fff"/>`).join('');
+  return shaft+'\u0001'+head+'\u0002';
 }
+// put all the shafts down first, then all the heads
+const arrowLayers=m=>{const parts=m.split('\u0002').filter(Boolean).map(x=>x.split('\u0001'));return parts.map(x=>x[0]).join('')+parts.map(x=>x[1]||'').join('');};
 function picArrow(a,b,both,C=ISO(0,1.5,0),straight=false){
   const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,ux=dx/n,uy=dy/n,sh=straight?1:C.x===0&&C.y===0?Math.max(0,Math.min(6,(n-30)/3)):3; // top-down arrows stop inside their squares so heads that meet don't pile up, but short ones keep room for both heads
   const A={x:a.x+ux*sh,y:a.y+uy*sh},B={x:b.x-ux*sh,y:b.y-uy*sh},bow=both||straight?0:Math.max(5,n*.35);
@@ -1717,7 +1726,7 @@ function cubePic(cs,keep,marks,label){
   }));
   const body=['0,1,0','0,0,1','1,0,0'].map(k=>{const d=k.split(',').map(Number);
     return `<polygon points="${stickerPts([d[0],d[1],d[2]],d,1.5).map(q=>f1(q.x)+','+f1(q.y)).join(' ')}" fill="#07080b"/>`;}).join('');
-  return `<figure><svg viewBox="-42 -46 84 92" role="img" aria-label="${label}">${body}${polys}${marks}</svg>${label?`<figcaption>${label}</figcaption>`:''}</figure>`;
+  return `<figure><svg viewBox="-42 -46 84 92" role="img" aria-label="${label}">${body}${polys}${arrowLayers(marks)}</svg>${label?`<figcaption>${label}</figcaption>`:''}</figure>`;
 }
 // the top layer seen from straight above, front side at the bottom, with the side colours as thin strips;
 // the usual way last-layer swaps are drawn
@@ -1739,7 +1748,7 @@ function topPic(cs,keep,moved,extra='',caption='Seen from above, front at the bo
     const back=moved.find(o=>o.from.join()===m.to.join()&&o.to.join()===m.from.join());if(back)seen.add(back.i);
     marks+=picArrow(spot(m.from),spot(m.to),!!back,{x:0,y:0});
   });
-  return `<figure><svg viewBox="-42 -42 84 84" role="img" aria-label="Top layer from above">${g}${marks}${extra}</svg><figcaption>${caption}</figcaption></figure>`;
+  return `<figure><svg viewBox="-42 -42 84 84" role="img" aria-label="Top layer from above">${g}${arrowLayers(marks+extra)}</svg><figcaption>${caption}</figcaption></figure>`;
 }
 function algPicture(a,start){
   const before=cloneState(start),after=applyAll(cloneState(start),a.moves);
