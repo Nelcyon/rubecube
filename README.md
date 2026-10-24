@@ -9,7 +9,7 @@ no build step and nothing to install: open it in any modern browser, or send the
 - The cube sits in the middle, seen from slightly left and above, with one button per layer placed right
   against the edge it turns: along the left edge for rows, along the bottom edge for columns, and along the
   bottom of the right side for the front, middle and back slices (left click twists them counter-clockwise as seen from the front). Each button
-  is slanted to follow the cube edge it sits on.
+  and its text are slanted to follow the cube edge it sits on.
 - **Left click** turns a layer the way the big arrow points. **Right click** turns it the other way.
 - Hover over a button first and the pieces it will move get a pink outline.
 - The long dashed buttons turn the whole cube to show other sides. Each one runs the full length of a side,
