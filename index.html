@@ -43,17 +43,21 @@ body{
   padding-block:.9rem 1.2rem;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));}
 
 /* header */
-header{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 1.25rem}
+header{display:grid;grid-template-columns:auto 1fr;grid-template-areas:"brand bar";align-items:start;gap:.8rem 1.25rem}
+.brand{grid-area:brand;display:flex;flex-direction:column;align-items:flex-start;gap:.6rem}
+header .gamebar{grid-area:bar;justify-self:center;align-self:center}
 h1{font-family:var(--font-display);font-weight:800;font-size:1.55rem;margin:0;letter-spacing:-.01em;display:flex;align-items:center;gap:.6rem}
 h1 .logo{display:grid;grid-template-columns:repeat(3,.42rem);gap:2px}
 h1 .logo i{width:.42rem;height:.42rem;border-radius:2px;display:block}
-.stats{display:flex;gap:.6rem;flex-wrap:wrap;margin-left:auto}
+.stats{display:flex;gap:.5rem;flex-wrap:wrap}
 .stat{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:.35rem .85rem;display:flex;align-items:baseline;gap:.5rem}
 .stat b{font-family:var(--font-display);font-size:1.35rem;font-variant-numeric:tabular-nums}
 .stat span{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
 .stat.armed{border-color:var(--warn);color:var(--warn)}
 .stat.armed span{color:var(--warn)}
-.head-btns{display:flex;gap:.6rem}
+.head-btns{display:flex;gap:.4rem}
+.head-btns .btn{white-space:nowrap;min-height:2.7rem;padding:.25rem .7rem;font-size:.9rem;border-radius:12px}
+.head-btns .btn .g{font-size:1.1rem}
 
 /* main */
 main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:1.2rem}
@@ -61,23 +65,51 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 /* board: buttons are placed by JS right against the cube edge they turn:
    rows along the left edge, columns along the bottom edge, front-to-back slices along the right face's bottom edge */
 .board{position:relative;--b:4.4rem;width:20rem;height:20rem}
-.board .btn{position:absolute;min-height:0;z-index:2;background:none;border:0;border-radius:0;padding:0;pointer-events:none;transform:none}
+.board>.btn{position:absolute;min-height:0;z-index:2;background:none;border:0;border-radius:0;padding:0;pointer-events:none;transform:none}
 /* each button is drawn as a polygon so neighbouring buttons can meet in clean mitred corners; only the shape takes clicks */
-.board .btn .shape{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
-.board .btn .shape polygon{fill:color-mix(in srgb,var(--raised) 92%,transparent);stroke:var(--line);stroke-width:2;stroke-linejoin:round;pointer-events:all;
+.board>.btn .shape{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.board>.btn .shape polygon{fill:color-mix(in srgb,var(--raised) 92%,transparent);stroke:var(--line);stroke-width:2;stroke-linejoin:round;pointer-events:all;
   transition:fill .12s,stroke .12s}
-.board .btn:hover .shape polygon{fill:var(--raised-hover);stroke:var(--accent)}
-.board .btn:active .shape polygon{fill:var(--raised-hover)}
-.board .btn.whole .shape polygon{stroke:color-mix(in srgb,var(--accent) 55%,var(--line));stroke-dasharray:7 5}
-.board .btn.whole:hover .shape polygon{stroke:var(--accent)}
-.board .btn:focus-visible{outline:none;box-shadow:none}
-.board .btn:focus-visible .shape polygon{stroke:var(--focus);stroke-width:5;stroke-dasharray:none}
-.board .btn:active{transform:none}
+.board>.btn:hover .shape polygon{fill:var(--raised-hover);stroke:var(--accent)}
+.board>.btn:active .shape polygon{fill:var(--raised-hover)}
+.board>.btn.whole .shape polygon{stroke:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.board>.btn.whole:hover .shape polygon{stroke:var(--accent)}
+.board>.btn:focus-visible{outline:none;box-shadow:none}
+.board>.btn:focus-visible .shape polygon{stroke:var(--focus);stroke-width:5;stroke-dasharray:none}
+.board>.btn:active{transform:none}
 /* the box around the shape stays invisible in every state; only the polygon shows hover and press */
-.board .btn:hover,.board .btn:active,.board .btn:focus-visible,.board .btn[aria-pressed="true"]{background:none;border:0}
-.board .btn>.in{position:absolute;display:flex;flex-direction:column;align-items:center;gap:.1rem;transform-origin:0 0;white-space:normal;pointer-events:none}
-.board .btn .t{font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.01em;text-shadow:0 1px 2px rgba(0,0,0,.6)}
-.board .btn.flat>.in{flex-direction:row;gap:.4rem}
+.board>.btn:hover,.board>.btn:active,.board>.btn:focus-visible,.board>.btn[aria-pressed="true"]{background:none;border:0}
+.board>.btn>.in{position:absolute;display:flex;flex-direction:column;align-items:center;gap:.1rem;transform-origin:0 0;white-space:normal;pointer-events:none}
+.board>.btn .t{font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.01em;text-shadow:0 1px 2px rgba(0,0,0,.6)}
+.board>.btn.flat>.in{flex-direction:row;gap:.4rem}
+.board>.btn .n{font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--accent);margin-top:.05rem;white-space:nowrap}
+.board>.btn .n small{font-size:.8em;font-weight:500;color:var(--muted)}
+/* lessons: the button for the next turn glows */
+.board>.btn.next .shape polygon{stroke:var(--good);stroke-width:5;stroke-dasharray:none;fill:color-mix(in srgb,var(--good) 18%,var(--raised))}
+.btn.learn{border-color:color-mix(in srgb,var(--good) 45%,var(--line))}
+.coach{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:.9rem 1rem;display:flex;flex-direction:column;gap:.6rem;width:100%;max-width:40rem}
+.coach h2{margin:0;font-family:var(--font-display);font-size:1.45rem}
+.coach .kicker{margin:0;color:var(--good);font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.1em}
+.coach .about{margin:0;color:var(--muted)}
+.coach .stepbox{background:var(--bg);border:2px solid var(--line);border-radius:14px;padding:.7rem .8rem;display:flex;flex-direction:column;gap:.55rem}
+.coach .steptext{margin:0;font-size:1.05rem}
+.coach .steptext .uses{display:block;margin-top:.3rem;color:var(--accent);font-size:.9rem}
+.chips{display:flex;flex-wrap:wrap;gap:.35rem}
+.chip{font-family:var(--font-display);font-weight:700;font-size:1.15rem;min-width:2.4rem;text-align:center;padding:.2rem .45rem;border-radius:9px;border:2px solid var(--line);background:var(--raised);color:var(--muted)}
+.chip.done{opacity:.45}
+.chip.cur{border-color:var(--good);color:#fff;background:color-mix(in srgb,var(--good) 25%,var(--raised))}
+.coach .now{font-size:1.1rem;line-height:1.45;min-height:3.2rem}
+.coach .now .how{display:block;margin-top:.35rem;color:var(--muted);font-size:.95rem}
+.coach .prog{margin:0;color:var(--muted);font-size:.9rem}
+.coach .ctl{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.4rem}
+.coach .ctl .btn{flex-direction:column;gap:.1rem;font-size:.9rem;padding:.3rem}
+.coach .ctl .btn{min-height:3.2rem}
+.coach .ctl .primary{border-color:var(--good);background:color-mix(in srgb,var(--good) 18%,var(--raised))}
+.alglist{display:grid;grid-template-columns:repeat(auto-fill,minmax(15rem,1fr));gap:.5rem}
+.btn.algpick{align-items:flex-start;text-align:left;padding:.55rem .75rem;gap:.2rem}
+.btn.algpick b{font-size:1rem}
+.btn.algpick .nt{font-family:var(--font-display);font-weight:500;color:var(--accent);font-size:.85rem;line-height:1.3}
+@media (min-width:1000px){main.lessoning{flex-wrap:nowrap}.coach{width:25rem;flex:none;max-height:calc(100vh - 6.5rem);overflow:auto}}
 .scene{position:absolute;left:0;top:0;width:0;height:0;perspective:calc(var(--s) * 13);perspective-origin:0 0;z-index:1;pointer-events:none}
 .shadow{position:absolute;left:0;top:0;width:calc(var(--s)*4);height:calc(var(--s)*1);transform:translate(-50%,calc(var(--s)*1.45));
   background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);filter:blur(6px)}
@@ -86,7 +118,7 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .cubie{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}
 .face{position:absolute;width:var(--s);height:var(--s);left:calc(var(--s) / -2);top:calc(var(--s) / -2);background:var(--plastic);border-radius:7%}
 .st{position:absolute;inset:7.5%;border-radius:15%;display:none;
-  background-image:linear-gradient(140deg,rgba(255,255,255,.32),rgba(255,255,255,0) 42%,rgba(0,0,0,0) 70%,rgba(0,0,0,.18))}
+  background-image:linear-gradient(var(--la,140deg),rgba(255,255,255,.32),rgba(255,255,255,0) 42%,rgba(0,0,0,0) 70%,rgba(0,0,0,.18))}
 .st.on{display:grid;place-items:center}
 .st::after{content:attr(data-l);font-family:var(--font-display);font-weight:800;font-size:calc(var(--s)*.34);color:rgba(0,0,0,.62);display:none}
 .labels .st::after{display:block}
@@ -116,6 +148,10 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .btn .t{font-size:.78rem}
 .btn .n{font-size:.7rem;color:var(--muted);font-weight:400;font-family:var(--font-display)}
 .no-notation .btn .n{display:none}
+/* letters only on the board; the words stay for screen readers and come back when notation is off */
+.app:not(.no-notation) .board>.btn .t{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.app:not(.no-notation) .board>.btn .n{font-size:1.35rem;font-weight:800;margin-top:.1rem}
+.app:not(.no-notation) .board>.btn .n small{font-size:.75em;font-weight:600}
 .btn.confirm{border-color:var(--warn);background:#3a2414;color:#ffd7bd}
 .btn.wide{flex-direction:row;gap:.55rem;font-size:1rem}
 .btn.wide .g{font-size:1.35rem}
@@ -125,10 +161,18 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .hint{min-height:2.6rem;width:100%;max-width:34rem;border-radius:12px;background:var(--panel);border:1px dashed var(--line);padding:.45rem .8rem;color:var(--muted);font-size:.95rem;display:flex;align-items:center;gap:.5rem}
 .hint b{color:var(--text)}
 
-/* whole-cube turns sit around the cube too, drawn with a dashed edge so they read as "the whole cube" */
-.board .btn.whole .t{font-size:.95rem}
-.gamebar{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.45rem}
-.gamebar .btn{min-height:3.4rem;padding:.3rem .9rem}
+/* whole-cube turns sit around the cube too, drawn with a blue edge so they read as "the whole cube" */
+.board>.btn.whole .t{font-size:.95rem}
+.gamebar{display:flex;flex-wrap:nowrap;justify-content:center;align-items:stretch;gap:.3rem;padding:.35rem;background:var(--panel);border:2px solid var(--line);border-radius:20px}
+.gamebar .grp{display:flex;align-items:center;gap:.3rem;padding:0 .3rem}
+.gamebar .grp+.grp{border-left:2px solid var(--line);padding-left:.45rem}
+.gamebar .stats{flex-wrap:nowrap}
+.gamebar .stats .stat{background:none;border:0;padding:.2rem .5rem;flex-direction:column;align-items:center;gap:0}
+.gamebar .stats .stat.armed{border:2px solid var(--warn);border-radius:12px}
+.gamebar .learn-grp .btn{color:#c9f5d6}
+.gamebar .btn{min-height:3.3rem;padding:.3rem .6rem;gap:.4rem;white-space:nowrap;border-color:transparent;background:transparent;border-radius:13px}
+.gamebar .btn:hover{background:var(--raised-hover);border-color:var(--accent)}
+.gamebar .btn.confirm{border-color:var(--warn);background:#3a2414}
 
 /* overlays */
 .overlay{position:fixed;inset:0;background:rgba(3,6,12,.78);display:grid;place-items:center;padding:1rem;z-index:20}
@@ -169,56 +213,68 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 
 /* narrow: side cards move under the board, side by side */
-@media (max-width:1000px){.stats{margin-left:0}}
+@media (max-width:1360px){header{grid-template-columns:1fr;grid-template-areas:"brand" "bar"}.brand{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between;width:100%}}
+@media (max-width:1000px){.gamebar{flex-wrap:wrap;row-gap:.4rem}.gamebar .grp{flex:1 1 auto;justify-content:center}.gamebar .grp+.grp{border-left:0;padding-left:.3rem}}
+@media (max-width:620px){.gamebar .grp+.grp{border-left:0;padding-left:.3rem}.gamebar .grp{flex:1 1 auto;justify-content:center}}
 @media (max-width:620px){
   .head-btns{width:100%}
   .head-btns .btn{flex:1}
   .board{--b:3.3rem}
-  .board .btn{border-radius:10px;padding:.15rem}
-  .board .btn .t{font-size:.72rem}
-  .board .btn .g{font-size:1.25rem}
+  .board>.btn{border-radius:10px;padding:.15rem}
+  .board>.btn .t{font-size:.72rem}
+  .app:not(.no-notation) .board>.btn .n{font-size:1.1rem}
+  .board>.btn .g{font-size:1.25rem}
 }
 @media (prefers-reduced-motion:reduce){.btn{transition:none}.btn:active{transform:none}}
 </style>
-</head>
-<body>
+</head><body>
+
 
 <div class="app" id="app">
   <header>
+    <div class="brand">
     <h1><span class="logo" aria-hidden="true"><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i><i style="background:#16a34a"></i><i style="background:#ffd60a"></i><i style="background:#1d6fe0"></i><i style="background:#f97316"></i><i style="background:#16a34a"></i><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i></span>RubeCube</h1>
-    <div class="stats">
+    <div class="head-btns" aria-label="Help and settings">
+      <button class="btn wide" id="setBtn" type="button"><span class="g" aria-hidden="true">⚙</span>Settings</button>
+      <button class="btn wide" id="helpBtn" type="button"><span class="g" aria-hidden="true">?</span>How to play</button>
+    </div>
+    </div>
+    <nav class="gamebar" aria-label="Game">
+    <div class="grp stats">
       <div class="stat"><span>Moves</span><b id="moves">0</b></div>
       <div class="stat" id="timeStat"><span>Time</span><b id="time">0:00</b></div>
       <div class="stat armed" id="armed" hidden><span>Next key</span><b>↺ reverse</b></div>
     </div>
-    <div class="head-btns">
-      <button class="btn wide" id="helpBtn" type="button"><span class="g" aria-hidden="true">?</span>How to play</button>
-      <button class="btn wide" id="keysBtn" type="button"><span class="g" aria-hidden="true">⌨</span>Keys</button>
-      <button class="btn wide" id="setBtn" type="button"><span class="g" aria-hidden="true">⚙</span>Settings</button>
-    </div>
+      <div class="grp">
+        <button class="btn wide" type="button" data-act="undo" id="undoBtn"><span class="g" aria-hidden="true">↶</span>Undo</button>
+        <button class="btn wide" type="button" data-act="redo" id="redoBtn"><span class="g" aria-hidden="true">↷</span>Redo</button>
+      </div>
+      <div class="grp">
+        <button class="btn wide" type="button" data-act="scramble" id="scrambleBtn"><span class="g" aria-hidden="true">⇄</span><span class="lbl">Scramble</span></button>
+        <button class="btn wide" type="button" data-act="reset" id="resetBtn"><span class="g" aria-hidden="true">⟲</span><span class="lbl">Reset</span></button>
+      </div>
+      <div class="grp learn-grp">
+        <button class="btn wide learn" type="button" id="learnBtn"><span class="g" aria-hidden="true">☰</span><span class="lbl">Algorithms</span></button>
+        <button class="btn wide learn" type="button" id="solveBtn"><span class="g" aria-hidden="true">✓</span><span class="lbl">Solve with me</span></button>
+      </div>
+    </nav>
   </header>
 
   <main id="main">
     <section class="middle">
-      <div class="gamebar" aria-label="Game">
-        <button class="btn wide" type="button" data-act="undo" id="undoBtn"><span class="g" aria-hidden="true">↶</span>Undo</button>
-        <button class="btn wide" type="button" data-act="redo" id="redoBtn"><span class="g" aria-hidden="true">↷</span>Redo</button>
-        <button class="btn wide" type="button" data-act="scramble" id="scrambleBtn"><span class="g" aria-hidden="true">⇄</span><span class="lbl">Scramble</span></button>
-        <button class="btn wide" type="button" data-act="reset" id="resetBtn"><span class="g" aria-hidden="true">⟲</span><span class="lbl">Reset</span></button>
-      </div>
       <div class="board" id="board" aria-label="Cube and turn buttons">
-      <button class="btn whole" type="button" data-move="y"><span class="in"><span class="g">⇇</span><span class="t">Spin left</span></span></button>
-      <button class="btn whole" type="button" data-move="x"><span class="in"><span class="g">⤒</span><span class="t">Tip up</span></span></button>
-      <button class="btn whole" type="button" data-move="z'"><span class="in"><span class="g">⟲</span><span class="t">Roll left</span></span></button>
-      <button class="btn" type="button" data-move="L'"><span class="in"><span class="g">⬆</span><span class="t">Left</span></span></button>
-      <button class="btn" type="button" data-move="M'"><span class="in"><span class="g">⬆</span><span class="t">Middle</span></span></button>
-      <button class="btn" type="button" data-move="R"><span class="in"><span class="g">⬆</span><span class="t">Right</span></span></button>
-      <button class="btn" type="button" data-move="U"><span class="in"><span class="g">⬅</span><span class="t">Top</span></span></button>
-      <button class="btn" type="button" data-move="E'"><span class="in"><span class="g">⬅</span><span class="t">Middle</span></span></button>
-      <button class="btn" type="button" data-move="D'"><span class="in"><span class="g">⬅</span><span class="t">Bottom</span></span></button>
-      <button class="btn" type="button" data-move="B"><span class="in"><span class="g">↺</span><span class="t">Back</span></span></button>
-      <button class="btn" type="button" data-move="S'"><span class="in"><span class="g">↺</span><span class="t">Mid</span></span></button>
-      <button class="btn" type="button" data-move="F'"><span class="in"><span class="g">↺</span><span class="t">Front</span></span></button>
+      <button class="btn whole" type="button" data-move="y"><span class="in"><span class="g">⬌⬌</span><span class="t">Spin left</span><span class="n" aria-hidden="true" title="left click / right click">y <small>/ y′</small></span></span></button>
+      <button class="btn whole" type="button" data-move="x"><span class="in"><span class="g">⬍⬍</span><span class="t">Tip up</span><span class="n" aria-hidden="true" title="left click / right click">x <small>/ x′</small></span></span></button>
+      <button class="btn whole" type="button" data-move="z'"><span class="in"><span class="g">⬍⬍</span><span class="t">Roll left</span><span class="n" aria-hidden="true" title="left click / right click">z′ <small>/ z</small></span></span></button>
+      <button class="btn" type="button" data-move="L'"><span class="in"><span class="g">⬍</span><span class="t">Left</span><span class="n" aria-hidden="true" title="left click / right click">L′ <small>/ L</small></span></span></button>
+      <button class="btn" type="button" data-move="M'"><span class="in"><span class="g">⬍</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="left click / right click">M′ <small>/ M</small></span></span></button>
+      <button class="btn" type="button" data-move="R"><span class="in"><span class="g">⬍</span><span class="t">Right</span><span class="n" aria-hidden="true" title="left click / right click">R <small>/ R′</small></span></span></button>
+      <button class="btn" type="button" data-move="U"><span class="in"><span class="g">⬌</span><span class="t">Top</span><span class="n" aria-hidden="true" title="left click / right click">U <small>/ U′</small></span></span></button>
+      <button class="btn" type="button" data-move="E'"><span class="in"><span class="g">⬌</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="left click / right click">E′ <small>/ E</small></span></span></button>
+      <button class="btn" type="button" data-move="D'"><span class="in"><span class="g">⬌</span><span class="t">Bottom</span><span class="n" aria-hidden="true" title="left click / right click">D′ <small>/ D</small></span></span></button>
+      <button class="btn" type="button" data-move="B"><span class="in"><span class="g">⬍</span><span class="t">Back</span><span class="n" aria-hidden="true" title="left click / right click">B <small>/ B′</small></span></span></button>
+      <button class="btn" type="button" data-move="S'"><span class="in"><span class="g">⬍</span><span class="t">Mid</span><span class="n" aria-hidden="true" title="left click / right click">S′ <small>/ S</small></span></span></button>
+      <button class="btn" type="button" data-move="F'"><span class="in"><span class="g">⬍</span><span class="t">Front</span><span class="n" aria-hidden="true" title="left click / right click">F′ <small>/ F</small></span></span></button>
         <div class="scene" id="scene"><div class="shadow"></div><div class="cube" id="cube"></div></div>
         <div class="banner" id="banner" hidden>
           <h2>Solved!</h2>
@@ -227,7 +283,26 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         </div>
       </div>
     </section>
-
+    <aside class="coach" id="coach" hidden aria-label="Lesson">
+      <p class="kicker" id="coachKicker"></p>
+      <h2 id="coachTitle"></h2>
+      <button class="btn wide" type="button" id="coachPick">☰ Choose another algorithm ▾</button>
+      <div class="stepbox">
+        <p class="steptext" id="coachStep"></p>
+        <div class="chips" id="coachChips" aria-hidden="true"></div>
+      </div>
+      <div class="now" id="coachNow" aria-live="polite"></div>
+      <div class="ctl">
+        <button class="btn wide" type="button" id="lessonBack"><span class="g" aria-hidden="true">◀</span>Back</button>
+        <button class="btn wide primary" type="button" id="lessonNext"><span class="g" aria-hidden="true">▶</span>Next move</button>
+        <button class="btn wide" type="button" id="lessonPlay"><span class="g" aria-hidden="true">⏵</span><span class="lbl">Play all</span></button>
+        <button class="btn wide" type="button" id="lessonStep"><span class="g" aria-hidden="true">⏭</span>Do this step</button>
+        <button class="btn wide" type="button" id="lessonReplay"><span class="g" aria-hidden="true">↺</span>Start over</button>
+        <button class="btn wide" type="button" id="lessonExit"><span class="g" aria-hidden="true">✕</span><span class="lbl">Exit lesson</span></button>
+      </div>
+      <p class="prog" id="coachProg"></p>
+      <p class="about" id="coachAbout"></p>
+    </aside>
   </main>
   <div class="sr" aria-live="polite" id="live"></div>
 </div>
@@ -240,16 +315,29 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
     <ul>
       <li>The buttons around the cube act on its <b>front</b>, the side facing you.</li>
       <li>Each button sits right against the edge it turns: the buttons along the left edge move a row, the buttons along the bottom edge move a column, and the buttons along the bottom of the right side twist the front, middle or back slice like a steering wheel (as seen from the front).</li>
-      <li><b>Left click</b> turns it the way the big arrow points. <b>Right click</b> turns it the other way.</li>
+      <li><b>Left click</b> turns it one way (the first letter on the button). <b>Right click</b> turns it the other way (the second letter).</li>
       <li>Point at any button first: the pieces it will move get a pink outline, so there are no surprises.</li>
     </ul>
     <h3>Seeing other sides</h3>
-    <p>The dashed buttons turn the whole cube: <b>Spin</b> on the left, <b>Tip</b> at the bottom left and <b>Roll</b> on the right (right click goes the other way). This never counts as a move.</p>
+    <p>The outer buttons with the double arrows turn the whole cube: <b>Spin</b> on the left, <b>Tip</b> at the bottom left and <b>Roll</b> on the right (right click goes the other way). This never counts as a move.</p>
     <h3>No rush</h3>
     <p>Every action is a single click or a single key. Nothing needs to be held, dragged or pressed together, and nothing times out. Made a mistake? <b>Undo</b> takes it back, as many times as you like. Your game is saved in this browser automatically.</p>
+    <h3>Letters on the buttons</h3>
+    <p>Each turn button also shows its letter in standard cube notation: <b>R</b> right, <b>L</b> left, <b>U</b> up (top), <b>D</b> down (bottom), <b>F</b> front, <b>B</b> back, <b>M</b>, <b>E</b> and <b>S</b> for the three middle slices, and <b>x</b>, <b>y</b>, <b>z</b> for turning the whole cube. The first letter is what a left click does and the second is the right click; a mark (′) means the other way round. On the turn buttons the letters replace the words; turn the letters off in Settings to see words instead.</p>
+    <h3>Algorithms and the solver</h3>
+    <p><b>Algorithms</b> teaches a recipe one turn at a time on the real cube. <b>Solve it with me</b> walks you through solving your own cube, stage by stage. In both, the button for the next turn glows green: press it yourself, or press <b>Next move</b>. Undo and Redo step back and forward too.</p>
     <h3>Keys and QuadStick</h3>
     <p>With a QuadStick in mouse mode, puff on the center tube to click a button and sip on it to turn that button the other way. In keyboard mode, move the yellow frame, sip right (Enter) to press the framed button and soft sip center (Ctrl-C) to press it the other way. Change any key under <b>Keys</b>.</p>
     <div class="keys" id="keysList"></div>
+    <button class="btn wide" type="button" data-close>Close</button>
+  </div>
+</div>
+
+<div class="overlay" id="algOv" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="algTitle">
+    <h2 id="algTitle">Algorithms</h2>
+    <p>An algorithm is a short recipe of turns. Pick one and the cube shows you the position it is for, then walks you through it one turn at a time.</p>
+    <div id="algList"></div>
     <button class="btn wide" type="button" data-close>Close</button>
   </div>
 </div>
@@ -265,8 +353,9 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <button class="btn" type="button" data-v="off">Off</button><button class="btn" type="button" data-v="on">On</button></div></div>
     <div class="opt"><span>Show timer</span><div class="seg" data-set="timer">
       <button class="btn" type="button" data-v="on">On</button><button class="btn" type="button" data-v="off">Off</button></div></div>
-    <div class="opt"><span>Show cube notation (R, U', …) on buttons</span><div class="seg" data-set="notation">
+    <div class="opt"><span>Letters on buttons (R, U', …) instead of words</span><div class="seg" data-set="notation">
       <button class="btn" type="button" data-v="on">On</button><button class="btn" type="button" data-v="off">Off</button></div></div>
+    <div class="opt"><span>Keys and QuadStick buttons</span><button class="btn wide" id="keysBtn" type="button"><span class="g" aria-hidden="true">⌨</span>Set up keys</button></div>
     <button class="btn wide" type="button" data-close>Done</button>
   </div>
 </div>
@@ -292,6 +381,7 @@ const CNAME={W:'White',Y:'Yellow',G:'Green',B:'Blue',R:'Red',O:'Orange'};
 // logical axes: x right, y up, z toward viewer
 const DIRS=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
 const FACE_TF=['rotateY(90deg)','rotateY(-90deg)','rotateX(90deg)','rotateX(-90deg)','','rotateY(180deg)'];
+const FACE_AX=FACE_TF.map(t=>{const m=new DOMMatrix(t||'none'),ap=(x,y,z)=>{const q=m.transformPoint(new DOMPoint(x,y,z,0));return [q.x,q.y,q.z];};return {u:ap(1,0,0),v:ap(0,1,0),n:ap(0,0,1)};});
 const key=v=>v.join(',');
 const MOVES={
   R:{k:[1,0,0],f:p=>p[0]===1}, L:{k:[-1,0,0],f:p=>p[0]===-1}, M:{k:[-1,0,0],f:p=>p[0]===0},
@@ -357,11 +447,20 @@ cubies.forEach(c=>{
 });
 
 const baseTf=c=>`translate3d(calc(var(--s) * ${c.p[0]}),calc(var(--s) * ${-c.p[1]}),calc(var(--s) * ${c.p[2]}))`;
+// Only the eight outer corners of the whole cube are rounded; rounding the
+// corners where cubies meet leaves little holes to see through.
+const CORNERS=[[-1,-1],[1,-1],[1,1],[-1,1]];
+function faceRadius(c,i){
+  const a=FACE_AX[i],q=[c.p[0],-c.p[1],c.p[2]],dot=(x,y)=>x[0]*y[0]+x[1]*y[1]+x[2]*y[2];
+  return CORNERS.map(([su,sv])=>Math.round(dot(q,a.u)*su)===1&&Math.round(dot(q,a.v)*sv)===1?'7%':'0').join(' ');
+}
 function render(){
   cubies.forEach(c=>{
     c.el.style.transform=baseTf(c);
+    c.faces.forEach((st,i)=>{st.parentElement.style.borderRadius=faceRadius(c,i);});
     DIRS.forEach((d,i)=>{
       const col=c.s[key(d)],st=c.faces[i];
+      st.style.removeProperty('--la');
       if(col){st.classList.add('on');st.style.backgroundColor=COLORS[col];st.dataset.l=col;}
       else st.classList.remove('on');
     });
@@ -382,15 +481,313 @@ function isSolved(){
   return DIRS.every(d=>{const k=key(d);const cols=new Set(cubies.filter(c=>c.s[k]).map(c=>c.s[k]));return cols.size===1;});
 }
 
+// ---------- learn: core (pure cube logic for the algorithm tutor and the solver) ----------
+const cloneState=cs=>cs.map(c=>({p:c.p.slice(),s:{...c.s}}));
+function applyTo(cs,t){
+  const m=parse(t);
+  cs.forEach(c=>{
+    if(!m.f(c.p))return;
+    c.p=rot(c.p,m.k,m.s);
+    const ns={};for(const k in c.s)ns[key(rot(k.split(',').map(Number),m.k,m.s))]=c.s[k];
+    c.s=ns;
+  });
+  return cs;
+}
+const applyAll=(cs,list)=>{list.forEach(t=>applyTo(cs,t));return cs;};
+const solvedOf=cs=>DIRS.every(d=>{const k=key(d);return new Set(cs.filter(c=>c.s[k]).map(c=>c.s[k])).size===1;});
+
+// notation → quarter turns. R2 is two R turns, wide moves (r, u, f…) turn a face and the middle slice next to it.
+const WIDE={r:["R","M'"],l:["L","M"],u:["U","E'"],d:["D","E"],f:["F","S"],b:["B","S'"]};
+function quarterTurns(tok){
+  const base=tok[0],mod=tok.slice(1);
+  let q=WIDE[base]?WIDE[base].slice():[base];
+  if(mod==="'")q=q.map(inv);
+  return mod==='2'?q.concat(q):q;
+}
+const tokens=str=>str.trim().split(/\s+/).filter(Boolean);
+const expandAlg=str=>tokens(str).flatMap(quarterTurns);
+const invertAlg=list=>list.slice().reverse().map(inv);
+
+// plain-English meaning of one notation token, for people who don't know cube notation
+const LETTER={
+  R:['Right','the right column','up, away from you','down, toward you'],
+  L:['Left','the left column','down, toward you','up, away from you'],
+  M:['Middle','the middle column','down, toward you','up, away from you'],
+  U:['Up','the top row','to the left','to the right'],
+  D:['Down','the bottom row','to the right','to the left'],
+  E:['Equator','the middle row','to the right','to the left'],
+  F:['Front','the front face','clockwise ↻','counter-clockwise ↺'],
+  B:['Back','the back face','counter-clockwise ↺ (as you look at the front)','clockwise ↻ (as you look at the front)'],
+  S:['Standing','the middle slice between front and back','clockwise ↻','counter-clockwise ↺'],
+  x:['x','the whole cube','tipped up (top goes away from you)','tipped down (top comes toward you)'],
+  y:['y','the whole cube','spun to the left','spun to the right'],
+  z:['z','the whole cube','rolled to the right','rolled to the left']
+};
+function explainTok(tok){
+  const base=tok[0],mod=tok.slice(1);
+  if(WIDE[base]){
+    const L=LETTER[base.toUpperCase()],dir=mod==="'"?L[3]:L[2];
+    return `<b>${tok}</b>: turn ${L[1]} <b>and</b> the middle layer next to it together, ${dir}${mod==='2'?', twice (a half turn)':''}. A small letter means "two layers at once".`;
+  }
+  const L=LETTER[base];if(!L)return tok;
+  const rotWhole='xyz'.includes(base);
+  const dir=mod==="'"?L[3]:L[2];
+  const what=rotWhole?`Turn ${L[1]}: ${dir}. Nothing gets mixed up, you just see it from a new side.`:`Turn ${L[1]} ${dir}.`;
+  const tail=mod==='2'?' Do it twice (a half turn).':mod==="'"?' The little mark (′) means "the other way".':'';
+  return `<b>${tok}</b> (${L[0]}): ${what}${tail}`;
+}
+
+// ---------- algorithm library ----------
+// setup 'solved': start from a solved cube and watch what it does.
+// setup 'case': start from the position the algorithm fixes, so playing it solves the cube.
+const ALGS=[
+  {group:'Basics',name:'Sexy move',alg:"R U R' U'",setup:'solved',about:'The most used four-move trigger. Do it six times and the cube is back where it started.'},
+  {group:'Basics',name:'Sledgehammer',alg:"R' F R F'",setup:'solved',about:'Another short trigger, used for corner and edge tricks.'},
+  {group:'Basics',name:'Corner trick (beginner)',alg:"R' D' R D",setup:'solved',about:'Used by the solver to place and twist corners. Repeat it until the corner sits right.'},
+  {group:'Basics',name:'Middle edge to the right',alg:"U R U' R' U' F' U F",setup:'case',about:'Moves the edge at the top front down into the middle layer on the right.'},
+  {group:'Basics',name:'Middle edge to the left',alg:"U' L' U L U F U' F'",setup:'case',about:'Moves the edge at the top front down into the middle layer on the left.'},
+  {group:'Basics',name:'Yellow cross',alg:"F R U R' U' F'",setup:'case',about:'Flips top edges to build the cross on the top face.'},
+  {group:'Basics',name:'Sune',alg:"R U R' U R U2 R'",setup:'case',about:'Twists three top corners. Also swaps top edges, which the beginner method uses.'},
+  {group:'Basics',name:'Anti-Sune',alg:"R U2 R' U' R U' R'",setup:'case',about:'The Sune played backwards: twists three top corners the other way.'},
+  {group:'Basics',name:'Corner swap (Niklas)',alg:"U R U' L' U R' U' L",setup:'case',about:'Cycles three top corners while the front-right one stays put.'},
+  {group:'Advanced: last layer',name:'T-perm',alg:"R U R' U' R' F R2 U' R' U' R U R' F'",setup:'case',about:'Swaps two top corners and two top edges in a T shape.'},
+  {group:'Advanced: last layer',name:'Y-perm',alg:"F R U' R' U' R U R' F' R U R' U' R' F R F'",setup:'case',about:'Swaps two diagonal top corners and two top edges.'},
+  {group:'Advanced: last layer',name:'Ua-perm',alg:"R U' R U R U R U' R' U' R2",setup:'case',about:'Cycles three top edges.'},
+  {group:'Advanced: last layer',name:'Ub-perm',alg:"R2 U R U R' U' R' U' R' U R'",setup:'case',about:'Cycles three top edges the other way.'},
+  {group:'Advanced: last layer',name:'H-perm',alg:"M2 U M2 U2 M2 U M2",setup:'case',about:'Swaps opposite top edges in both directions.'},
+  {group:'Advanced: last layer',name:'Z-perm',alg:"M' U M2 U M2 U M' U2 M2 U'",setup:'case',about:'Swaps neighbouring top edges in two pairs.'},
+  {group:'Advanced: last layer',name:'Aa-perm',alg:"x R' U R' D2 R U' R' D2 R2 x'",setup:'case',about:'Cycles three top corners.'},
+  {group:'Advanced: last layer',name:'Ja-perm',alg:"R' U L' U2 R U' R' U2 R L U'",setup:'case',about:'Swaps two corners and two edges on one side.'},
+  {group:'Advanced: last layer',name:'Jb-perm',alg:"R U R' F' R U R' U' R' F R2 U' R' U'",setup:'case',about:'Swaps two corners and two edges on the right side.'},
+  {group:'Advanced: last layer',name:'Ra-perm',alg:"R U' R' U' R U R D R' U' R D' R' U2 R' U'",setup:'case',about:'Swaps two corners and two edges, shaped like an R.'},
+  {group:'Advanced: last layer',name:'F-perm',alg:"R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R",setup:'case',about:'Swaps two corners and two edges along one side.'},
+  {group:'Advanced: orient',name:'OLL: Pi',alg:"R U2 R2 U' R2 U' R2 U2 R",setup:'case',about:'Turns a top with two pairs of twisted corners all yellow.'},
+  {group:'Advanced: orient',name:'OLL: Headlights',alg:"R2 D R' U2 R D' R' U2 R'",setup:'case',about:'Twists two neighbouring top corners.'}
+];
+ALGS.forEach(a=>{a.moves=expandAlg(a.alg);a.toks=tokens(a.alg);});
+
+// ---------- beginner solver ----------
+const UP=[0,1,0];
+const vadd=(a,b)=>a.map((v,i)=>v+b[i]),veq=(a,b)=>a[0]===b[0]&&a[1]===b[1]&&a[2]===b[2];
+const centerDir=(cs,col)=>cs.find(c=>Object.keys(c.s).length===1&&Object.values(c.s)[0]===col).p;
+const centerCol=(cs,d)=>{const c=cs.find(c=>veq(c.p,d));return c.s[key(d)];};
+const pieceWith=(cs,cols)=>cs.find(c=>{const v=Object.values(c.s);return v.length===cols.length&&cols.every(x=>v.includes(x));});
+const dirOf=(c,col)=>Object.keys(c.s).find(k=>c.s[k]===col).split(',').map(Number);
+const CN={W:'white',Y:'yellow',G:'green',B:'blue',R:'red',O:'orange'};
+const FACE_MOVES=['U',"U'",'D',"D'",'R',"R'",'L',"L'",'F',"F'",'B',"B'"];
+
+// tidy a move list: X X' cancels, X X X becomes X'
+function simplify(list){
+  const out=[];
+  for(const t of list){
+    out.push(t);
+    let again=true;
+    while(again){
+      again=false;const n=out.length;
+      if(n>=2&&out[n-1]===inv(out[n-2])){out.length=n-2;again=true;}
+      else if(n>=3&&out[n-1]===out[n-2]&&out[n-2]===out[n-3]){out.length=n-3;out.push(inv(t));again=true;}
+    }
+  }
+  return out;
+}
+
+// cross: put one white edge in at a time with a small search that keeps the edges already placed
+function crossSearch(cs,target,keep){
+  const edges=[target,...keep].map(cols=>{const c=pieceWith(cs,cols);const other=cols.find(x=>x!=='W');
+    return {p:c.p.slice(),w:dirOf(c,'W'),goalP:vadd(centerDir(cs,other),UP),goalW:UP};});
+  // distance table for each edge on its own (moves are their own inverses as a set, so search out from the goal)
+  const tables=edges.map(e=>{
+    const dist=new Map(),q=[[e.goalP,e.goalW]];dist.set(key(e.goalP)+'|'+key(e.goalW),0);
+    while(q.length){const [p,w]=q.shift(),d0=dist.get(key(p)+'|'+key(w));
+      for(const t of FACE_MOVES){const m=parse(t);if(!m.f(p))continue;const np=rot(p,m.k,m.s),nw=rot(w,m.k,m.s),k=key(np)+'|'+key(nw);
+        if(!dist.has(k)){dist.set(k,d0+1);q.push([np,nw]);}}}
+    return dist;
+  });
+  const h=st=>Math.max(...st.map((e,i)=>tables[i].get(key(e.p)+'|'+key(e.w))));
+  const path=[];
+  const dfs=(st,g,limit,last)=>{
+    const hv=h(st);if(hv===0)return true;if(g+hv>limit)return false;
+    for(const t of FACE_MOVES){
+      if(last&&t[0]===last[0]&&t!==last)continue; // never undo the last turn
+      if(path.length>=2&&path[path.length-1]===t&&path[path.length-2]===t)continue;
+      const m=parse(t);
+      const ns=st.map(e=>m.f(e.p)?{p:rot(e.p,m.k,m.s),w:rot(e.w,m.k,m.s)}:e);
+      path.push(t);if(dfs(ns,g+1,limit,t))return true;path.pop();
+    }
+    return false;
+  };
+  const st=edges.map(e=>({p:e.p,w:e.w}));
+  for(let limit=h(st);limit<=12;limit++){if(dfs(st,0,limit,null))return path.slice();}
+  return null;
+}
+
+function solveBeginner(input){
+  const cs=cloneState(input);
+  const stages=[];let stage=null;
+  const begin=(name,intro)=>{stage={name,intro,steps:[]};stages.push(stage);};
+  const step=(text,moves,alg)=>{if(!moves)throw new Error('no moves for: '+stage.name+' / '+text);moves=simplify(moves);if(!moves.length)return;applyAll(cs,moves);stage.steps.push({text,moves,alg:alg||null});};
+  const yTurnsTo=(posFn,goal)=>{ // fewest whole-cube spins that bring a position (recomputed after each spin) to goal
+    for(const seq of [[],['y'],["y'"],['y','y']]){const t=applyAll(cloneState(cs),seq);if(veq(posFn(t),goal))return seq;}
+    return null;
+  };
+
+  // 0. white on top
+  begin('Get ready','Hold the cube with the white center on top. Nothing is mixed up by this, you only turn the whole cube.');
+  for(const seq of [[],['x'],["x'"],['x','x'],['z'],["z'"]]){
+    const t=applyAll(cloneState(cs),seq);if(veq(centerDir(t,'W'),UP)){step('Turn the whole cube so the white center is on top.',seq);break;}
+  }
+
+  // 1. white cross
+  begin('1. White cross','Make a white plus sign on top. Each white edge goes next to the center of its other color, white facing up.');
+  const crossCols=['G','R','B','O'];
+  const crossDone=cols=>{const c=pieceWith(cs,['W',cols]);return veq(c.p,vadd(centerDir(cs,cols),UP))&&veq(dirOf(c,'W'),UP);};
+  let kept=[];
+  for(let n=0;n<4;n++){
+    const todo=crossCols.filter(c=>!kept.includes(c));
+    // do the closest edge first
+    let best=null;
+    for(const c of todo){if(crossDone(c)){best={c,path:[]};break;}const path=crossSearch(cs,['W',c],kept.map(k=>['W',k]));if(path&&(!best||path.length<best.path.length))best={c,path};}
+    step(`Bring the white–${CN[best.c]} edge up next to the ${CN[best.c]} center, white side up.`,best.path);
+    kept.push(best.c);
+  }
+
+  // 2. white corners
+  begin('2. White corners','Fill in the white corners so the whole top is white and each side shows a matching band. One trick does it: R′ D′ R D.');
+  const FR_TOP=[1,1,1],FR_BOT=[1,-1,1];
+  const cornerCols=[['G','R'],['R','B'],['B','O'],['O','G']];
+  const slotOf=(t,pair)=>vadd(vadd(centerDir(t,pair[0]),centerDir(t,pair[1])),UP);
+  const cornerDone=pair=>{const c=pieceWith(cs,['W',...pair]);return veq(c.p,slotOf(cs,pair))&&veq(dirOf(c,'W'),UP);};
+  const TRICK=["R'","D'",'R','D'];
+  for(let guard=0;guard<12;guard++){
+    const todo=cornerCols.filter(p=>!cornerDone(p));if(!todo.length)break;
+    const pair=todo.find(p=>pieceWith(cs,['W',...p]).p[1]===-1)||todo[0];
+    const label=`white–${CN[pair[0]]}–${CN[pair[1]]}`;
+    if(pieceWith(cs,['W',...pair]).p[1]===1){
+      step(`The ${label} corner is stuck in the top layer. Spin the cube so it is at the top front right.`,yTurnsTo(t=>pieceWith(t,['W',...pair]).p,FR_TOP));
+      step('Drop it to the bottom row with the corner trick once.',TRICK,'Corner trick (beginner)');
+    }
+    step(`Spin the cube so the spot for the ${label} corner (between the ${CN[pair[0]]} and ${CN[pair[1]]} centers) is at the top front right.`,yTurnsTo(t=>slotOf(t,pair),FR_TOP));
+    const dt=[[],['D'],["D'"],['D','D']].find(seq=>veq(pieceWith(applyAll(cloneState(cs),seq),['W',...pair]).p,FR_BOT));
+    step('Turn the bottom row until the corner sits right under its spot.',dt);
+    for(let r=1;r<=6&&!cornerDone(pair);r++)step(`Corner trick, round ${r}: repeat it until the corner is in with white on top.`,TRICK,'Corner trick (beginner)');
+  }
+
+  // 3. flip, then the middle layer
+  begin('3. Middle layer','Turn the cube over so yellow is on top, then move each middle edge down into place.');
+  step('Tip the cube twice so the white side is on the bottom and yellow is on top.',['x','x']);
+  const RIGHT_IN=['U','R',"U'","R'","U'","F'",'U','F'],LEFT_IN=["U'","L'",'U','L','U','F',"U'","F'"];
+  const midPairs=[['G','R'],['R','B'],['B','O'],['O','G']];
+  const midDone=pair=>{const c=pieceWith(cs,pair);return pair.every(col=>veq(dirOf(c,col),centerDir(cs,col)));};
+  for(let guard=0;guard<16;guard++){
+    const todo=midPairs.filter(p=>!midDone(p));if(!todo.length)break;
+    const top=todo.find(p=>pieceWith(cs,p).p[1]===1);
+    if(top){
+      // the color on the side of the edge (not the one facing up) decides which center it lines up with
+      const c0=pieceWith(cs,top),upCol=top.find(col=>veq(dirOf(c0,col),UP)),sideCol=top.find(col=>col!==upCol);
+      step(`Spin the cube so the ${CN[sideCol]} center faces you.`,yTurnsTo(t=>centerDir(t,sideCol),[0,0,1]));
+      const ut=[[],['U'],["U'"],['U','U']].find(seq=>{const t=applyAll(cloneState(cs),seq);const c=pieceWith(t,top);return veq(c.p,[0,1,1])&&veq(dirOf(c,sideCol),[0,0,1]);});
+      step(`Turn the top row so the ${CN[sideCol]}–${CN[upCol]} edge sits above the ${CN[sideCol]} center.`,ut);
+      if(veq(centerDir(cs,upCol),[1,0,0]))step(`Its top color (${CN[upCol]}) matches the right side, so send it down to the right.`,RIGHT_IN,'Middle edge to the right');
+      else step(`Its top color (${CN[upCol]}) matches the left side, so send it down to the left.`,LEFT_IN,'Middle edge to the left');
+    } else {
+      const p=todo[0];
+      step(`The ${CN[p[0]]}–${CN[p[1]]} edge is in the middle layer but wrong. Spin the cube so it is at the front right.`,yTurnsTo(t=>pieceWith(t,p).p,[1,0,1]));
+      step('Push it out to the top with the right-hand move; it comes back in properly next.',RIGHT_IN,'Middle edge to the right');
+    }
+  }
+
+  // last-layer steps: find the fewest uses of an algorithm (each after one of the allowed setup turns) that reach the goal
+  const plan=(alg,setups,goal,maxUses=4)=>{
+    if(goal(cs))return [];
+    for(let n=1;n<=maxUses;n++){
+      const dfs=(t,left,acc)=>{
+        if(!left)return goal(t)?acc:null;
+        for(const pre of setups){const r=dfs(applyAll(cloneState(t),pre.concat(alg)),left-1,acc.concat([pre]));if(r)return r;}
+        return null;
+      };
+      const r=dfs(cs,n,[]);if(r)return r;
+    }
+    return [];
+  };
+  const U4=[[],['U'],["U'"],['U','U']],Y4=[[],['y'],["y'"],['y','y']];
+  // 4. yellow cross
+  begin('4. Yellow cross','Make a yellow plus sign on top with F R U R′ U′ F′.');
+  const CROSS=['F','R','U',"R'","U'","F'"];
+  const yEdgesUp=t=>t.filter(c=>c.p[1]===1&&Object.keys(c.s).length===2&&c.s['0,1,0']==='Y').length;
+  for(const pre of plan(CROSS,U4,t=>yEdgesUp(t)===4)){
+    step('Turn the top row so the yellow shape sits the right way for the next step: a line goes left to right, an L goes to the back and left.',pre);
+    step('Yellow cross move: F R U R′ U′ F′.',CROSS,'Yellow cross');
+  }
+
+  // 5. yellow edges
+  begin('5. Line up the yellow edges','Swap top edges until each one matches the center below it, using the Sune.');
+  const SUNE=['R','U',"R'",'U','R','U','U',"R'"];
+  const edgeMatch=t=>t.filter(c=>c.p[1]===1&&Object.keys(c.s).length===2&&Object.entries(c.s).every(([k,col])=>col==='Y'||veq(centerDir(t,col),k.split(',').map(Number)))).length;
+  const bestU=t=>{let b=null;for(const pre of [[],['U'],["U'"],['U','U']]){const n=edgeMatch(applyAll(cloneState(t),pre));if(!b||n>b.n)b={pre,n};}return b;};
+  for(const ys of plan(SUNE,Y4,t=>bestU(t).n===4)){
+    step('Spin the cube so the two edges that already match are at the back and on the right (if none match side by side, any side is fine).',ys);
+    step('Sune: R U R′ U R U2 R′.',SUNE,'Sune');
+  }
+  step('Turn the top row until all four top edges match the centers below them.',bestU(cs).pre);
+
+  // 6. yellow corners to their spots
+  begin('6. Yellow corners to their spots','Move each top corner to the spot between its three colors. Twisted is fine for now.');
+  const NIK=['U','R',"U'","L'",'U',"R'","U'",'L'];
+  const cornerPlaced=t=>t.filter(c=>c.p[1]===1&&Object.keys(c.s).length===3&&Object.values(c.s).every(col=>{const d=centerDir(t,col);return d.every((v,i)=>v===0||v===c.p[i]);})).length;
+  for(const ys of plan(NIK,Y4,t=>cornerPlaced(t)===4)){
+    step('Spin the cube so a corner that is already in its spot is at the top front right (if none are, any side is fine).',ys);
+    step('Corner swap: U R U′ L′ U R′ U′ L.',NIK,'Corner swap (Niklas)');
+  }
+
+  // 7. twist the yellow corners
+  begin('7. Twist the yellow corners','Hold the cube still. For each top corner, repeat the corner trick until yellow faces up, then turn only the top row to the next corner. The lower layers look messy halfway through. Keep going, they come back.');
+  const yUp=t=>{const c=t.find(c=>veq(c.p,FR_TOP));return c.s['0,1,0']==='Y';};
+  const allYUp=t=>t.filter(c=>c.p[1]===1&&c.s['0,1,0']==='Y').length===9;
+  for(let guard=0;guard<8&&!allYUp(cs);guard++){
+    if(yUp(cs)){
+      const ut=[['U'],["U'"],['U','U']].find(seq=>!yUp(applyAll(cloneState(cs),seq)));
+      step('Turn the top row to bring a corner that is not yellow on top to the front right.',ut);continue;
+    }
+    for(let r=1;r<=4&&!yUp(cs);r++)step(`Corner trick, round ${r}: repeat until yellow faces up on the front-right corner.`,TRICK,'Corner trick (beginner)');
+  }
+  const fin=[[],['U'],["U'"],['U','U']].find(seq=>solvedOf(applyAll(cloneState(cs),seq)));
+  if(fin&&fin.length){begin('Finish','Line up the top row.');step('Turn the top row to finish.',fin);}
+  stages.forEach(s=>s.steps.forEach(st=>st.toks=compact(st.moves)));
+  return {stages:stages.filter(s=>s.steps.length),solved:solvedOf(cs)};
+}
+// show X X as X2 so step lists read like normal notation
+function compact(moves){const out=[];moves.forEach(t=>{const l=out[out.length-1];if(l&&l===t&&!l.endsWith('2'))out[out.length-1]=t[0]+'2';else out.push(t);});return out;}
+// ---------- learn: end core ----------
+
 // ---------- animation queue ----------
+// The sticker shine is lit from fixed places on the cube, so it must not travel
+// with a turning sticker. For each face of a turning cubie, find how far its
+// shine has to swing (in the sticker's own frame) to match the shine of the
+// spot it lands on, and swing it in step with the turn.
+const SHINE=[Math.sin(140*Math.PI/180),-Math.cos(140*Math.PI/180)];
+const lightCache={};
+function lightTurn(k,target){
+  const id=k+'|'+target;if(lightCache[id])return lightCache[id];
+  const R=new DOMMatrix().rotateAxisAngle(k[0],-k[1],k[2],-target);
+  const ap=v=>{const q=R.transformPoint(new DOMPoint(v[0],v[1],v[2],0));return [q.x,q.y,q.z];};
+  const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2];
+  return lightCache[id]=FACE_AX.map(f=>{
+    const n=ap(f.n),u=ap(f.u),v=ap(f.v),B=FACE_AX.find(g=>dot(g.n,n)>.9);
+    const d=B.u.map((x,i)=>SHINE[0]*x+SHINE[1]*B.v[i]);
+    let delta=Math.atan2(dot(d,u),-dot(d,v))*180/Math.PI-140;
+    delta=((delta%360)+540)%360-180;
+    return delta;
+  });
+}
 function animate(t,dur){
   return new Promise(res=>{
     const m=parse(t),aff=cubies.filter(c=>m.f(c.p)),target=m.s*90;
     if(!dur){applyMove(t);render();return res();}
-    const t0=performance.now();
+    const t0=performance.now(),turn=lightTurn(m.k,target);
     const frame=now=>{
       const u=Math.min(1,(now-t0)/dur),e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2,a=target*e;
-      aff.forEach(c=>{c.el.style.transform=`rotate3d(${m.k[0]},${-m.k[1]},${m.k[2]},${-a}deg) ${baseTf(c)}`;});
+      aff.forEach(c=>{c.el.style.transform=`rotate3d(${m.k[0]},${-m.k[1]},${m.k[2]},${-a}deg) ${baseTf(c)}`;
+        c.faces.forEach((st,i)=>{if(st.classList.contains('on'))st.style.setProperty('--la',(140+turn[i]*e).toFixed(1)+'deg');});});
       if(u<1)requestAnimationFrame(frame);else{applyMove(t);render();res();}
     };
     requestAnimationFrame(frame);
@@ -425,16 +822,19 @@ function afterMove(t){
 
 // ---------- actions ----------
 function doMove(t){
+  if(lesson){lessonPress(t);return;}
   clearConfirm();$('banner').hidden=true;
   history.push(t);redo=[];
   if(scrambled&&timerStart===null&&!isRot(t))timerStart=Date.now()-timerElapsed;
   queue.push(t);pump();updateStats();announce(t);
 }
 function undo(){
+  if(lesson){lessonBack();return;}
   clearConfirm();if(!history.length)return;
   const t=history.pop();redo.push(t);queue.push(inv(t));pump();updateStats();say('Undo');
 }
 function redoMove(){
+  if(lesson){lessonNext();return;}
   clearConfirm();if(!redo.length)return;
   const t=redo.pop();history.push(t);queue.push(t);pump();updateStats();announce(t);
 }
@@ -452,6 +852,7 @@ function clearConfirm(){
   [['scramble','Scramble'],['reset','Reset']].forEach(([a,l])=>{const b=$(a+'Btn');b.classList.remove('confirm');b.querySelector('.lbl').textContent=l;});
 }
 function scramble(){
+  if(lesson){coachNote('Exit the lesson first, then scramble.');return;}
   if(needsConfirm('scramble'))return;
   $('banner').hidden=true;
   queue.push(()=>{
@@ -471,6 +872,7 @@ function scramble(){
   pump();
 }
 function reset(){
+  if(lesson){coachNote('Exit the lesson first, then reset.');return;}
   if(needsConfirm('reset'))return;
   $('banner').hidden=true;
   queue.push(()=>{
@@ -489,15 +891,15 @@ function fmt(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/6
 function updateStats(){
   $('moves').textContent=countMoves();
   $('time').textContent=fmt(elapsed());
-  $('undoBtn').disabled=!history.length;$('redoBtn').disabled=!redo.length;
+  $('undoBtn').disabled=lesson?!lesson.pos:!history.length;$('redoBtn').disabled=lesson?lesson.pos>=lesson.flat.length:!redo.length;
   $('armed').hidden=!armed;
 }
 setInterval(()=>{if(timerStart!==null)$('time').textContent=fmt(elapsed());},250);
 
 // ---------- preview highlight ----------
-let hoverTok=null,focusTok=null;
+let hoverTok=null,focusTok=null,lessonTok=null;
 function applyPreview(){
-  const t=hoverTok||focusTok;
+  const t=hoverTok||focusTok||lessonTok;
   cubeEl.classList.toggle('previewing',!!t&&!isRot(t)); // whole-cube turns move everything, so no outline
   const f=t&&!isRot(t)?MOVES[t[0]].f:null;
   cubies.forEach(c=>c.el.classList.toggle('hl',!!f&&f(c.p)));
@@ -714,7 +1116,8 @@ $('keysBtn').onclick=()=>openOverlay('keysOv');
 let layoutPending=false;
 function sizeCube(){
   const main=$('main'),board=$('board'),rem=parseFloat(getComputedStyle(document.documentElement).fontSize);
-  const vw=main.clientWidth;
+  const coach=$('coach'),beside=!coach.hidden&&window.innerWidth>=1000;
+  const vw=main.clientWidth-(beside?coach.offsetWidth+parseFloat(getComputedStyle(main).columnGap||0):0);
   const availW=vw-8;
   // room left under the game bar, minus the page's bottom padding
   const availH=Math.max(18*rem,window.innerHeight-(board.getBoundingClientRect().top+window.scrollY)-1.3*rem);
@@ -816,13 +1219,23 @@ function layoutBoard(){
     for(let i=0;i<4;i++){const a=lp[i],c=lp[(i+1)%4];if((a.y-cy)*(c.y-cy)<=0&&a.y!==c.y){const x=a.x+(c.x-a.x)*(cy-a.y)/(c.y-a.y);if(x<cx)x0=Math.max(x0,x);else x1=Math.min(x1,x);}}
     const chord=isFinite(x0)&&isFinite(x1)?x1-x0:w;
     const lab=el.querySelector('.in');
-    // try the label on one line and wrapped narrow; keep whichever can stay bigger
-    const fit=mw=>{lab.style.maxWidth=mw+'px';lab.style.transform='none';const lw=lab.offsetWidth,lh=lab.offsetHeight;let k=1;
-      for(let i=0;i<20;i++){const hw=lw*k/2+3,hh=lh*k/2+3;
-        if([[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].every(([dx,dy])=>inside(lp,cx+dx,cy+dy)))break;k*=.93;}
+    // try the label on one line and wrapped narrow, and slide it around the middle of the shape;
+    // keep whichever spot lets it stay biggest, so slanted shapes don't push it into an edge
+    const kAt=(lw,lh,x,y)=>{let k=1.25;
+      for(let i=0;i<24;i++){const hw=lw*k/2+8,hh=lh*k/2+5;
+        if([[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].every(([dx,dy])=>inside(lp,x+dx,y+dy)))return k;k*=.93;}
       return k;};
-    const wide=Math.max(30,chord-10),k1=fit(wide),k2=fit(30),k=k2>k1*1.05?k2:fit(wide);
-    lab.style.left=cx+'px';lab.style.top=cy+'px';
+    let best={k:0};
+    const isWhole=el.classList.contains('whole'),flat0=el.classList.contains('flat');
+    (isWhole?[flat0,!flat0]:[flat0]).forEach(fl=>[Math.max(30,chord-10),30].forEach(mw=>{
+      el.classList.toggle('flat',fl);lab.style.maxWidth=mw+'px';lab.style.transform='none';const lw=lab.offsetWidth,lh=lab.offsetHeight;
+      for(let a=-2;a<=2;a++)for(let b=-2;b<=2;b++){const x=cx+a*w*.08,y=cy+b*h*.08;if(!inside(lp,x,y))continue;
+        const kk=Math.min(1,kAt(lw,lh,x,y)),score=kk-(Math.abs(a)+Math.abs(b))*.03; // prefer the centre when it's a tie
+        if(score>best.k)best={k:score,kk,mw,x,y,fl};}
+    }));
+    el.classList.toggle('flat',best.fl);lab.style.maxWidth=best.mw+'px';
+    const k=best.kk;
+    lab.style.left=best.x+'px';lab.style.top=best.y+'px';
     lab.style.transform=`scale(${k.toFixed(3)}) translate(-50%,-50%)`;
   });
   layoutPending=false;
@@ -830,10 +1243,184 @@ function layoutBoard(){
 }
 window.addEventListener('resize',sizeCube);
 
+// ---------- lessons: the algorithm tutor and the solver walk-through ----------
+// A lesson is a list of quarter turns grouped into steps. Next plays one turn, Back undoes one;
+// the button for the next turn glows and its layer gets the pink outline.
+let lesson=null,lessonSnap=null,autoTimer=null;
+const AUTO_GAP={slow:1300,normal:850,fast:450,instant:350};
+const pretty=t=>t.replace(/'/g,'′');
+function makeLesson(kind,title,about,steps){
+  const flat=[];
+  steps.forEach((st,si)=>{let qi=0;st.toks.forEach((tok,ti)=>{const n=quarterTurns(tok).length;for(let k=0;k<n;k++)flat.push({t:st.moves[qi++],si,ti,part:k,of:n});});});
+  return {kind,title,about,steps,flat,pos:0,auto:false,start:cloneState(cubies)};
+}
+const setCube=state=>{state.forEach((c,i)=>{cubies[i].p=c.p.slice();cubies[i].s={...c.s};});};
+function putGameAside(){
+  if(lessonSnap)return;
+  lessonSnap={c:cubies.map(c=>({p:c.p.slice(),s:{...c.s}})),history:history.slice(),redo:redo.slice(),scrambled,elapsed:elapsed(),running:timerStart!==null};
+  timerStart=null;scrambled=false; // the lesson must not count as solving the game
+}
+function startAlgLesson(a){
+  if(lesson&&lesson.kind==='solve')stopLesson(true);
+  stopAuto();
+  queue.push(()=>{
+    putGameAside();
+    // yellow on top, the way cubers hold it for these; for a case, set up the position the algorithm fixes
+    setCube(applyAll(solvedState(),a.setup==='case'?['x','x',...invertAlg(a.moves)]:['x','x']));
+    lesson=makeLesson('alg',a.name,a.about,[{text:a.setup==='case'?'The cube is set up in the position this algorithm is for. Play it and the cube comes out solved.':'The cube starts solved. Play it and watch what it changes.',moves:a.moves,toks:a.toks,alg:a.name}]);
+    lesson.alg=a;
+    render();showCoach();
+  });
+  pump();
+}
+function startSolve(){
+  if(lesson)stopLesson(lesson.kind==='solve');
+  queue.push(()=>{
+    if(isSolved()){lesson=makeLesson('solve','Already solved','',[]);lesson.empty=true;showCoach();return;}
+    const r=solveBeginner(cubies);
+    const steps=[];
+    r.stages.forEach((stg,k)=>stg.steps.forEach(st=>steps.push({...st,stage:stg.name,intro:stg.intro,stageNo:k+1,stages:r.stages.length})));
+    // helping with a solve ends the timed game; the moves made from here are the lesson's
+    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;
+    lesson=makeLesson('solve','Solve it with me','',steps);
+    showCoach();
+  });
+  pump();
+}
+function showCoach(){
+  $('coach').hidden=false;$('main').classList.add('lessoning');
+  $('coachPick').hidden=lesson.kind!=='alg';$('lessonReplay').hidden=lesson.kind!=='alg';
+  updateCoach();sizeCube();
+  $('lessonNext').focus({preventScroll:true});
+}
+function stopLesson(keepCube){
+  stopAuto();
+  const snap=lessonSnap;
+  lesson=null;lessonTok=null;
+  queue.push(()=>{
+    if(snap&&!keepCube){
+      setCube(snap.c);history=snap.history;redo=snap.redo;scrambled=snap.scrambled;timerElapsed=snap.elapsed;timerStart=snap.running?Date.now()-timerElapsed:null;
+    }
+    lessonSnap=null;render();updateStats();save();
+  });
+  pump();
+  $('coach').hidden=true;$('main').classList.remove('lessoning');
+  document.querySelectorAll('#board .btn.next').forEach(b=>b.classList.remove('next'));
+  applyPreview();updateStats();sizeCube();
+}
+function lessonNext(){
+  if(!lesson||lesson.pos>=lesson.flat.length)return;
+  const f=lesson.flat[lesson.pos++];
+  queue.push(f.t);queue.push(updateCoach);pump();updateCoach();
+}
+function lessonBack(){
+  if(!lesson||!lesson.pos)return;
+  stopAuto();
+  const f=lesson.flat[--lesson.pos];
+  queue.push(inv(f.t));queue.push(updateCoach);pump();updateCoach();
+}
+function lessonStep(){ // finish the current step in one go
+  if(!lesson)return;stopAuto();
+  const cur=lesson.flat[lesson.pos];if(!cur)return;
+  while(lesson.pos<lesson.flat.length&&lesson.flat[lesson.pos].si===cur.si)queue.push(lesson.flat[lesson.pos++].t);
+  queue.push(updateCoach);pump();updateCoach();
+}
+function stopAuto(){if(lesson)lesson.auto=false;clearTimeout(autoTimer);autoTimer=null;}
+function autoTick(){
+  if(!lesson||!lesson.auto)return;
+  if(lesson.pos>=lesson.flat.length){stopAuto();updateCoach();return;}
+  lessonNext();
+  queue.push(()=>{autoTimer=setTimeout(autoTick,AUTO_GAP[settings.speed]||850);});pump();
+}
+function lessonPlay(){if(!lesson)return;if(lesson.auto){stopAuto();updateCoach();}else{lesson.auto=true;updateCoach();autoTick();}}
+function lessonReplay(){
+  if(!lesson||lesson.kind!=='alg')return;stopAuto();
+  queue.push(()=>{setCube(lesson.start);lesson.pos=0;render();updateCoach();});pump();
+}
+// a turn pressed on the board during a lesson: the expected one counts as Next, anything else is held back
+function lessonPress(t){
+  const cur=lesson.flat[lesson.pos];
+  if(cur&&t===cur.t){stopAuto();lessonNext();return;}
+  coachNote(cur?`That one isn't next. Press the glowing button (${pretty(cur.t)}), or Next move.`:'This lesson is finished. Press Exit lesson to play on.');
+}
+let noteTimer=null;
+function coachNote(msg){
+  if(!lesson)return say(msg);
+  const el=$('coachNow');el.innerHTML=`<b>${msg}</b>`;say(msg);
+  clearTimeout(noteTimer);noteTimer=setTimeout(updateCoach,2600);
+}
+function boardButtonFor(t){
+  const direct=document.querySelector(`#board [data-move="${t}"]`);if(direct)return {b:direct,rev:false};
+  const back=document.querySelector(`#board [data-move="${inv(t)}"]`);return back?{b:back,rev:true}:null;
+}
+function updateCoach(){
+  if(!lesson)return;
+  const L=lesson,done=L.pos>=L.flat.length,cur=L.flat[L.pos];
+  document.querySelectorAll('#board .btn.next').forEach(b=>b.classList.remove('next'));
+  if(L.empty){
+    $('coachKicker').textContent='Solver';$('coachTitle').textContent='Already solved';
+    $('coachAbout').textContent='Your cube is already solved. Press Exit lesson, then Scramble, and come back.';
+    $('coachStep').innerHTML='';$('coachChips').innerHTML='';$('coachNow').innerHTML='';$('coachProg').textContent='';
+    ['lessonBack','lessonNext','lessonPlay','lessonStep'].forEach(id=>$(id).disabled=true);
+    lessonTok=null;applyPreview();updateStats();return;
+  }
+  const si=cur?cur.si:L.steps.length-1,st=L.steps[si];
+  if(L.kind==='alg'){
+    $('coachKicker').textContent='Algorithm tutor';$('coachTitle').textContent=L.title;
+    $('coachAbout').innerHTML=`${L.about}<br><b class="nt">${L.alg.toks.map(pretty).join(' ')}</b>`;
+    $('coachStep').innerHTML=st.text;
+  } else {
+    $('coachKicker').textContent=`Solver · stage ${st.stageNo} of ${st.stages}`;$('coachTitle').textContent=st.stage;
+    $('coachAbout').textContent=st.intro;
+    $('coachStep').innerHTML=`Step ${si+1} of ${L.steps.length}: ${st.text}`+(st.alg?`<span class="uses">Uses the algorithm: ${st.alg}</span>`:'');
+  }
+  // chips: one per notation token of this step
+  const doneQ=L.flat.slice(0,L.pos);
+  $('coachChips').innerHTML=st.toks.map((tok,ti)=>{
+    const qs=L.flat.filter(f=>f.si===si&&f.ti===ti),nDone=doneQ.filter(f=>f.si===si&&f.ti===ti).length;
+    const cls=nDone===qs.length?'done':(cur&&cur.si===si&&cur.ti===ti?'cur':'');
+    return `<span class="chip ${cls}">${pretty(tok)}</span>`;
+  }).join('');
+  if(done){
+    $('coachNow').innerHTML=L.kind==='alg'?(L.alg.setup==='case'?'<b>Done!</b> That was the whole algorithm, and the cube is solved again. Press Start over to practise it, or choose another.':'<b>Done!</b> That was the whole algorithm. Press Start over to see it again, or choose another.')
+      :'<b>Solved!</b> Every side is one color. Press Exit lesson to keep playing.';
+    lessonTok=null;
+  } else {
+    const tok=st.toks[cur.ti],hb=boardButtonFor(cur.t);
+    const turnOf=cur.of>1?` <i>(turn ${cur.part+1} of ${cur.of})</i>`:'';
+    const how=hb?(hb.rev?'Right click (sip) the glowing button':'Click (puff) the glowing button'):'Press Next move';
+    $('coachNow').innerHTML=`Next: ${explainTok(cur.of>1&&WIDE[tok[0]]?tok:(cur.of>1?cur.t+(tok.endsWith('2')?'':''):tok))}${turnOf}<span class="how">${how}, or press Next move.</span>`;
+    if(hb)hb.b.classList.add('next');
+    lessonTok=cur.t;
+  }
+  $('coachProg').textContent=`Turn ${Math.min(L.pos,L.flat.length)} of ${L.flat.length}`;
+  $('lessonBack').disabled=!L.pos;$('lessonNext').disabled=done;$('lessonStep').disabled=done;$('lessonPlay').disabled=done&&!L.auto;
+  $('lessonPlay').querySelector('.lbl').textContent=L.auto?'Pause':'Play all';
+  $('lessonPlay').querySelector('.g').textContent=L.auto?'⏸':'⏵';
+  applyPreview();updateStats();
+}
+function renderAlgList(){
+  const groups=[...new Set(ALGS.map(a=>a.group))];
+  $('algList').innerHTML=groups.map(g=>`<h3>${g}</h3><div class="alglist">`+ALGS.map((a,i)=>a.group!==g?'':`<button class="btn algpick" type="button" data-alg="${i}"><b>${a.name}</b><span class="nt">${a.toks.map(pretty).join(' ')}</span></button>`).join('')+'</div>').join('');
+}
+renderAlgList();
+$('algList').addEventListener('click',e=>{const b=e.target.closest('[data-alg]');if(!b||!pointerOk(b))return;closeOverlay();startAlgLesson(ALGS[+b.dataset.alg]);});
+$('learnBtn').onclick=()=>openOverlay('algOv');
+$('coachPick').onclick=()=>openOverlay('algOv');
+$('solveBtn').onclick=()=>{if(pointerOk($('solveBtn')))startSolve();};
+$('lessonNext').onclick=()=>{if(pointerOk($('lessonNext'))){stopAuto();lessonNext();}};
+$('lessonBack').onclick=()=>{if(pointerOk($('lessonBack')))lessonBack();};
+$('lessonPlay').onclick=()=>{if(pointerOk($('lessonPlay')))lessonPlay();};
+$('lessonStep').onclick=()=>{if(pointerOk($('lessonStep')))lessonStep();};
+$('lessonReplay').onclick=()=>{if(pointerOk($('lessonReplay')))lessonReplay();};
+$('lessonExit').onclick=()=>{if(pointerOk($('lessonExit')))stopLesson(lesson&&lesson.kind==='solve');};
+
 // ---------- persistence ----------
 const STORE='easy-reach-cube-v1';
 function save(){
-  try{localStorage.setItem(STORE,JSON.stringify({c:cubies.map(c=>({p:c.p,s:c.s})),history,redo,scrambled,elapsed:elapsed(),running:timerStart!==null,settings}));}catch(e){}
+  // during an algorithm lesson the cube on screen is borrowed; save the game that was put aside instead
+  const g=lessonSnap||{c:cubies.map(c=>({p:c.p,s:c.s})),history,redo,scrambled,elapsed:elapsed(),running:timerStart!==null};
+  try{localStorage.setItem(STORE,JSON.stringify({...g,settings}));}catch(e){}
 }
 function load(){
   try{
@@ -856,5 +1443,4 @@ window.__cube={cubies,applyMove,isSolved,doMove};
 })();
 </script>
 
-</body>
-</html>
+</body></html>
