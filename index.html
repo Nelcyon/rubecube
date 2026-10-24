@@ -1673,9 +1673,18 @@ function pieceSpot(p){
   return ISO(p[0]+d[0]*.5,p[1]+d[1]*.5,p[2]+d[2]*.5);
 }
 const f1=v=>v.toFixed(1);
-function arrowHead(tip,dir){
+// arrowhead triangle; drawn twice by each arrow: once in the outline colour with a thick edge, then plain white on top
+function headPts(tip,dir){
   const n=Math.hypot(dir.x,dir.y)||1,ux=dir.x/n,uy=dir.y/n,L=7,W=4.4;
-  return `<polygon points="${f1(tip.x)},${f1(tip.y)} ${f1(tip.x-ux*L-uy*W)},${f1(tip.y-uy*L+ux*W)} ${f1(tip.x-ux*L+uy*W)},${f1(tip.y-uy*L-ux*W)}" fill="#fff" stroke="#07080b" stroke-width="1.3" stroke-linejoin="round"/>`;
+  return `${f1(tip.x)},${f1(tip.y)} ${f1(tip.x-ux*L-uy*W)},${f1(tip.y-uy*L+ux*W)} ${f1(tip.x-ux*L+uy*W)},${f1(tip.y-uy*L-ux*W)}`;
+}
+// one arrow as a single shape with one outline: every dark part first, then every white part over it,
+// so there's no seam where the head meets the shaft; each arrow is drawn whole over the ones before it
+function arrowShape(d,heads){
+  return `<g><path d="${d}" fill="none" stroke="#07080b" stroke-width="5.6" stroke-linecap="butt"/>`+
+    heads.map(h=>`<polygon points="${h}" fill="#07080b" stroke="#07080b" stroke-width="2.6" stroke-linejoin="round"/>`).join('')+
+    `<path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="butt"/>`+
+    heads.map(h=>`<polygon points="${h}" fill="#fff"/>`).join('')+'</g>';
 }
 function picArrow(a,b,both,C=ISO(0,1.5,0),straight=false){
   const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,ux=dx/n,uy=dy/n,sh=straight?1:C.x===0&&C.y===0?Math.max(0,Math.min(6,(n-30)/3)):3; // top-down arrows stop inside their squares so heads that meet don't pile up, but short ones keep room for both heads
@@ -1683,14 +1692,16 @@ function picArrow(a,b,both,C=ISO(0,1.5,0),straight=false){
   const mid={x:(A.x+B.x)/2,y:(A.y+B.y)/2};
   let ox=-uy,oy=ux;if(ox*(mid.x-C.x)+oy*(mid.y-C.y)<0){ox=-ox;oy=-oy;}
   const M={x:mid.x+ox*bow,y:mid.y+oy*bow};
-  const d=`M${f1(A.x)},${f1(A.y)} Q${f1(M.x)},${f1(M.y)} ${f1(B.x)},${f1(B.y)}`;
-  // shaft ends short of each tip so the head sits cleanly on it
-  return `<path d="${d}" fill="none" stroke="#07080b" stroke-width="5.6" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`+
-    arrowHead(B,{x:B.x-M.x,y:B.y-M.y})+(both?arrowHead(A,{x:A.x-M.x,y:A.y-M.y}):'');
+  // the shaft stops inside the arrowhead and has flat ends, so no round blobs show at either end
+  const pull=(P,from,k)=>{const vx=P.x-from.x,vy=P.y-from.y,m=Math.hypot(vx,vy)||1;return {x:P.x-vx/m*k,y:P.y-vy/m*k};};
+  const Bs=pull(B,M,5),As=both?pull(A,M,5):A;
+  const d=`M${f1(As.x)},${f1(As.y)} Q${f1(M.x)},${f1(M.y)} ${f1(Bs.x)},${f1(Bs.y)}`;
+  return arrowShape(d,[headPts(B,{x:B.x-M.x,y:B.y-M.y}),...(both?[headPts(A,{x:A.x-M.x,y:A.y-M.y})]:[])]);
 }
-function twistMark(at){
-  const r=5.4;
-  return `<path d="M${f1(at.x+r)},${f1(at.y)} A${r},${r} 0 1 1 ${f1(at.x)},${f1(at.y-r)}" fill="none" stroke="#07080b" stroke-width="5.6" stroke-linecap="round"/><path d="M${f1(at.x+r)},${f1(at.y)} A${r},${r} 0 1 1 ${f1(at.x)},${f1(at.y-r)}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`+arrowHead({x:at.x+5,y:at.y-r},{x:1,y:0});
+function twistMark(at,cw=true){
+  // a three-quarter circle ending at the top with its head pointing the way the corner turns (as seen from outside it)
+  const r=5.4,k=cw?1:-1,d=`M${f1(at.x+k*r)},${f1(at.y)} A${r},${r} 0 1 ${cw?1:0} ${f1(at.x)},${f1(at.y-r)}`;
+  return arrowShape(d,[headPts({x:at.x+k*5,y:at.y-r},{x:k,y:0})]);
 }
 function cubePic(cs,keep,marks,label){
   const faces=[[0,1,0],[0,0,1],[1,0,0]],shade={'0,1,0':1,'0,0,1':.86,'1,0,0':.72};
@@ -1755,7 +1766,13 @@ function algPicture(a,start){
     if(back)seen.add(back.i);
     const A=pieceSpot(m.from),B=pieceSpot(m.to);if(A&&B)marks+=picArrow(A,B,!!back);
   });
-  twisted.forEach(i=>{const at=pieceSpot(before[i].p);if(at)marks+=twistMark(at);});
+  // which way each corner turns: the face its top colour ends up on came from where? one step U→R→F (for the top front right
+  // corner, and the matching order elsewhere) is clockwise seen from outside the corner
+  const det=(a,b,c)=>a[0]*(b[1]*c[2]-b[2]*c[1])-a[1]*(b[0]*c[2]-b[2]*c[0])+a[2]*(b[0]*c[1]-b[1]*c[0]);
+  twisted.forEach(i=>{const at=pieceSpot(before[i].p);if(!at)return;
+    const up=key([0,1,0]),col=after[i].s[up],from=Object.keys(before[i].s).find(k=>before[i].s[k]===col);
+    const X=from.split(',').map(Number),Y=[0,1,0],Z=Object.keys(before[i].s).find(k=>k!==from&&k!==up).split(',').map(Number);
+    marks+=twistMark(at,det(X,Y,Z)===-1);});
   return `<div class="illus">${cubePic(before,keep.size?keep:null,marks,'')}</div>`;
 }
 function renderAlgList(){
