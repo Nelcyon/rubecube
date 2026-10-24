@@ -35,6 +35,7 @@
 :root.text-l{font-size:21px}
 :root.text-xl{font-size:24px}
 html,body{height:100%}
+html{scrollbar-gutter:stable} /* keep room for a scrollbar so nothing shifts when the page grows taller, e.g. with the Algorithms panel open */
 body{
   margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:1rem;line-height:1.4;
   background-image:radial-gradient(ellipse 70% 60% at 28% 35%,var(--bg-glow),transparent 70%);
