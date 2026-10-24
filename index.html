@@ -292,7 +292,7 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <div class="stat"><span>Moves</span><b id="moves">0</b></div>
       <div class="stat" id="timeStat"><span>Time</span><b id="time">0:00</b></div>
       <div class="stat par" id="parStat" hidden><span>Par</span><b id="par">0</b></div>
-      <div class="stat" id="solvedStat" title="Games you solved yourself (Solve with me games don't count)"><span>Solved</span><b id="solvedCount">0</b></div>
+      <div class="stat" id="solvedStat" title="Scrambled games you solved yourself (Challenge and Solve with me games don't count)"><span>Solved</span><b id="solvedCount">0</b></div>
       <div class="stat armed" id="armed" hidden><span>Next key</span><b>↺ reverse</b></div>
     </div>
       <div class="grp">
@@ -398,7 +398,7 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
     <h3>Letters on the buttons</h3>
     <p>Each turn button also shows its letter in standard cube notation: <b>R</b> right, <b>L</b> left, <b>U</b> up (top), <b>D</b> down (bottom), <b>F</b> front, <b>B</b> back, <b>M</b>, <b>E</b> and <b>S</b> for the three middle slices, and <b>x</b>, <b>y</b>, <b>z</b> for turning the whole cube. Each button shows the turn and its reverse; a mark (′) means the other way round. On the turn buttons the letters replace the words; turn the letters off in Settings to see words instead.</p>
     <h3>Challenge</h3>
-    <p><b>Challenge</b> mixes the cube with a few turns and gives a par: the fewest moves that solve it. Solve it in exactly par for gold; a few more earn silver or bronze. <b>Solved</b> counts the games you solved yourself; games finished with Solve it with me don't count.</p>
+    <p><b>Challenge</b> mixes the cube with a few turns and gives a par: the fewest moves that solve it. Solve it in exactly par for gold; a few more earn silver or bronze. <b>Solved</b> counts the scrambled games you solved yourself; challenges and games finished with Solve it with me don't count.</p>
     <h3>Algorithms and the solver</h3>
     <p><b>Algorithms</b> teaches a recipe one turn at a time on the real cube. <b>Solve it with me</b> walks you through solving your own cube, stage by stage. In both, the button for the next turn glows green: press it yourself, or press <b>Next move</b>. Undo and Redo step back and forward too.</p>
     <h3>Keys and QuadStick</h3>
@@ -910,7 +910,7 @@ async function pump(){
 function afterMove(t){
   if(scrambled&&!isRot(t)&&isSolved()){
     timerElapsed=elapsed();timerStart=null;scrambled=false;
-    record.solved++;
+    if(!chal)record.solved++; // only full scrambles count, not challenges
     const time=settings.timer==='on'?' in '+fmt(timerElapsed):'';
     const b=$('banner');b.classList.remove('gold','silver','bronze');
     if(chal){
