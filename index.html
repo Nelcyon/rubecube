@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RubeCube</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Lexend:wght@500;700;800&display=swap">
+<style>
+/* Layout: the cube sits in the centre of a ring of turn buttons; whole-cube turns on its left, game actions on its right (both drop below on narrow screens). */
+:root{
+  --bg:#0a0e16;
+  --bg-glow:#16223d;
+  --panel:#121a29;
+  --raised:#1a2438;
+  --raised-hover:#24324d;
+  --line:#2b3a57;
+  --text:#eef3fb;
+  --muted:#9fb0c9;
+  --accent:#6fc3ff;
+  --focus:#ffd23f;
+  --warn:#ff9d5c;
+  --good:#5ee39a;
+  --plastic:#07080b;
+  --outline:#ff4fd8; /* magenta: unlike any sticker colour */
+  --font-display:"Lexend",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-body:"Atkinson Hyperlegible",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --s:80px; /* cubie size, set from JS */
+  color-scheme:dark;
+  font-size:18px;
+}
+:root.text-l{font-size:21px}
+:root.text-xl{font-size:24px}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);font-family:var(--font-body);font-size:1rem;line-height:1.4;
+  background-image:radial-gradient(ellipse 70% 60% at 28% 35%,var(--bg-glow),transparent 70%);
+  background-attachment:fixed;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+.app{min-height:100%;display:flex;flex-direction:column;gap:.9rem;
+  padding-block:.9rem 1.2rem;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));}
+
+/* header */
+header{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem 1.25rem}
+h1{font-family:var(--font-display);font-weight:800;font-size:1.55rem;margin:0;letter-spacing:-.01em;display:flex;align-items:center;gap:.6rem}
+h1 .logo{display:grid;grid-template-columns:repeat(3,.42rem);gap:2px}
+h1 .logo i{width:.42rem;height:.42rem;border-radius:2px;display:block}
+.stats{display:flex;gap:.6rem;flex-wrap:wrap;margin-left:auto}
+.stat{background:var(--panel);border:2px solid var(--line);border-radius:12px;padding:.35rem .85rem;display:flex;align-items:baseline;gap:.5rem}
+.stat b{font-family:var(--font-display);font-size:1.35rem;font-variant-numeric:tabular-nums}
+.stat span{color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.08em}
+.stat.armed{border-color:var(--warn);color:var(--warn)}
+.stat.armed span{color:var(--warn)}
+.head-btns{display:flex;gap:.6rem}
+
+/* main */
+main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:1.2rem}
+.middle{display:flex;flex-direction:column;align-items:center;gap:.7rem;min-width:0}
+/* board: 6x6 grid; the cube fills the centre, one turn button per column (below) and per row (left) */
+.board{position:relative;display:grid;gap:.4rem;
+  --b:4.6rem;--cw:calc(var(--s) * 1.0);--rh:calc(var(--s) * 1.02);
+  grid-template-columns:var(--b) calc(var(--s) * .08) var(--cw) var(--cw) var(--cw) calc(var(--s) * 1.25);
+  grid-template-rows:calc(var(--s) * 1.0) var(--rh) var(--rh) var(--rh) calc(var(--s) * .12) var(--b)}
+.board .btn{width:100%;height:100%;min-height:0;position:relative;z-index:2;background:color-mix(in srgb,var(--raised) 92%,transparent)}
+.scene{grid-column:3/6;grid-row:2/5;position:relative;perspective:calc(var(--s) * 13);z-index:1;pointer-events:none}
+.shadow{position:absolute;left:50%;top:50%;width:calc(var(--s)*4);height:calc(var(--s)*1);transform:translate(-40%,calc(var(--s)*1.7));
+  background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);filter:blur(6px)}
+.cube{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;
+  transform:translate(calc(var(--s) * .62),calc(var(--s) * -.44)) rotateX(-20deg) rotateY(-25deg)}
+.cubie{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}
+.face{position:absolute;width:var(--s);height:var(--s);left:calc(var(--s) / -2);top:calc(var(--s) / -2);background:var(--plastic);border-radius:7%}
+.st{position:absolute;inset:7.5%;border-radius:15%;display:none;
+  background-image:linear-gradient(140deg,rgba(255,255,255,.32),rgba(255,255,255,0) 42%,rgba(0,0,0,0) 70%,rgba(0,0,0,.18))}
+.st.on{display:grid;place-items:center}
+.st::after{content:attr(data-l);font-family:var(--font-display);font-weight:800;font-size:calc(var(--s)*.34);color:rgba(0,0,0,.62);display:none}
+.labels .st::after{display:block}
+/* hover preview: frame the pieces that will move in a bright outline, leave the rest untouched */
+.cube.previewing .cubie.hl .face{background:var(--outline)}
+.cube.previewing .cubie.hl .st.on{box-shadow:0 0 0 calc(var(--s) * .02) var(--plastic)}
+
+.facing{display:flex;justify-content:center;gap:.6rem;flex-wrap:wrap;color:var(--muted);font-size:.95rem}
+.facing .chip{display:inline-flex;align-items:center;gap:.4rem;background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:.2rem .7rem}
+.dot{width:.9rem;height:.9rem;border-radius:50%;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
+.history{min-height:1.4rem;color:var(--muted);font-family:var(--font-display);font-size:.9rem;letter-spacing:.04em;overflow-wrap:anywhere}
+.history:empty::before{content:"Your moves will appear here"}
+
+/* solved banner */
+.banner{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;background:var(--panel);border:3px solid var(--good);border-radius:18px;
+  padding:1rem 1.4rem;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:.6rem;align-items:center;width:max-content;max-width:calc(100% - 2rem)}
+.banner h2{margin:0;font-family:var(--font-display);font-size:1.6rem;color:var(--good)}
+.banner p{margin:0;color:var(--muted)}
+
+/* side cards */
+.card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:.9rem;display:flex;flex-direction:column;gap:.7rem;width:14.5rem}
+.card h2{margin:0;font-family:var(--font-display);font-size:.85rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--muted)}
+
+.btn{appearance:none;font:inherit;color:var(--text);background:var(--raised);border:2px solid var(--line);border-radius:14px;
+  min-height:3.4rem;padding:.35rem .4rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.05rem;
+  font-weight:700;line-height:1.1;text-align:center;transition:background .12s,border-color .12s,transform .08s;touch-action:manipulation;user-select:none}
+.btn:hover{background:var(--raised-hover);border-color:var(--accent)}
+.btn:active{transform:scale(.96)}
+.btn:focus-visible{outline:5px solid var(--focus);outline-offset:3px;box-shadow:0 0 0 10px rgba(255,210,63,.22)}
+.btn .g{font-size:1.7rem;line-height:1}
+.btn .t{font-size:.78rem}
+.btn .alt{font-size:.62rem;color:var(--muted);font-weight:400;white-space:nowrap}
+.btn .n{font-size:.7rem;color:var(--muted);font-weight:400;font-family:var(--font-display)}
+.no-notation .btn .n{display:none}
+.btn.confirm{border-color:var(--warn);background:#3a2414;color:#ffd7bd}
+.btn.wide{flex-direction:row;gap:.55rem;font-size:1rem}
+.btn.wide .g{font-size:1.35rem}
+.btn[aria-pressed="true"]{background:#173a5a;border-color:var(--accent)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+.hint{min-height:2.6rem;width:100%;max-width:34rem;border-radius:12px;background:var(--panel);border:1px dashed var(--line);padding:.45rem .8rem;color:var(--muted);font-size:.95rem;display:flex;align-items:center;gap:.5rem}
+.hint b{color:var(--text)}
+
+.whole{display:grid;grid-template-columns:1fr;gap:.45rem}
+.whole .btn{min-height:4.4rem;justify-content:flex-start;padding-left:1rem}
+.whole .g{font-size:1.7rem;width:2rem}
+.wt{display:flex;flex-direction:column;align-items:flex-start;gap:.1rem}
+.whole .t{font-size:1rem}
+.game{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.45rem}
+.game .btn{min-height:4rem}
+
+/* overlays */
+.overlay{position:fixed;inset:0;background:rgba(3,6,12,.78);display:grid;place-items:center;padding:1rem;z-index:20}
+.sheet{background:var(--panel);border:2px solid var(--line);border-radius:22px;width:min(40rem,100%);max-height:calc(100vh - 2rem);overflow:auto;padding:1.2rem 1.3rem;display:flex;flex-direction:column;gap:.9rem}
+.sheet h2{margin:0;font-family:var(--font-display);font-size:1.5rem}
+.sheet h3{margin:.3rem 0 0;font-family:var(--font-display);font-size:1rem;color:var(--accent)}
+.sheet p,.sheet li{color:var(--text);max-width:65ch}
+.sheet p{margin:0}
+.sheet ul{margin:0;padding-left:1.2rem;display:flex;flex-direction:column;gap:.3rem}
+kbd{font-family:var(--font-display);background:var(--raised);border:2px solid var(--line);border-bottom-width:3px;border-radius:7px;padding:.02rem .45rem;font-size:.9em}
+.keys{display:grid;grid-template-columns:auto 1fr;gap:.35rem .9rem;align-items:center}
+.opt{display:flex;flex-direction:column;gap:.4rem}
+.opt>span{font-weight:700}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:.4rem}
+.seg .btn{min-height:3rem;font-size:.95rem}
+.wide-sheet{width:min(56rem,100%)}
+.sheet>*{flex-shrink:0}
+.muted{color:var(--muted)!important}
+.cardwrap{overflow-x:auto;border:2px solid var(--line);border-radius:14px}
+.qcard{border-collapse:collapse;width:100%;min-width:44rem;font-size:.82rem}
+.qcard th,.qcard td{border:1px solid var(--line);padding:.4rem .45rem;vertical-align:top;text-align:left}
+.qcard thead th{background:var(--raised);font-family:var(--font-display);font-size:.78rem;text-align:center}
+.qcard tbody th{background:var(--raised);font-family:var(--font-display);white-space:nowrap}
+.qcard td b{display:block;color:var(--focus);font-family:var(--font-display)}
+.qcard td span{color:var(--text)}
+.qcard td.else b{color:var(--muted)}.qcard td.else span{color:var(--muted);font-size:.75rem}
+.qcard td.empty{color:var(--line);text-align:center}
+.binds{display:flex;flex-direction:column;gap:.35rem}
+.bind{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:.5rem;align-items:center;background:var(--bg);border-radius:12px;padding:.35rem .35rem .35rem .7rem}
+.bk{display:flex;flex-wrap:wrap;gap:.3rem;justify-content:flex-end}
+.bk .none{color:var(--muted);font-size:.85rem}
+.btn.kchip{min-height:2.6rem;flex-direction:row;gap:.4rem;font-family:var(--font-display);font-size:.9rem;padding:.2rem .7rem}
+.btn.kchip span{color:var(--muted);font-size:.8rem}
+.btn.add{min-height:2.6rem;font-size:.9rem;padding:.2rem .8rem}
+.btn.listen{min-height:2.6rem;font-size:.9rem;border-color:var(--focus);background:#3a3210;grid-column:1/-1}
+.btn.listen small{font-weight:400;color:var(--muted)}
+@media (max-width:620px){.bind{grid-template-columns:1fr auto}.bk{grid-column:1/-1;justify-content:flex-start}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* narrow: side cards move under the board, side by side */
+main.stacked .middle{order:-1;flex-basis:100%}
+@media (max-width:1000px){.stats{margin-left:0}}
+@media (max-width:620px){
+  .head-btns{width:100%}
+  .head-btns .btn{flex:1}
+  .board{gap:.25rem;--b:3.4rem}
+  .board .btn{border-radius:10px;padding:.15rem}
+  .board .btn .t{font-size:.62rem}
+  .board .btn .g{font-size:1.25rem}
+  .board .btn .alt{display:none}
+  .card{width:100%}
+}
+@media (prefers-reduced-motion:reduce){.btn{transition:none}.btn:active{transform:none}}
+</style>
+</head>
+<body>
+
+
+<div class="app" id="app">
+  <header>
+    <h1><span class="logo" aria-hidden="true"><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i><i style="background:#16a34a"></i><i style="background:#ffd60a"></i><i style="background:#1d6fe0"></i><i style="background:#f97316"></i><i style="background:#16a34a"></i><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i></span>RubeCube</h1>
+    <div class="stats">
+      <div class="stat"><span>Moves</span><b id="moves">0</b></div>
+      <div class="stat" id="timeStat"><span>Time</span><b id="time">0:00</b></div>
+      <div class="stat armed" id="armed" hidden><span>Next key</span><b>↺ reverse</b></div>
+    </div>
+    <div class="head-btns">
+      <button class="btn wide" id="helpBtn" type="button"><span class="g" aria-hidden="true">?</span>How to play</button>
+      <button class="btn wide" id="keysBtn" type="button"><span class="g" aria-hidden="true">⌨</span>Keys</button>
+      <button class="btn wide" id="setBtn" type="button"><span class="g" aria-hidden="true">⚙</span>Settings</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="card" aria-label="Turn the whole cube">
+      <h2>Turn whole cube</h2>
+      <div class="whole">
+        <button class="btn wide" type="button" data-move="y"><span class="g">⇇</span><span class="wt"><span class="t">Spin left</span><span class="alt">right-click: spin right</span></span></button>
+        <button class="btn wide" type="button" data-move="x"><span class="g">⤒</span><span class="wt"><span class="t">Tip up</span><span class="alt">right-click: tip down</span></span></button>
+        <button class="btn wide" type="button" data-move="z'"><span class="g">⟲</span><span class="wt"><span class="t">Roll left</span><span class="alt">right-click: roll right</span></span></button>
+      </div>
+    </section>
+
+    <section class="middle">
+      <div class="facing" id="facing"></div>
+      <div class="board" id="board" aria-label="Cube and turn buttons">
+      <button class="btn" type="button" data-move="F" style="grid-row:6;grid-column:1"><span class="g">↻</span><span class="t">Front</span><span class="alt">right-click ↺</span></button>
+      <button class="btn" type="button" data-move="L'" style="grid-row:6;grid-column:3"><span class="g">⬆</span><span class="t">Left</span><span class="alt">right-click ⬇</span></button>
+      <button class="btn" type="button" data-move="M'" style="grid-row:6;grid-column:4"><span class="g">⬆</span><span class="t">Middle</span><span class="alt">right-click ⬇</span></button>
+      <button class="btn" type="button" data-move="R" style="grid-row:6;grid-column:5"><span class="g">⬆</span><span class="t">Right</span><span class="alt">right-click ⬇</span></button>
+      <button class="btn" type="button" data-move="B'" style="grid-row:6;grid-column:6"><span class="g">↻</span><span class="t">Back</span><span class="alt">right-click ↺</span></button>
+      <button class="btn" type="button" data-move="U" style="grid-row:2;grid-column:1"><span class="g">⬅</span><span class="t">Top</span><span class="alt">right-click ➡</span></button>
+      <button class="btn" type="button" data-move="E'" style="grid-row:3;grid-column:1"><span class="g">⬅</span><span class="t">Middle</span><span class="alt">right-click ➡</span></button>
+      <button class="btn" type="button" data-move="D'" style="grid-row:4;grid-column:1"><span class="g">⬅</span><span class="t">Bottom</span><span class="alt">right-click ➡</span></button>
+        <div class="scene" id="scene"><div class="shadow"></div><div class="cube" id="cube"></div></div>
+        <div class="banner" id="banner" hidden>
+          <h2>Solved!</h2>
+          <p id="bannerText"></p>
+          <button class="btn wide" type="button" data-act="scramble"><span class="g" aria-hidden="true">⇄</span>Play again</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" aria-label="Game">
+      <h2>Game</h2>
+      <div class="game">
+        <button class="btn wide" type="button" data-act="undo" id="undoBtn"><span class="g" aria-hidden="true">↶</span>Undo</button>
+        <button class="btn wide" type="button" data-act="redo" id="redoBtn"><span class="g" aria-hidden="true">↷</span>Redo</button>
+        <button class="btn wide" type="button" data-act="scramble" id="scrambleBtn"><span class="g" aria-hidden="true">⇄</span><span class="lbl">Scramble</span></button>
+        <button class="btn wide" type="button" data-act="reset" id="resetBtn"><span class="g" aria-hidden="true">⟲</span><span class="lbl">Reset</span></button>
+      </div>
+      <div class="history" id="history" aria-hidden="true"></div>
+    </section>
+  </main>
+  <div class="sr" aria-live="polite" id="live"></div>
+</div>
+
+<div class="overlay" id="helpOv" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <h2 id="helpTitle">How to play</h2>
+    <p>Goal: make every side of the cube one solid color. Press <b>Scramble</b> to mix it up, then put it back.</p>
+    <h3>Turning pieces</h3>
+    <ul>
+      <li>The buttons around the cube act on its <b>front</b>, the side facing you.</li>
+      <li>The buttons below the cube move a column, the buttons on its left move a row, and the buttons in the bottom corners twist the front or back side.</li>
+      <li><b>Left click</b> turns it the way the big arrow points. <b>Right click</b> turns it the other way.</li>
+      <li>Point at any button first: the pieces it will move get a pink outline, so there are no surprises.</li>
+    </ul>
+    <h3>Seeing other sides</h3>
+    <p>Use <b>Turn whole cube</b> to spin, tip or roll it (right click goes the other way). This never counts as a move.</p>
+    <h3>No rush</h3>
+    <p>Every action is a single click or a single key. Nothing needs to be held, dragged or pressed together, and nothing times out. Made a mistake? <b>Undo</b> takes it back, as many times as you like. Your game is saved in this browser automatically.</p>
+    <h3>Keys and QuadStick</h3>
+    <p>With a QuadStick in mouse mode, puff on the center tube to click a button and sip on it to turn that button the other way. In keyboard mode, move the yellow frame, sip right (Enter) to press the framed button and soft sip center (Ctrl-C) to press it the other way. Change any key under <b>Keys</b>.</p>
+    <div class="keys" id="keysList"></div>
+    <button class="btn wide" type="button" data-close>Close</button>
+  </div>
+</div>
+
+<div class="overlay" id="setOv" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <h2 id="setTitle">Settings</h2>
+    <div class="opt"><span>Turn speed</span><div class="seg" data-set="speed">
+      <button class="btn" type="button" data-v="slow">Slow</button><button class="btn" type="button" data-v="normal">Normal</button><button class="btn" type="button" data-v="fast">Fast</button><button class="btn" type="button" data-v="instant">Instant</button></div></div>
+    <div class="opt"><span>Text size</span><div class="seg" data-set="text">
+      <button class="btn" type="button" data-v="m">Normal</button><button class="btn" type="button" data-v="l">Large</button><button class="btn" type="button" data-v="xl">Extra large</button></div></div>
+    <div class="opt"><span>Color letters on stickers (helps with color blindness)</span><div class="seg" data-set="labels">
+      <button class="btn" type="button" data-v="off">Off</button><button class="btn" type="button" data-v="on">On</button></div></div>
+    <div class="opt"><span>Show timer</span><div class="seg" data-set="timer">
+      <button class="btn" type="button" data-v="on">On</button><button class="btn" type="button" data-v="off">Off</button></div></div>
+    <div class="opt"><span>Show cube notation (R, U', …) on buttons</span><div class="seg" data-set="notation">
+      <button class="btn" type="button" data-v="on">On</button><button class="btn" type="button" data-v="off">Off</button></div></div>
+    <button class="btn wide" type="button" data-close>Done</button>
+  </div>
+</div>
+
+<div class="overlay" id="keysOv" hidden>
+  <div class="sheet wide-sheet" role="dialog" aria-modal="true" aria-labelledby="keysTitle">
+    <h2 id="keysTitle">Keys</h2>
+    <p>Each action takes a single key or mouse button, never a combination you have to hold. Keys act once per press: holding a key or a doubled signal won't turn the cube twice.</p>
+    <div class="opt"><span>Layout</span><div class="seg">
+      <button class="btn" type="button" id="presetQ">QuadStick card</button><button class="btn" type="button" id="presetL">Letter keys</button></div></div>
+    <h3>QuadStick card</h3>
+    <p class="muted">What each sip and puff sends, from the QuadStick card in BetterTalk, and what the cube does with it. If your QuadStick sends different keys, change them below.</p>
+    <div class="cardwrap"><table class="qcard" id="qcard"></table></div>
+    <div id="bindList"></div>
+    <button class="btn wide" type="button" data-close>Done</button>
+  </div>
+</div>
+
+<script>
+(()=>{
+const COLORS={W:'#f2f3ee',Y:'#ffd60a',G:'#16a34a',B:'#1d6fe0',R:'#dc2626',O:'#f97316'};
+const CNAME={W:'White',Y:'Yellow',G:'Green',B:'Blue',R:'Red',O:'Orange'};
+// logical axes: x right, y up, z toward viewer
+const DIRS=[[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+const FACE_TF=['rotateY(90deg)','rotateY(-90deg)','rotateX(90deg)','rotateX(-90deg)','','rotateY(180deg)'];
+const key=v=>v.join(',');
+const MOVES={
+  R:{k:[1,0,0],f:p=>p[0]===1}, L:{k:[-1,0,0],f:p=>p[0]===-1}, M:{k:[-1,0,0],f:p=>p[0]===0},
+  U:{k:[0,1,0],f:p=>p[1]===1}, D:{k:[0,-1,0],f:p=>p[1]===-1}, E:{k:[0,-1,0],f:p=>p[1]===0},
+  F:{k:[0,0,1],f:p=>p[2]===1}, B:{k:[0,0,-1],f:p=>p[2]===-1}, S:{k:[0,0,1],f:p=>p[2]===0},
+  x:{k:[1,0,0],f:()=>true}, y:{k:[0,1,0],f:()=>true}, z:{k:[0,0,1],f:()=>true}
+};
+const DESC={
+  "R":"<b>Right column up</b>","R'":"<b>Right column down</b>",
+  "L":"<b>Left column down</b>","L'":"<b>Left column up</b>",
+  "M":"<b>Middle column down</b>","M'":"<b>Middle column up</b>",
+  "U":"<b>Top row left</b>","U'":"<b>Top row right</b>",
+  "E":"<b>Middle row right</b>","E'":"<b>Middle row left</b>",
+  "D":"<b>Bottom row right</b>","D'":"<b>Bottom row left</b>",
+  "F":"<b>Front face clockwise</b> ↻","F'":"<b>Front face counter-clockwise</b> ↺",
+  "B":"<b>Back face counter-clockwise</b> ↺, as seen from the front","B'":"<b>Back face clockwise</b> ↻, as seen from the front",
+  "S":"<b>Middle slice clockwise</b>","S'":"<b>Middle slice counter-clockwise</b>",
+  "x":"<b>Tip whole cube up</b> (not counted as a move)","x'":"<b>Tip whole cube down</b> (not counted)",
+  "y":"<b>Spin whole cube left</b> (not counted)","y'":"<b>Spin whole cube right</b> (not counted)",
+  "z":"<b>Roll whole cube right</b> (not counted)","z'":"<b>Roll whole cube left</b> (not counted)"
+};
+const isRot=t=>'xyz'.includes(t[0]);
+const inv=t=>t.endsWith("'")?t.slice(0,-1):t+"'";
+const parse=t=>{const m=MOVES[t[0]];return {k:m.k,f:m.f,s:t.endsWith("'")?1:-1};}; // s = sin(angle); clockwise = -90°
+
+function rot(v,k,s){
+  const c=[k[1]*v[2]-k[2]*v[1],k[2]*v[0]-k[0]*v[2],k[0]*v[1]-k[1]*v[0]];
+  const d=k[0]*v[0]+k[1]*v[1]+k[2]*v[2];
+  return [0,1,2].map(i=>c[i]*s+k[i]*d+0);
+}
+function solvedState(){
+  const out=[];
+  for(let x=-1;x<=1;x++)for(let y=-1;y<=1;y++)for(let z=-1;z<=1;z++){
+    if(!x&&!y&&!z)continue;
+    const s={};
+    if(x===1)s['1,0,0']='R'; if(x===-1)s['-1,0,0']='O';
+    if(y===1)s['0,1,0']='W'; if(y===-1)s['0,-1,0']='Y';
+    if(z===1)s['0,0,1']='G'; if(z===-1)s['0,0,-1']='B';
+    out.push({p:[x,y,z],s});
+  }
+  return out;
+}
+
+// ---------- state ----------
+let cubies=solvedState();
+let history=[],redo=[],scrambled=false,timerStart=null,timerElapsed=0,armed=false,confirmAct=null,animating=false;
+const queue=[];
+const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on'};
+const SPEED={slow:520,normal:300,fast:140,instant:0};
+
+const $=id=>document.getElementById(id);
+const cubeEl=$('cube');
+
+// ---------- DOM ----------
+cubies.forEach(c=>{
+  const el=document.createElement('div');el.className='cubie';
+  c.faces=DIRS.map((d,i)=>{
+    const f=document.createElement('div');f.className='face';
+    f.style.transform=`${FACE_TF[i]} translateZ(calc(var(--s) / 2))`;
+    const st=document.createElement('div');st.className='st';f.appendChild(st);el.appendChild(f);return st;
+  });
+  c.el=el;cubeEl.appendChild(el);
+});
+
+const baseTf=c=>`translate3d(calc(var(--s) * ${c.p[0]}),calc(var(--s) * ${-c.p[1]}),calc(var(--s) * ${c.p[2]}))`;
+function render(){
+  cubies.forEach(c=>{
+    c.el.style.transform=baseTf(c);
+    DIRS.forEach((d,i)=>{
+      const col=c.s[key(d)],st=c.faces[i];
+      if(col){st.classList.add('on');st.style.backgroundColor=COLORS[col];st.dataset.l=col;}
+      else st.classList.remove('on');
+    });
+  });
+  const center=d=>cubies.find(c=>key(c.p)===key(d)).s[key(d)];
+  const chip=(name,d)=>{const col=center(d);return `<span class="chip"><span class="dot" style="background:${COLORS[col]}"></span>${name}: ${CNAME[col]}</span>`;};
+  $('facing').innerHTML=chip('Front',[0,0,1])+chip('Top',[0,1,0])+chip('Right',[1,0,0]);
+  applyPreview();
+}
+
+function applyMove(t){
+  const m=parse(t);
+  cubies.forEach(c=>{
+    if(!m.f(c.p))return;
+    c.p=rot(c.p,m.k,m.s);
+    const ns={};for(const k in c.s){ns[key(rot(k.split(',').map(Number),m.k,m.s))]=c.s[k];}
+    c.s=ns;
+  });
+}
+function isSolved(){
+  return DIRS.every(d=>{const k=key(d);const cols=new Set(cubies.filter(c=>c.s[k]).map(c=>c.s[k]));return cols.size===1;});
+}
+
+// ---------- animation queue ----------
+function animate(t,dur){
+  return new Promise(res=>{
+    const m=parse(t),aff=cubies.filter(c=>m.f(c.p)),target=m.s*90;
+    if(!dur){applyMove(t);render();return res();}
+    const t0=performance.now();
+    const frame=now=>{
+      const u=Math.min(1,(now-t0)/dur),e=u<.5?2*u*u:1-Math.pow(-2*u+2,2)/2,a=target*e;
+      aff.forEach(c=>{c.el.style.transform=`rotate3d(${m.k[0]},${-m.k[1]},${m.k[2]},${-a}deg) ${baseTf(c)}`;});
+      if(u<1)requestAnimationFrame(frame);else{applyMove(t);render();res();}
+    };
+    requestAnimationFrame(frame);
+  });
+}
+async function pump(){
+  if(animating)return;animating=true;
+  while(queue.length){
+    const job=queue.shift();
+    if(typeof job==='function')job();
+    else{
+      const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let dur=reduce?0:SPEED[settings.speed];
+      if(queue.length>2)dur=Math.min(dur,90); // catch up if many presses are waiting
+      await animate(job,dur);
+      afterMove(job);
+    }
+  }
+  animating=false;
+}
+function afterMove(t){
+  if(scrambled&&!isRot(t)&&isSolved()){
+    timerElapsed=elapsed();timerStart=null;scrambled=false;
+    const n=countMoves();
+    $('bannerText').textContent=`${n} move${n===1?'':'s'}${settings.timer==='on'?' in '+fmt(timerElapsed):''}. Nicely done.`;
+    $('banner').hidden=false;
+    say('Solved! Congratulations.');
+  }
+  save();updateStats();
+}
+
+// ---------- actions ----------
+function doMove(t){
+  clearConfirm();$('banner').hidden=true;
+  history.push(t);redo=[];
+  if(scrambled&&timerStart===null&&!isRot(t))timerStart=Date.now()-timerElapsed;
+  queue.push(t);pump();updateStats();announce(t);
+}
+function undo(){
+  clearConfirm();if(!history.length)return;
+  const t=history.pop();redo.push(t);queue.push(inv(t));pump();updateStats();say('Undo');
+}
+function redoMove(){
+  clearConfirm();if(!redo.length)return;
+  const t=redo.pop();history.push(t);queue.push(t);pump();updateStats();announce(t);
+}
+function needsConfirm(act){
+  if(scrambled&&countMoves()>0&&confirmAct!==act){
+    clearConfirm();confirmAct=act;
+    const b=$(act+'Btn');b.classList.add('confirm');b.querySelector('.lbl').textContent='Click again to confirm';
+    say('Your current game will be lost. Press again to confirm.');
+    return true;
+  }
+  clearConfirm();return false;
+}
+function clearConfirm(){
+  confirmAct=null;
+  [['scramble','Scramble'],['reset','Reset']].forEach(([a,l])=>{const b=$(a+'Btn');b.classList.remove('confirm');b.querySelector('.lbl').textContent=l;});
+}
+function scramble(){
+  if(needsConfirm('scramble'))return;
+  $('banner').hidden=true;
+  queue.push(()=>{
+    cubies.forEach((c,i)=>{const s=solvedState()[i];c.p=s.p;c.s=s.s;});
+    const faces='RLUDFB',axisOf={R:0,L:0,U:1,D:1,F:2,B:2};let last='',prevAxis=-1,list=[];
+    while(list.length<22){
+      const f=faces[Math.floor(Math.random()*6)];
+      if(f===last)continue;
+      if(axisOf[f]===prevAxis&&list.length>1&&axisOf[list[list.length-2][0]]===prevAxis)continue;
+      const t=f+(Math.random()<.5?"'":"");list.push(t);applyMove(t);last=f;prevAxis=axisOf[f];
+    }
+    if(isSolved())applyMove('R');
+    history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;
+    render();save();updateStats();
+    $('history').textContent='';
+    say('Cube scrambled. Good luck!');
+  });
+  pump();
+}
+function reset(){
+  if(needsConfirm('reset'))return;
+  $('banner').hidden=true;
+  queue.push(()=>{
+    cubies.forEach((c,i)=>{const s=solvedState()[i];c.p=s.p;c.s=s.s;});
+    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;
+    render();save();updateStats();say('Cube reset to solved.');
+  });
+  pump();
+}
+
+// ---------- stats ----------
+const countMoves=()=>history.filter(t=>!isRot(t)).length;
+const elapsed=()=>timerStart!==null?Date.now()-timerStart:timerElapsed;
+function fmt(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);
+  return h?`${h}:${String(m%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:`${m}:${String(s%60).padStart(2,'0')}`;}
+function updateStats(){
+  $('moves').textContent=countMoves();
+  $('time').textContent=fmt(elapsed());
+  $('undoBtn').disabled=!history.length;$('redoBtn').disabled=!redo.length;
+  $('history').textContent=history.slice(-14).join('  ');
+  $('armed').hidden=!armed;
+}
+setInterval(()=>{if(timerStart!==null)$('time').textContent=fmt(elapsed());},250);
+
+// ---------- preview highlight ----------
+let hoverTok=null,focusTok=null;
+function applyPreview(){
+  const t=hoverTok||focusTok;
+  cubeEl.classList.toggle('previewing',!!t&&!isRot(t)); // whole-cube turns move everything, so no outline
+  const f=t&&!isRot(t)?MOVES[t[0]].f:null;
+  cubies.forEach(c=>c.el.classList.toggle('hl',!!f&&f(c.p)));
+}
+document.querySelectorAll('[data-move]').forEach(b=>{
+  const t=b.dataset.move;
+  b.setAttribute('aria-label',DESC[t].replace(/<[^>]+>/g,''));
+  b.addEventListener('click',()=>{if(pointerOk(b))doMove(t);});
+  b.addEventListener('mouseenter',()=>{hoverTok=t;applyPreview();});
+  b.addEventListener('mouseleave',()=>{hoverTok=null;applyPreview();});
+  b.addEventListener('focus',()=>{if(b.matches(':focus-visible')){focusTok=t;applyPreview();}});
+  b.addEventListener('blur',()=>{focusTok=null;applyPreview();});
+  b.querySelectorAll('.g').forEach(g=>g.setAttribute('aria-hidden','true'));
+});
+document.querySelectorAll('[data-act]').forEach(b=>b.addEventListener('click',()=>{
+  if(!pointerOk(b))return;
+  ({undo,redo:redoMove,scramble,reset})[b.dataset.act]();
+}));
+
+// ---------- announcements ----------
+const live=$('live');
+function say(s){live.textContent='';setTimeout(()=>live.textContent=s,30);}
+function announce(t){say(DESC[t].replace(/<[^>]+>/g,''));}
+
+// ---------- overlays ----------
+let openOv=null,lastFocus=null;
+function openOverlay(id){closeOverlay();renderKeys();openOv=$(id);lastFocus=document.activeElement;openOv.hidden=false;openOv.querySelector('[data-close]').focus({preventScroll:true});openOv.querySelector('.sheet').scrollTop=0;}
+function closeOverlay(){if(!openOv)return;capture=null;openOv.hidden=true;openOv=null;if(lastFocus)lastFocus.focus();}
+$('helpBtn').onclick=()=>openOverlay('helpOv');
+$('setBtn').onclick=()=>openOverlay('setOv');
+document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeOverlay);
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)closeOverlay();}));
+
+// ---------- settings ----------
+function applySettings(){
+  const root=document.documentElement;
+  root.classList.toggle('text-l',settings.text==='l');root.classList.toggle('text-xl',settings.text==='xl');
+  cubeEl.classList.toggle('labels',settings.labels==='on');
+  $('app').classList.toggle('no-notation',settings.notation==='off');
+  $('timeStat').hidden=settings.timer==='off';
+  document.querySelectorAll('[data-set]').forEach(g=>g.querySelectorAll('[data-v]').forEach(b=>b.setAttribute('aria-pressed',String(settings[g.dataset.set]===b.dataset.v))));
+  sizeCube();render();
+}
+document.querySelectorAll('[data-set]').forEach(g=>g.querySelectorAll('[data-v]').forEach(b=>b.addEventListener('click',()=>{
+  settings[g.dataset.set]=b.dataset.v;applySettings();save();
+})));
+
+// ---------- keys: rebindable, QuadStick-safe (single press, no repeats, debounced) ----------
+// Layout and input rules follow the QuadStick card and InputGate in BetterTalk.
+const TURN_IDS=["R","R'","L'","L","M'","M","U","U'","E'","E","D'","D","F","F'","B","B'","S","S'"];
+const WHOLE_IDS=["y","y'","x","x'","z'","z"];
+const plain=t=>DESC[t].replace(/<[^>]+>/g,'').replace(/ \(not counted.*\)/,'');
+const ACTION_GROUPS=[
+  ['Move the yellow frame',[['focusUp','Move frame up'],['focusDown','Move frame down'],['focusLeft','Move frame left'],['focusRight','Move frame right'],
+    ['focusNext','Move frame to the next button'],['focusPrev','Move frame to the previous button'],['select','Press the framed button'],['selectReverse','Press the framed button the other way'],['cancel','Cancel or close']]],
+  ['Turn a row, column or side',[...TURN_IDS.map(t=>['turn:'+t,plain(t)]),['reverseNext','Reverse the next turn key']]],
+  ['Turn the whole cube',WHOLE_IDS.map(t=>['turn:'+t,plain(t)])],
+  ['Game',[['undo','Undo'],['redo','Redo'],['scramble','Scramble'],['reset','Reset'],['help','Open How to play'],['settings','Open Settings'],['keys','Open Keys']]]
+];
+const ACTION_LABEL={};ACTION_GROUPS.forEach(([,list])=>list.forEach(([id,l])=>ACTION_LABEL[id]=l));
+const LETTERS={R:'turn:R',L:'turn:L',U:'turn:U',D:'turn:D',F:'turn:F',B:'turn:B',M:'turn:M',E:'turn:E',S:'turn:S',
+  I:'reverseNext',"'":'reverseNext',Z:'undo',Y:'redo',N:'scramble',H:'help',Escape:'cancel'};
+const PRESETS={
+  quadstick:{...LETTERS,ArrowUp:'focusUp',ArrowDown:'focusDown',ArrowLeft:'focusLeft',ArrowRight:'focusRight',
+    Tab:'focusNext','Shift+Tab':'focusPrev',Enter:'select',Backspace:'undo',Delete:'redo',Escape:'cancel',
+    'Ctrl+X':'turn:y','Ctrl+C':'selectReverse','Ctrl+V':"turn:y'"},
+  letters:{...LETTERS,ArrowLeft:'turn:y',ArrowRight:"turn:y'",ArrowUp:'turn:x',ArrowDown:"turn:x'",Q:"turn:z'",W:'turn:z',
+    Backspace:'undo',Enter:'select'}
+};
+// BetterTalk's default QuadStick card: what each sip/puff on each tube sends to the PC.
+const TUBES=['Left','Left+Center','Center','Right+Center','Right','Side'];
+const GESTURES=['Soft puff','Puff','Sip','Soft sip'];
+const CARD={
+  'Soft puff|Center':{k:'MiddleClick'},'Soft puff|Right':{k:'Delete'},'Soft puff|Side':{n:'On-screen keyboard'},
+  'Puff|Left':{k:'Tab'},'Puff|Center':{k:'LeftClick'},'Puff|Right':{k:'Backspace'},'Puff|Side':{n:'MODE −'},
+  'Sip|Left':{k:'Escape'},'Sip|Left+Center':{n:'Windows key'},'Sip|Center':{k:'RightClick'},'Sip|Right':{k:'Enter'},'Sip|Side':{n:'MODE +'},
+  'Soft sip|Left':{k:'Ctrl+X'},'Soft sip|Center':{k:'Ctrl+C'},'Soft sip|Right+Center':{n:'Ctrl+Alt+Delete'},'Soft sip|Right':{k:'Ctrl+V'},'Soft sip|Side':{n:'Dictation microphone'}
+};
+
+
+const KEY_SHOW={ArrowUp:'↑',ArrowDown:'↓',ArrowLeft:'←',ArrowRight:'→',Escape:'Esc',Space:'Space',
+  MiddleClick:'Middle click',RightClick:'Right click',LeftClick:'Left click',SideButton1:'Side button 1',SideButton2:'Side button 2',
+  PageUp:'Page Up',PageDown:'Page Down'};
+const showKey=k=>KEY_SHOW[k]||k.replace(/^Ctrl\+/,'Ctrl-').replace(/^Shift\+/,'Shift-');
+function keyName(e){
+  let k=e.key;
+  if(['Shift','Control','Alt','Meta','CapsLock','Dead','Unidentified','Process'].includes(k))return null;
+  if(k===' ')k='Space';else if(k.length===1)k=k.toUpperCase();
+  const mods=[];if(e.ctrlKey)mods.push('Ctrl');if(e.altKey)mods.push('Alt');if(e.metaKey)mods.push('Meta');
+  if(e.shiftKey&&k.length>1)mods.push('Shift');
+  return [...mods,k].join('+');
+}
+const keysFor=a=>Object.keys(settings.keys).filter(k=>settings.keys[k]===a);
+
+// gate: a key acts once per press, never on auto-repeat, not right after the window regains focus,
+// and the same action can't fire twice within a short debounce (sip/puff bounce, doubled USB+Bluetooth)
+const downCodes=new Set(),lastFired={};let focusAt=performance.now()-1000;
+window.addEventListener('focus',()=>{focusAt=performance.now();downCodes.clear();});
+window.addEventListener('blur',()=>downCodes.clear());
+function fire(action){
+  const now=performance.now(),deb=action.startsWith('focus')?120:300;
+  if(lastFired[action]&&now-lastFired[action]<deb)return;
+  lastFired[action]=now;run(action);
+}
+function run(a){
+  if(openOv&&!/^(focus|select|cancel)/.test(a))return;
+  if(a.startsWith('focus'))return moveFocus(a.slice(5).toLowerCase());
+  if(a==='select'){const el=document.activeElement;if(el&&el.tagName==='BUTTON'&&scopeButtons().includes(el))el.click();else moveFocus('next');return;}
+  if(a==='selectReverse'){const el=document.activeElement;if(el&&el.dataset&&el.dataset.move&&scopeButtons().includes(el))doMove(inv(el.dataset.move));else if(el&&el.tagName==='BUTTON'&&scopeButtons().includes(el))el.click();else moveFocus('next');return;}
+  if(a==='cancel'){if(openOv)closeOverlay();else{clearConfirm();armed=false;$('banner').hidden=true;updateStats();}return;}
+  if(a==='reverseNext'){armed=!armed;updateStats();say(armed?'Next turn will be reversed':'Reverse cancelled');return;}
+  if(a.startsWith('turn:')){let t=a.slice(5);if(!isRot(t)&&armed){t=inv(t);armed=false;}doMove(t);updateStats();return;}
+  ({undo,redo:redoMove,scramble,reset,help:()=>openOverlay('helpOv'),settings:()=>openOverlay('setOv'),keys:()=>openOverlay('keysOv')})[a]?.();
+}
+function handleName(name,e){
+  if(capture){return;}
+  const a=settings.keys[name];if(!a)return false;
+  if(e)e.preventDefault();
+  if(performance.now()-focusAt<400)return true;
+  fire(a);return true;
+}
+document.addEventListener('keydown',e=>{
+  const name=keyName(e);if(!name)return;
+  if(capture){e.preventDefault();if(name==='Escape')stopCapture();else bindKey(name);return;}
+  if(!settings.keys[name])return;
+  e.preventDefault();
+  if(e.repeat||downCodes.has(e.code))return;
+  downCodes.add(e.code);
+  handleName(name,null);
+});
+document.addEventListener('keyup',e=>downCodes.delete(e.code));
+
+// mouse: right click on a turn button turns it the other way; middle and side buttons can be bound
+document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('contextmenu',e=>{
+  e.preventDefault();if(!pointerOk(b))return;doMove(inv(b.dataset.move));
+}));
+const MOUSE_NAMES={1:'MiddleClick',3:'SideButton1',4:'SideButton2'};
+document.addEventListener('mousedown',e=>{if(MOUSE_NAMES[e.button]&&(capture||settings.keys[MOUSE_NAMES[e.button]]))e.preventDefault();});
+document.addEventListener('mouseup',e=>{
+  const name=MOUSE_NAMES[e.button];if(!name)return;
+  if(capture){e.preventDefault();bindKey(name);return;}
+  if(settings.keys[name]){e.preventDefault();handleName(name,null);}
+});
+const lastPointer=new WeakMap();
+function pointerOk(el){const now=performance.now(),l=lastPointer.get(el)||0;if(now-l<250)return false;lastPointer.set(el,now);return true;}
+
+// yellow focus frame
+function scopeButtons(){
+  const root=openOv||$('app');
+  return [...root.querySelectorAll('button')].filter(b=>!b.disabled&&b.offsetParent!==null);
+}
+function moveFocus(dir){
+  const list=scopeButtons();if(!list.length)return;
+  const cur=document.activeElement;
+  const go=b=>{b.focus();b.scrollIntoView({block:'nearest',inline:'nearest'});};
+  if(!list.includes(cur)){go(openOv?list[0]:(list.find(b=>b.dataset.move==='R')||list[0]));return;}
+  if(dir==='next'||dir==='prev'){const i=list.indexOf(cur);go(list[(i+(dir==='next'?1:-1)+list.length)%list.length]);return;}
+  const r=cur.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;
+  let best=null,bs=Infinity;
+  for(const b of list){if(b===cur)continue;
+    const q=b.getBoundingClientRect(),x=q.left+q.width/2-cx,y=q.top+q.height/2-cy;
+    const [main,side]=dir==='left'?[-x,y]:dir==='right'?[x,y]:dir==='up'?[-y,x]:[y,x];
+    if(main<=4)continue;const sc=main+2.5*Math.abs(side);if(sc<bs){bs=sc;best=b;}}
+  if(best)go(best);
+}
+
+// keybind mode (Keys sheet)
+let capture=null;
+function bindKey(name){
+  const a=capture;stopCapture(false);if(!a)return;
+  settings.keys[name]=a;save();renderKeys();say(`${showKey(name)} now does: ${ACTION_LABEL[a]}`);
+  const btn=document.querySelector(`[data-add="${a}"]`);if(btn)btn.focus();
+}
+function startCapture(a){capture=a;renderKeys();}
+function stopCapture(rerender=true){capture=null;if(rerender)renderKeys();}
+function samePreset(p){const a=settings.keys,b=PRESETS[p];const ka=Object.keys(a),kb=Object.keys(b);return ka.length===kb.length&&kb.every(k=>a[k]===b[k]);}
+function cardCell(id){
+  const c=CARD[id];if(!c)return '<td class="empty">—</td>';
+  if(c.n)return `<td class="else"><b>${c.n}</b><span>Stays with the QuadStick</span></td>`;
+  let does;
+  if(c.k==='LeftClick')does='Presses the button under the pointer';
+  else if(c.k==='RightClick')does='Turns the pointed button the other way';
+  else does=settings.keys[c.k]?ACTION_LABEL[settings.keys[c.k]]:'<i>Not used here</i>';
+  return `<td><b>${showKey(c.k)}</b><span>${does}</span></td>`;
+}
+function renderKeys(){
+  $('presetQ').setAttribute('aria-pressed',String(samePreset('quadstick')));
+  $('presetL').setAttribute('aria-pressed',String(samePreset('letters')));
+  $('qcard').innerHTML='<thead><tr><th></th>'+TUBES.map(t=>`<th>${t}</th>`).join('')+'</tr></thead><tbody>'+
+    GESTURES.map(g=>`<tr><th>${g}</th>${TUBES.map(t=>cardCell(g+'|'+t)).join('')}</tr>`).join('')+'</tbody>';
+  $('bindList').innerHTML=ACTION_GROUPS.map(([g,list])=>`<h3>${g}</h3><div class="binds">`+list.map(([id,l])=>{
+    const ks=keysFor(id);
+    return `<div class="bind"><span class="bl">${l}</span><span class="bk">${ks.map(k=>`<button class="btn kchip" type="button" data-unbind="${k.replace(/"/g,'&quot;')}" aria-label="Remove ${showKey(k)} from ${l}">${showKey(k)} <span aria-hidden="true">✕</span></button>`).join('')||'<span class="none">No key</span>'}</span>`+
+      (capture===id?`<button class="btn listen" type="button" data-stop>Press a key or mouse button… <small>Esc or click here to stop</small></button>`
+        :`<button class="btn add" type="button" data-add="${id}">+ Key</button>`)+`</div>`;
+  }).join('')+'</div>').join('');
+  $('keysList').innerHTML=ACTION_GROUPS.flatMap(([,list])=>list).filter(([id])=>keysFor(id).length)
+    .map(([id,l])=>`<span>${keysFor(id).map(k=>`<kbd>${showKey(k)}</kbd>`).join(' ')}</span><span>${l}</span>`).join('');
+}
+$('bindList').addEventListener('click',e=>{
+  const add=e.target.closest('[data-add]'),un=e.target.closest('[data-unbind]'),st=e.target.closest('[data-stop]');
+  if(st){stopCapture();return;}
+  if(capture)return;
+  if(add){startCapture(add.dataset.add);setTimeout(()=>{const l=document.querySelector('[data-stop]');if(l)l.focus();},0);}
+  if(un){const k=un.dataset.unbind;delete settings.keys[k];save();renderKeys();say(`${showKey(k)} removed`);}
+});
+$('presetQ').onclick=()=>{settings.keys={...PRESETS.quadstick};save();renderKeys();say('QuadStick card layout');};
+$('presetL').onclick=()=>{settings.keys={...PRESETS.letters};save();renderKeys();say('Letter keys layout');};
+$('keysBtn').onclick=()=>openOverlay('keysOv');
+
+// ---------- sizing ----------
+function sizeCube(){
+  const board=$('board'),main=$('main'),rem=parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const b=board.querySelector('[data-move="U"]').getBoundingClientRect().width||4.6*rem;
+  const gap=parseFloat(getComputedStyle(board).columnGap)||6;
+  const vw=main.clientWidth,cardW=document.querySelector('.card').getBoundingClientRect().width;
+  const fixedW=b+5*gap,minS=60;
+  const side=vw-2*cardW-2*1.2*rem;
+  const stacked=side<fixedW+4.33*minS*1.15;
+  main.classList.toggle('stacked',stacked);
+  const availW=(stacked?vw:side)-fixedW;
+  const headH=document.querySelector('header').getBoundingClientRect().height;
+  const availH=window.innerHeight-headH-fixedW-6.5*rem;
+  const s=Math.max(30,Math.min(125,availW/4.33,Math.max(availH/4.18,stacked?48:minS)));
+  document.documentElement.style.setProperty('--s',s.toFixed(1)+'px');
+}
+window.addEventListener('resize',sizeCube);
+
+// ---------- persistence ----------
+const STORE='easy-reach-cube-v1';
+function save(){
+  try{localStorage.setItem(STORE,JSON.stringify({c:cubies.map(c=>({p:c.p,s:c.s})),history,redo,scrambled,elapsed:elapsed(),running:timerStart!==null,settings}));}catch(e){}
+}
+function load(){
+  try{
+    const d=JSON.parse(localStorage.getItem(STORE)||'null');if(!d)return;
+    if(d.settings)Object.assign(settings,d.settings);
+    if(Array.isArray(d.c)&&d.c.length===26){d.c.forEach((x,i)=>{cubies[i].p=x.p;cubies[i].s=x.s;});
+      history=d.history||[];redo=d.redo||[];scrambled=!!d.scrambled;timerElapsed=d.elapsed||0;timerStart=d.running?Date.now()-timerElapsed:null;}
+  }catch(e){}
+}
+window.addEventListener('beforeunload',save);
+
+load();
+if(!settings.keys||(settings.keys['Ctrl+C']==='turn:x'&&settings.keys.Tab==='focusNext'))settings.keys={...PRESETS.quadstick}; // first run, or the earlier QuadStick layout
+applySettings();updateStats();
+if(!scrambled&&!history.length&&isSolved()){
+  // open in a playable state: first visit starts scrambled
+  try{if(!localStorage.getItem(STORE))scramble();}catch(e){scramble();}
+}
+window.__cube={cubies,applyMove,isSolved,doMove};
+})();
+</script>
+
+</body>
+</html>
