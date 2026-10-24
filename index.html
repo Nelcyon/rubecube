@@ -208,9 +208,9 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <button class="btn" type="button" data-move="U"><span class="g">⬅</span><span class="t">Top</span><span class="alt">right-click ➡</span></button>
       <button class="btn" type="button" data-move="E'"><span class="g">⬅</span><span class="t">Middle</span><span class="alt">right-click ➡</span></button>
       <button class="btn" type="button" data-move="D'"><span class="g">⬅</span><span class="t">Bottom</span><span class="alt">right-click ➡</span></button>
-      <button class="btn" type="button" data-move="B'"><span class="g">↻</span><span class="t">Back</span><span class="alt">right-click ↺</span></button>
-      <button class="btn" type="button" data-move="S"><span class="g">↻</span><span class="t">Mid slice</span><span class="alt">right-click ↺</span></button>
-      <button class="btn" type="button" data-move="F"><span class="g">↻</span><span class="t">Front</span><span class="alt">right-click ↺</span></button>
+      <button class="btn" type="button" data-move="B"><span class="g">↺</span><span class="t">Back</span><span class="alt">right-click ↻</span></button>
+      <button class="btn" type="button" data-move="S'"><span class="g">↺</span><span class="t">Mid slice</span><span class="alt">right-click ↻</span></button>
+      <button class="btn" type="button" data-move="F'"><span class="g">↺</span><span class="t">Front</span><span class="alt">right-click ↻</span></button>
         <div class="scene" id="scene"><div class="shadow"></div><div class="cube" id="cube"></div></div>
         <div class="banner" id="banner" hidden>
           <h2>Solved!</h2>
@@ -539,7 +539,7 @@ document.querySelectorAll('[data-set]').forEach(g=>g.querySelectorAll('[data-v]'
 
 // ---------- keys: rebindable, QuadStick-safe (single press, no repeats, debounced) ----------
 // Layout and input rules follow the QuadStick card and InputGate in BetterTalk.
-const TURN_IDS=["R","R'","L'","L","M'","M","U","U'","E'","E","D'","D","F","F'","B","B'","S","S'"];
+const TURN_IDS=["R","R'","L'","L","M'","M","U","U'","E'","E","D'","D","F'","F","B","B'","S'","S"];
 const WHOLE_IDS=["y","y'","x","x'","z'","z"];
 const plain=t=>DESC[t].replace(/<[^>]+>/g,'').replace(/ \(not counted.*\)/,'');
 const ACTION_GROUPS=[
@@ -550,7 +550,7 @@ const ACTION_GROUPS=[
   ['Game',[['undo','Undo'],['redo','Redo'],['scramble','Scramble'],['reset','Reset'],['help','Open How to play'],['settings','Open Settings'],['keys','Open Keys']]]
 ];
 const ACTION_LABEL={};ACTION_GROUPS.forEach(([,list])=>list.forEach(([id,l])=>ACTION_LABEL[id]=l));
-const LETTERS={R:'turn:R',L:'turn:L',U:'turn:U',D:'turn:D',F:'turn:F',B:'turn:B',M:'turn:M',E:'turn:E',S:'turn:S',
+const LETTERS={R:'turn:R',L:'turn:L',U:'turn:U',D:'turn:D',F:"turn:F'",B:'turn:B',M:'turn:M',E:'turn:E',S:"turn:S'",
   I:'reverseNext',"'":'reverseNext',Z:'undo',Y:'redo',N:'scramble',H:'help',Escape:'cancel'};
 const PRESETS={
   quadstick:{...LETTERS,ArrowUp:'focusUp',ArrowDown:'focusDown',ArrowLeft:'focusLeft',ArrowRight:'focusRight',
@@ -751,14 +751,14 @@ function layoutBoard(){
   [["L'",-1],["M'",0],['R',1]].forEach(([m,x])=>along(m,P(x-.5,-1.5,1.5),P(x+.5,-1.5,1.5),down));
   // depth slices: under the right face's bottom edge, front to back (that face is narrow, so these are taller)
   const downR=unit(sub(P(1.5,-1.5,0),P(1.5,1.5,0)));
-  [['F',1],['S',0],["B'",-1]].forEach(([m,z])=>along(m,P(1.5,-1.5,z+.5),P(1.5,-1.5,z-.5),downR,b*1.2));
+  [["F'",1],["S'",0],['B',-1]].forEach(([m,z])=>along(m,P(1.5,-1.5,z+.5),P(1.5,-1.5,z-.5),downR,b*1.2));
   probe.remove();
   // whole-cube turns sit one ring further out: spin beside the middle row,
   // tip under the Left/Middle columns, roll beyond the Mid slice/Back slices
   const by=m=>placed.find(q=>q.el===btn(m));
   const E=by("E'");put(btn('y'),add(E.p,E.u,-(1+gap/b)),E.u,E.v);
   const L=by("L'"),M=by("M'");put(btn('x'),add(add(L.p,sub(M.p,L.p),.5),down,b+gap),L.u,L.v);
-  const S=by('S'),B=by("B'");put(btn("z'"),add(add(S.p,sub(B.p,S.p),.5),downR,b*1.2+gap),add(S.u,unit(S.u),Math.max(0,b-len(S.u))),S.v);
+  const S=by("S'"),B=by('B');put(btn("z'"),add(add(S.p,sub(B.p,S.p),.5),downR,b*1.2+gap),add(S.u,unit(S.u),Math.max(0,b-len(S.u))),S.v);
   // bounding box of cube faces and buttons
   let l=Infinity,t=Infinity,r=-Infinity,bt=-Infinity;
   const grow=(x1,y1,x2,y2)=>{l=Math.min(l,x1);t=Math.min(t,y1);r=Math.max(r,x2);bt=Math.max(bt,y2);};
