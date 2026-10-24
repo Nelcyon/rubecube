@@ -198,6 +198,7 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
   padding:1rem 1.4rem;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:.6rem;align-items:center;width:max-content;max-width:calc(100% - 2rem)}
 .banner h2{margin:0;font-family:var(--font-display);font-size:1.6rem;color:var(--good)}
 .banner p{margin:0;color:var(--muted)}
+.banner p.saved{color:var(--text);font-weight:600}
 
 /* side cards */
 .card{background:var(--panel);border:2px solid var(--line);border-radius:20px;padding:.9rem;display:flex;flex-direction:column;gap:.7rem;width:14.5rem}
@@ -350,10 +351,12 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         <div class="banner" id="banner" hidden>
           <h2>Solved!</h2>
           <p id="bannerText"></p>
+          <p id="bannerSaved" class="saved" hidden></p>
           <div class="row">
-          <button class="btn wide" type="button" data-act="scramble" id="againBtn"><span class="g" aria-hidden="true">⇄</span>Play again</button>
-          <button class="btn wide" type="button" id="chalAgain" hidden><span class="g" aria-hidden="true">★</span><span class="lbl">Same level again</span></button>
           <button class="btn wide" type="button" id="chalNext" hidden><span class="g" aria-hidden="true">▲</span>Next level</button>
+          <button class="btn wide" type="button" id="chalAgain" hidden><span class="g" aria-hidden="true">★</span><span class="lbl">Same level again</span></button>
+          <button class="btn wide" type="button" data-act="scramble" id="againBtn"><span class="g" aria-hidden="true">⇄</span><span class="lbl">Play again</span></button>
+          <button class="btn wide" type="button" id="bannerClose"><span class="g" aria-hidden="true">✕</span>Close</button>
           </div>
         </div>
       </div>
@@ -522,6 +525,7 @@ function solvedState(){
 let cubies=solvedState();
 let history=[],redo=[],scrambled=false,timerStart=null,timerElapsed=0,armed=false,confirmAct=null,animating=false;
 let chal=null; // {level,par,spent}: a challenge game in progress
+let chalDone=null; // the challenge just won: its score stays on the bar until the next game or turn
 const record={solved:0,best:{}}; // games solved without help, and the best medal per challenge level
 const queue=[];
 const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on',hand:'left'};
@@ -926,19 +930,25 @@ function afterMove(t){
     const b=$('banner');b.classList.remove('gold','silver','bronze');
     if(chal){
       const c=chal,m=medalFor(c.par,c.spent),pl=n=>`${n} move${n===1?'':'s'}`;
-      if(m&&RANK[m]>RANK[record.best[c.level]||''])record.best[c.level]=m;
+      const prev=record.best[c.level];
+      if(m&&RANK[m]>RANK[prev||''])record.best[c.level]=m;
+      chalDone={level:c.level,par:c.par,spent:c.spent};
+      // the result is saved right here, so nothing done from the banner can lose it
+      const best=record.best[c.level],nm=x=>x[0].toUpperCase()+x.slice(1);
+      $('bannerSaved').textContent=!m?'':best===m&&prev!==m?`Saved: ${nm(m)} is now your best on level ${c.level}.`:`Saved. Your best on level ${c.level} is ${nm(best)}.`;
+      $('bannerSaved').hidden=!m;
       if(m)b.classList.add(m);
       b.querySelector('h2').textContent=m==='gold'?'Gold! Perfect score':m?`${m[0].toUpperCase()+m.slice(1)} medal`:'Solved!';
       $('bannerText').textContent=m==='gold'?`Level ${c.level}: ${pl(c.spent)}${time}, the fewest possible.`
         :`Level ${c.level}: ${pl(c.spent)}${time}. Par is ${c.par}${m==='silver'?'; gold needs exactly par.':m==='bronze'?`; silver is ${tiers(c.par).silver} or fewer.`:`; bronze is ${tiers(c.par).bronze} or fewer.`}`;
-      $('chalAgain').hidden=false;$('chalNext').hidden=c.level>=LEVELS.length;
+      $('chalAgain').hidden=false;$('chalNext').hidden=c.level>=LEVELS.length;$('againBtn').querySelector('.lbl').textContent='Free play';
       say((m?m+' medal. ':'Solved. ')+$('bannerText').textContent);
       chalLast=c.level;chal=null;
     }else{
       b.querySelector('h2').textContent='Solved!';
       const n=countMoves();
       $('bannerText').textContent=`${n} move${n===1?'':'s'}${time}. Nicely done.`;
-      $('chalAgain').hidden=true;$('chalNext').hidden=true;
+      $('chalAgain').hidden=true;$('chalNext').hidden=true;$('bannerSaved').hidden=true;$('againBtn').querySelector('.lbl').textContent='Play again';
       say('Solved! Congratulations.');
     }
     b.hidden=false;
@@ -949,7 +959,7 @@ function afterMove(t){
 // ---------- actions ----------
 function doMove(t){
   if(lesson){lessonPress(t);return;}
-  clearConfirm();$('banner').hidden=true;
+  clearConfirm();$('banner').hidden=true;chalDone=null;
   history.push(t);redo=[];spend(t);
   if(scrambled&&timerStart===null&&!isRot(t))timerStart=Date.now()-timerElapsed;
   queue.push(t);pump();updateStats();announce(t);
@@ -957,6 +967,7 @@ function doMove(t){
 function undo(){
   if(lesson){lessonBack();return;}
   clearConfirm();if(!history.length)return;
+  $('banner').hidden=true;chalDone=null;
   const t=history.pop();redo.push(t);spend(t);queue.push(inv(t));pump();updateStats();say('Undo');
 }
 function redoMove(){
@@ -991,7 +1002,7 @@ function scramble(){
       const t=f+(Math.random()<.5?"'":"");list.push(t);applyMove(t);last=f;prevAxis=axisOf[f];
     }
     if(isSolved())applyMove('R');
-    history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;chal=null;
+    history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;chal=null;chalDone=null;
     render();save();updateStats();
     say('Cube scrambled. Good luck!');
   });
@@ -1003,7 +1014,7 @@ function reset(){
   $('banner').hidden=true;
   queue.push(()=>{
     cubies.forEach((c,i)=>{const s=solvedState()[i];c.p=s.p;c.s=s.s;});
-    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;chal=null;
+    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;chal=null;chalDone=null;
     render();save();updateStats();say('Cube reset to solved.');
   });
   pump();
@@ -1077,7 +1088,7 @@ function startChallenge(level){
     cubies.forEach((c,i)=>{const s=solvedState()[i];c.p=s.p;c.s=s.s;});
     list.forEach(applyMove);
     history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;
-    chal={level,par:LEVELS[level-1],spent:0,mix:list};chalLast=level;
+    chal={level,par:LEVELS[level-1],spent:0,mix:list};chalLast=level;chalDone=null;
     render();save();updateStats();
     say(`Challenge level ${level}. Par is ${chal.par}. Good luck!`);
   });
@@ -1094,6 +1105,7 @@ function renderLevels(){
 function openChallenge(){renderLevels();openOverlay('chalOv');}
 $('chalBtn').onclick=()=>{if(pointerOk($('chalBtn')))openChallenge();};
 $('chalAgain').onclick=()=>{if(pointerOk($('chalAgain'))&&chalLast)startChallenge(chalLast);};
+$('bannerClose').onclick=()=>{if(!pointerOk($('bannerClose')))return;$('banner').hidden=true;say('Closed. Your result is kept.');};
 $('chalNext').onclick=()=>{if(pointerOk($('chalNext'))&&chalLast)startChallenge(Math.min(LEVELS.length,chalLast+1));};
 let chalLast=null;
 
@@ -1103,9 +1115,10 @@ const elapsed=()=>timerStart!==null?Date.now()-timerStart:timerElapsed;
 function fmt(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/60);
   return h?`${h}:${String(m%60).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`:`${m}:${String(s%60).padStart(2,'0')}`;}
 function updateStats(){
-  $('moves').textContent=chal?chal.spent:countMoves();
-  $('parStat').hidden=!chal;if(chal)$('par').textContent=chal.par;
-  $('moves').parentElement.classList.toggle('chal-moves',!!chal);$('chalBtn').classList.toggle('on',!!chal);
+  const c=chal||chalDone;
+  $('moves').textContent=c?c.spent:countMoves();
+  $('parStat').hidden=!c;if(c)$('par').textContent=c.par;
+  $('moves').parentElement.classList.toggle('chal-moves',!!c);$('chalBtn').classList.toggle('on',!!chal);
   $('solvedCount').textContent=record.solved;
   $('time').textContent=fmt(elapsed());
   $('undoBtn').disabled=lesson?!lesson.pos:!history.length;$('redoBtn').disabled=lesson?lesson.pos>=lesson.flat.length:!redo.length;
@@ -1500,7 +1513,7 @@ const setCube=state=>{state.forEach((c,i)=>{cubies[i].p=c.p.slice();cubies[i].s=
 function putGameAside(){
   if(lessonSnap)return;
   lessonSnap={c:cubies.map(c=>({p:c.p.slice(),s:{...c.s}})),history:history.slice(),redo:redo.slice(),scrambled,chal,elapsed:elapsed(),running:timerStart!==null};
-  timerElapsed=lessonSnap.elapsed;timerStart=null;scrambled=false;chal=null; // the game clock pauses (showing its time) and the lesson can't count as solving the game
+  timerElapsed=lessonSnap.elapsed;timerStart=null;scrambled=false;chal=null;chalDone=null; // the game clock pauses (showing its time) and the lesson can't count as solving the game
 }
 function startAlgLesson(a){
   if(lesson&&lesson.kind==='solve')stopLesson(true);
