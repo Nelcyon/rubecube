@@ -65,7 +65,6 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .board .btn{--m:none;--mi:none;transform-origin:0 0;transform:var(--m);border-radius:10px;padding:.2rem;gap:0}
 .board .btn:active{transform:var(--m) translate(2%,2%) scale(.96)}
 .board .btn>span{transform:var(--mi)}
-.board .btn.narrow .alt{display:none}
 .board .btn.narrow .t{font-size:.7rem;line-height:1.1}
 .scene{position:absolute;left:0;top:0;width:0;height:0;perspective:calc(var(--s) * 13);perspective-origin:0 0;z-index:1;pointer-events:none}
 .shadow{position:absolute;left:0;top:0;width:calc(var(--s)*4);height:calc(var(--s)*1);transform:translate(-50%,calc(var(--s)*1.45));
@@ -103,7 +102,6 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .btn:focus-visible{outline:5px solid var(--focus);outline-offset:3px;box-shadow:0 0 0 10px rgba(255,210,63,.22)}
 .btn .g{font-size:1.7rem;line-height:1}
 .btn .t{font-size:.78rem}
-.btn .alt{font-size:.62rem;color:var(--muted);font-weight:400;white-space:nowrap}
 .btn .n{font-size:.7rem;color:var(--muted);font-weight:400;font-family:var(--font-display)}
 .no-notation .btn .n{display:none}
 .btn.confirm{border-color:var(--warn);background:#3a2414;color:#ffd7bd}
@@ -168,7 +166,6 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
   .board .btn{border-radius:10px;padding:.15rem}
   .board .btn .t{font-size:.62rem}
   .board .btn .g{font-size:1.25rem}
-  .board .btn .alt{display:none}
 }
 @media (prefers-reduced-motion:reduce){.btn{transition:none}.btn:active{transform:none}}
 </style>
@@ -199,18 +196,18 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         <button class="btn wide" type="button" data-act="reset" id="resetBtn"><span class="g" aria-hidden="true">⟲</span><span class="lbl">Reset</span></button>
       </div>
       <div class="board" id="board" aria-label="Cube and turn buttons">
-      <button class="btn whole" type="button" data-move="y"><span class="g">⇇</span><span class="t">Spin cube left</span><span class="alt">right-click ⇉</span></button>
-      <button class="btn whole" type="button" data-move="x"><span class="g">⤒</span><span class="t">Tip cube up</span><span class="alt">right-click ⤓</span></button>
-      <button class="btn whole" type="button" data-move="z'"><span class="g">⟲</span><span class="t">Roll cube left</span><span class="alt">right-click ⟳</span></button>
-      <button class="btn" type="button" data-move="L'"><span class="g">⬆</span><span class="t">Left</span><span class="alt">right-click ⬇</span></button>
-      <button class="btn" type="button" data-move="M'"><span class="g">⬆</span><span class="t">Middle</span><span class="alt">right-click ⬇</span></button>
-      <button class="btn" type="button" data-move="R"><span class="g">⬆</span><span class="t">Right</span><span class="alt">right-click ⬇</span></button>
-      <button class="btn" type="button" data-move="U"><span class="g">⬅</span><span class="t">Top</span><span class="alt">right-click ➡</span></button>
-      <button class="btn" type="button" data-move="E'"><span class="g">⬅</span><span class="t">Middle</span><span class="alt">right-click ➡</span></button>
-      <button class="btn" type="button" data-move="D'"><span class="g">⬅</span><span class="t">Bottom</span><span class="alt">right-click ➡</span></button>
-      <button class="btn" type="button" data-move="B"><span class="g">↺</span><span class="t">Back</span><span class="alt">right-click ↻</span></button>
-      <button class="btn" type="button" data-move="S'"><span class="g">↺</span><span class="t">Mid slice</span><span class="alt">right-click ↻</span></button>
-      <button class="btn" type="button" data-move="F'"><span class="g">↺</span><span class="t">Front</span><span class="alt">right-click ↻</span></button>
+      <button class="btn whole" type="button" data-move="y"><span class="g">⇇</span><span class="t">Spin cube left</span></button>
+      <button class="btn whole" type="button" data-move="x"><span class="g">⤒</span><span class="t">Tip cube up</span></button>
+      <button class="btn whole" type="button" data-move="z'"><span class="g">⟲</span><span class="t">Roll cube left</span></button>
+      <button class="btn" type="button" data-move="L'"><span class="g">⬆</span><span class="t">Left</span></button>
+      <button class="btn" type="button" data-move="M'"><span class="g">⬆</span><span class="t">Middle</span></button>
+      <button class="btn" type="button" data-move="R"><span class="g">⬆</span><span class="t">Right</span></button>
+      <button class="btn" type="button" data-move="U"><span class="g">⬅</span><span class="t">Top</span></button>
+      <button class="btn" type="button" data-move="E'"><span class="g">⬅</span><span class="t">Middle</span></button>
+      <button class="btn" type="button" data-move="D'"><span class="g">⬅</span><span class="t">Bottom</span></button>
+      <button class="btn" type="button" data-move="B"><span class="g">↺</span><span class="t">Back</span></button>
+      <button class="btn" type="button" data-move="S'"><span class="g">↺</span><span class="t">Mid slice</span></button>
+      <button class="btn" type="button" data-move="F'"><span class="g">↺</span><span class="t">Front</span></button>
         <div class="scene" id="scene"><div class="shadow"></div><div class="cube" id="cube"></div></div>
         <div class="banner" id="banner" hidden>
           <h2>Solved!</h2>
@@ -749,16 +746,16 @@ function layoutBoard(){
   // columns: under the front face's bottom edge, sides following the columns' lines
   const down=unit(sub(P(0,-1.5,1.5),P(0,1.5,1.5)));
   [["L'",-1],["M'",0],['R',1]].forEach(([m,x])=>along(m,P(x-.5,-1.5,1.5),P(x+.5,-1.5,1.5),down));
-  // depth slices: under the right face's bottom edge, front to back (that face is narrow, so these are taller)
+  // depth slices: under the right face's bottom edge, front to back, as deep as the columns so the two groups meet in a clean V
   const downR=unit(sub(P(1.5,-1.5,0),P(1.5,1.5,0)));
-  [["F'",1],["S'",0],['B',-1]].forEach(([m,z])=>along(m,P(1.5,-1.5,z+.5),P(1.5,-1.5,z-.5),downR,b*1.2));
+  [["F'",1],["S'",0],['B',-1]].forEach(([m,z])=>along(m,P(1.5,-1.5,z+.5),P(1.5,-1.5,z-.5),downR));
   probe.remove();
   // whole-cube turns sit one ring further out: spin beside the middle row,
-  // tip under the Left/Middle columns, roll beyond the Mid slice/Back slices
+  // tip spanning under the Left and Middle columns, roll spanning under the Mid and Back slices
   const by=m=>placed.find(q=>q.el===btn(m));
   const E=by("E'");put(btn('y'),add(E.p,E.u,-(1+gap/b)),E.u,E.v);
-  const L=by("L'"),M=by("M'");put(btn('x'),add(add(L.p,sub(M.p,L.p),.5),down,b+gap),L.u,L.v);
-  const S=by("S'"),B=by('B');put(btn("z'"),add(add(S.p,sub(B.p,S.p),.5),downR,b*1.2+gap),add(S.u,unit(S.u),Math.max(0,b-len(S.u))),S.v);
+  const L=by("L'"),M=by("M'");put(btn('x'),add(L.p,down,b+gap),sub(add(M.p,M.u),L.p),L.v);
+  const S=by("S'"),B=by('B');put(btn("z'"),add(S.p,downR,b+gap),sub(add(B.p,B.u),S.p),S.v);
   // bounding box of cube faces and buttons
   let l=Infinity,t=Infinity,r=-Infinity,bt=-Infinity;
   const grow=(x1,y1,x2,y2)=>{l=Math.min(l,x1);t=Math.min(t,y1);r=Math.max(r,x2);bt=Math.max(bt,y2);};
