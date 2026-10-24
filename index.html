@@ -73,6 +73,8 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .board .btn:focus-visible{outline:none;box-shadow:none}
 .board .btn:focus-visible .shape polygon{stroke:var(--focus);stroke-width:5;stroke-dasharray:none}
 .board .btn:active{transform:none}
+/* the box around the shape stays invisible in every state; only the polygon shows hover and press */
+.board .btn:hover,.board .btn:active,.board .btn:focus-visible,.board .btn[aria-pressed="true"]{background:none;border:0}
 .board .btn>.in{position:absolute;display:flex;flex-direction:column;align-items:center;gap:.1rem;transform-origin:0 0;white-space:normal;pointer-events:none}
 .board .btn .t{font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.01em;text-shadow:0 1px 2px rgba(0,0,0,.6)}
 .board .btn.flat>.in{flex-direction:row;gap:.4rem}
