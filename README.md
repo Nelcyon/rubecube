@@ -6,8 +6,9 @@ no build step and nothing to install: open it in any modern browser, or send the
 
 ## Playing
 
-- The cube sits in the middle. The buttons below it move a column, the buttons on its left move a row,
-  and the two bottom corners twist the front and back. The labels above the cube name the colors of the
+- The cube sits in the middle, with one button per layer along each axis. The buttons below it move a
+  column, the buttons on its left move a row, and the buttons on its right twist the front, middle or back
+  slice (as seen from the front). The labels above the cube name the colors of the
   front, top and right sides.
 - **Left click** turns a layer the way the big arrow points. **Right click** turns it the other way.
 - Hover over a button first and the pieces it will move get a pink outline.

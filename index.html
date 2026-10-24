@@ -58,10 +58,10 @@ h1 .logo i{width:.42rem;height:.42rem;border-radius:2px;display:block}
 /* main */
 main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:1.2rem}
 .middle{display:flex;flex-direction:column;align-items:center;gap:.7rem;min-width:0}
-/* board: 6x6 grid; the cube fills the centre, one turn button per column (below) and per row (left) */
+/* board: 7x6 grid; the cube fills the centre, one turn button per layer along each axis: columns below, rows left, front-to-back slices right */
 .board{position:relative;display:grid;gap:.4rem;
   --b:4.6rem;--cw:calc(var(--s) * 1.0);--rh:calc(var(--s) * 1.02);
-  grid-template-columns:var(--b) calc(var(--s) * .08) var(--cw) var(--cw) var(--cw) calc(var(--s) * 1.25);
+  grid-template-columns:var(--b) calc(var(--s) * .08) var(--cw) var(--cw) var(--cw) calc(var(--s) * 1.25) var(--b);
   grid-template-rows:calc(var(--s) * 1.0) var(--rh) var(--rh) var(--rh) calc(var(--s) * .12) var(--b)}
 .board .btn{width:100%;height:100%;min-height:0;position:relative;z-index:2;background:color-mix(in srgb,var(--raised) 92%,transparent)}
 .scene{grid-column:3/6;grid-row:2/5;position:relative;perspective:calc(var(--s) * 13);z-index:1;pointer-events:none}
@@ -209,14 +209,15 @@ main.stacked .middle{order:-1;flex-basis:100%}
     <section class="middle">
       <div class="facing" id="facing"></div>
       <div class="board" id="board" aria-label="Cube and turn buttons">
-      <button class="btn" type="button" data-move="F" style="grid-row:6;grid-column:1"><span class="g">↻</span><span class="t">Front</span><span class="alt">right-click ↺</span></button>
       <button class="btn" type="button" data-move="L'" style="grid-row:6;grid-column:3"><span class="g">⬆</span><span class="t">Left</span><span class="alt">right-click ⬇</span></button>
       <button class="btn" type="button" data-move="M'" style="grid-row:6;grid-column:4"><span class="g">⬆</span><span class="t">Middle</span><span class="alt">right-click ⬇</span></button>
       <button class="btn" type="button" data-move="R" style="grid-row:6;grid-column:5"><span class="g">⬆</span><span class="t">Right</span><span class="alt">right-click ⬇</span></button>
-      <button class="btn" type="button" data-move="B'" style="grid-row:6;grid-column:6"><span class="g">↻</span><span class="t">Back</span><span class="alt">right-click ↺</span></button>
       <button class="btn" type="button" data-move="U" style="grid-row:2;grid-column:1"><span class="g">⬅</span><span class="t">Top</span><span class="alt">right-click ➡</span></button>
       <button class="btn" type="button" data-move="E'" style="grid-row:3;grid-column:1"><span class="g">⬅</span><span class="t">Middle</span><span class="alt">right-click ➡</span></button>
       <button class="btn" type="button" data-move="D'" style="grid-row:4;grid-column:1"><span class="g">⬅</span><span class="t">Bottom</span><span class="alt">right-click ➡</span></button>
+      <button class="btn" type="button" data-move="B'" style="grid-row:2;grid-column:7"><span class="g">↻</span><span class="t">Back</span><span class="alt">right-click ↺</span></button>
+      <button class="btn" type="button" data-move="S" style="grid-row:3;grid-column:7"><span class="g">↻</span><span class="t">Mid slice</span><span class="alt">right-click ↺</span></button>
+      <button class="btn" type="button" data-move="F" style="grid-row:4;grid-column:7"><span class="g">↻</span><span class="t">Front</span><span class="alt">right-click ↺</span></button>
         <div class="scene" id="scene"><div class="shadow"></div><div class="cube" id="cube"></div></div>
         <div class="banner" id="banner" hidden>
           <h2>Solved!</h2>
@@ -247,7 +248,7 @@ main.stacked .middle{order:-1;flex-basis:100%}
     <h3>Turning pieces</h3>
     <ul>
       <li>The buttons around the cube act on its <b>front</b>, the side facing you.</li>
-      <li>The buttons below the cube move a column, the buttons on its left move a row, and the buttons in the bottom corners twist the front or back side.</li>
+      <li>The buttons below the cube move a column, the buttons on its left move a row, and the buttons on its right twist the front, middle or back slice like a steering wheel (as seen from the front).</li>
       <li><b>Left click</b> turns it the way the big arrow points. <b>Right click</b> turns it the other way.</li>
       <li>Point at any button first: the pieces it will move get a pink outline, so there are no surprises.</li>
     </ul>
@@ -316,7 +317,7 @@ const DESC={
   "D":"<b>Bottom row right</b>","D'":"<b>Bottom row left</b>",
   "F":"<b>Front face clockwise</b> ↻","F'":"<b>Front face counter-clockwise</b> ↺",
   "B":"<b>Back face counter-clockwise</b> ↺, as seen from the front","B'":"<b>Back face clockwise</b> ↻, as seen from the front",
-  "S":"<b>Middle slice clockwise</b>","S'":"<b>Middle slice counter-clockwise</b>",
+  "S":"<b>Middle slice clockwise</b> ↻, as seen from the front","S'":"<b>Middle slice counter-clockwise</b> ↺, as seen from the front",
   "x":"<b>Tip whole cube up</b> (not counted as a move)","x'":"<b>Tip whole cube down</b> (not counted)",
   "y":"<b>Spin whole cube left</b> (not counted)","y'":"<b>Spin whole cube right</b> (not counted)",
   "z":"<b>Roll whole cube right</b> (not counted)","z'":"<b>Roll whole cube left</b> (not counted)"
@@ -726,13 +727,13 @@ function sizeCube(){
   const b=board.querySelector('[data-move="U"]').getBoundingClientRect().width||4.6*rem;
   const gap=parseFloat(getComputedStyle(board).columnGap)||6;
   const vw=main.clientWidth,cardW=document.querySelector('.card').getBoundingClientRect().width;
-  const fixedW=b+5*gap,minS=60;
+  const fixedW=2*b+6*gap,fixedH=b+5*gap,minS=60;
   const side=vw-2*cardW-2*1.2*rem;
   const stacked=side<fixedW+4.33*minS*1.15;
   main.classList.toggle('stacked',stacked);
   const availW=(stacked?vw:side)-fixedW;
   const headH=document.querySelector('header').getBoundingClientRect().height;
-  const availH=window.innerHeight-headH-fixedW-6.5*rem;
+  const availH=window.innerHeight-headH-fixedH-6.5*rem;
   const s=Math.max(30,Math.min(125,availW/4.33,Math.max(availH/4.18,stacked?48:minS)));
   document.documentElement.style.setProperty('--s',s.toFixed(1)+'px');
 }
