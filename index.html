@@ -1674,23 +1674,23 @@ function pieceSpot(p){
 }
 const f1=v=>v.toFixed(1);
 function arrowHead(tip,dir){
-  const n=Math.hypot(dir.x,dir.y)||1,ux=dir.x/n,uy=dir.y/n,L=5.2,W=3.4;
-  return `<polygon points="${f1(tip.x)},${f1(tip.y)} ${f1(tip.x-ux*L-uy*W)},${f1(tip.y-uy*L+ux*W)} ${f1(tip.x-ux*L+uy*W)},${f1(tip.y-uy*L-ux*W)}" fill="#fff" stroke="#07080b" stroke-width="1" stroke-linejoin="round"/>`;
+  const n=Math.hypot(dir.x,dir.y)||1,ux=dir.x/n,uy=dir.y/n,L=7,W=4.4;
+  return `<polygon points="${f1(tip.x)},${f1(tip.y)} ${f1(tip.x-ux*L-uy*W)},${f1(tip.y-uy*L+ux*W)} ${f1(tip.x-ux*L+uy*W)},${f1(tip.y-uy*L-ux*W)}" fill="#fff" stroke="#07080b" stroke-width="1.3" stroke-linejoin="round"/>`;
 }
-function picArrow(a,b,both,C=ISO(0,1.5,0)){
-  const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,ux=dx/n,uy=dy/n,sh=3;
-  const A={x:a.x+ux*sh,y:a.y+uy*sh},B={x:b.x-ux*sh,y:b.y-uy*sh},bow=both?0:Math.max(5,n*.35);
+function picArrow(a,b,both,C=ISO(0,1.5,0),straight=false){
+  const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,ux=dx/n,uy=dy/n,sh=straight?1:C.x===0&&C.y===0?Math.max(0,Math.min(6,(n-30)/3)):3; // top-down arrows stop inside their squares so heads that meet don't pile up, but short ones keep room for both heads
+  const A={x:a.x+ux*sh,y:a.y+uy*sh},B={x:b.x-ux*sh,y:b.y-uy*sh},bow=both||straight?0:Math.max(5,n*.35);
   const mid={x:(A.x+B.x)/2,y:(A.y+B.y)/2};
   let ox=-uy,oy=ux;if(ox*(mid.x-C.x)+oy*(mid.y-C.y)<0){ox=-ox;oy=-oy;}
   const M={x:mid.x+ox*bow,y:mid.y+oy*bow};
   const d=`M${f1(A.x)},${f1(A.y)} Q${f1(M.x)},${f1(M.y)} ${f1(B.x)},${f1(B.y)}`;
   // shaft ends short of each tip so the head sits cleanly on it
-  return `<path d="${d}" fill="none" stroke="#07080b" stroke-width="4.6" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>`+
+  return `<path d="${d}" fill="none" stroke="#07080b" stroke-width="5.6" stroke-linecap="round"/><path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`+
     arrowHead(B,{x:B.x-M.x,y:B.y-M.y})+(both?arrowHead(A,{x:A.x-M.x,y:A.y-M.y}):'');
 }
 function twistMark(at){
-  const r=4.2;
-  return `<path d="M${f1(at.x+r)},${f1(at.y)} A${r},${r} 0 1 1 ${f1(at.x)},${f1(at.y-r)}" fill="none" stroke="#07080b" stroke-width="4.2" stroke-linecap="round"/><path d="M${f1(at.x+r)},${f1(at.y)} A${r},${r} 0 1 1 ${f1(at.x)},${f1(at.y-r)}" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"/>`+arrowHead({x:at.x+2.6,y:at.y-r},{x:1,y:0});
+  const r=5.4;
+  return `<path d="M${f1(at.x+r)},${f1(at.y)} A${r},${r} 0 1 1 ${f1(at.x)},${f1(at.y-r)}" fill="none" stroke="#07080b" stroke-width="5.6" stroke-linecap="round"/><path d="M${f1(at.x+r)},${f1(at.y)} A${r},${r} 0 1 1 ${f1(at.x)},${f1(at.y-r)}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`+arrowHead({x:at.x+5,y:at.y-r},{x:1,y:0});
 }
 function cubePic(cs,keep,marks,label){
   const faces=[[0,1,0],[0,0,1],[1,0,0]],shade={'0,1,0':1,'0,0,1':.86,'1,0,0':.72};
@@ -1708,7 +1708,7 @@ function cubePic(cs,keep,marks,label){
 }
 // the top layer seen from straight above, front side at the bottom, with the side colours as thin strips;
 // the usual way last-layer swaps are drawn
-function topPic(cs,keep,moved){
+function topPic(cs,keep,moved,extra='',caption='Seen from above, front at the bottom'){
   const U=cs.filter(c=>c.p[1]===1),S=20,h=9;
   let g='';
   const rect=(x,y,w,hh,col,dim)=>g+=`<rect x="${f1(x)}" y="${f1(y)}" width="${w}" height="${hh}" rx="2.5" fill="${COLORS[col]}" fill-opacity="${dim?.3:1}" stroke="#07080b" stroke-width="1.2"/>`;
@@ -1726,14 +1726,19 @@ function topPic(cs,keep,moved){
     const back=moved.find(o=>o.from.join()===m.to.join()&&o.to.join()===m.from.join());if(back)seen.add(back.i);
     marks+=picArrow(spot(m.from),spot(m.to),!!back,{x:0,y:0});
   });
-  return `<figure><svg viewBox="-42 -42 84 84" role="img" aria-label="Top layer from above">${g}${marks}</svg><figcaption>Seen from above, front at the bottom</figcaption></figure>`;
+  return `<figure><svg viewBox="-42 -42 84 84" role="img" aria-label="Top layer from above">${g}${marks}${extra}</svg><figcaption>${caption}</figcaption></figure>`;
 }
 function algPicture(a,start){
   const before=cloneState(start),after=applyAll(cloneState(start),a.moves);
   if(a.pic==='orient'){
     // orientation algorithms: what matters is which top stickers aren't yellow yet, not where pieces travel
+    // seen from above, each piece with its yellow on a side gets an arrow from that side strip onto its top: turn yellow up
     const up=key([0,1,0]),keep=new Set(before.map((c,i)=>i).filter(i=>before[i].p[1]===1&&before[i].p.filter(v=>v).length>1&&before[i].s[up]!=='Y'));
-    return `<div class="illus">${cubePic(before,keep,'','Bright pieces don\'t have yellow on top yet')}</div>`;
+    let marks='';
+    keep.forEach(i=>{const c=before[i],side=Object.keys(c.s).find(k=>k!==up&&c.s[k]==='Y');if(!side)return;
+      const d=side.split(',').map(Number),x=c.p[0]*20,y=c.p[2]*20;
+      marks+=picArrow({x:d[0]?d[0]*39:x,y:d[2]?d[2]*39:y},{x,y},false,{x:0,y:0},true);});
+    return `<div class="illus">${topPic(before,keep,[],marks,'Seen from above: turn each yellow side sticker up')}</div>`;
   }
   const sameSt=(x,y)=>Object.keys(x).length===Object.keys(y).length&&Object.keys(x).every(k=>x[k]===y[k]);
   let moved=before.map((c,i)=>({i,from:c.p,to:after[i].p})).filter(m=>m.from.join()!==m.to.join()&&m.from.filter(v=>v).length>1);
