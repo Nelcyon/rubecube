@@ -1689,9 +1689,10 @@ function arrowPath(pts,both=false){
   const left=side(1),right=side(-1).reverse();
   const out=[...left,...head(line[line.length-1],pts[pts.length-1]),...right];
   if(both)out.push(...head(line[0],pts[0]));
-  return `<path d="M${out.map(p=>f1(p.x)+','+f1(p.y)).join(' L')} Z" fill="#fff" stroke="#07080b" stroke-width="2.6" stroke-linejoin="round" paint-order="stroke"/>`;
+  return `<path d="M${out.map(p=>f1(p.x)+','+f1(p.y)).join(' L')} Z" fill="#fff" stroke="#07080b" stroke-width="2.6" stroke-linejoin="round" paint-order="stroke"/>\u0002${f1(len)}\u0001`;
 }
-const arrowLayers=m=>m;
+// where arrows cross, the shorter one goes on top: draw the longest first
+const arrowLayers=m=>m.split('\u0001').filter(Boolean).map(x=>x.split('\u0002')).sort((a,b)=>b[1]-a[1]).map(x=>x[0]).join('');
 function picArrow(a,b,both,C=ISO(0,1.5,0),straight=false){
   const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,ux=dx/n,uy=dy/n,top=C.x===0&&C.y===0;
   // arrows stop short of the pieces they join, so a head never runs into the next arrow's tail
