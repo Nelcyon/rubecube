@@ -61,14 +61,21 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 /* board: buttons are placed by JS right against the cube edge they turn:
    rows along the left edge, columns along the bottom edge, front-to-back slices along the right face's bottom edge */
 .board{position:relative;--b:4.4rem;width:20rem;height:20rem}
-.board .btn{position:absolute;min-height:0;z-index:2;background:color-mix(in srgb,var(--raised) 92%,transparent)}
-.board .btn{--m:none;--mi:none;transform-origin:0 0;transform:var(--m);border-radius:10px;padding:.2rem;gap:0}
-.board .btn:active{transform:var(--m) translate(2%,2%) scale(.96)}
-/* the label follows its button's slant at half strength: in the cube's perspective but still easy to read */
-.board .btn>.in{display:flex;flex-direction:column;align-items:center;gap:.1rem;transform:var(--mi)}
+.board .btn{position:absolute;min-height:0;z-index:2;background:none;border:0;border-radius:0;padding:0;pointer-events:none;transform:none}
+/* each button is drawn as a polygon so neighbouring buttons can meet in clean mitred corners; only the shape takes clicks */
+.board .btn .shape{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
+.board .btn .shape polygon{fill:color-mix(in srgb,var(--raised) 92%,transparent);stroke:var(--line);stroke-width:2;stroke-linejoin:round;pointer-events:all;
+  transition:fill .12s,stroke .12s}
+.board .btn:hover .shape polygon{fill:var(--raised-hover);stroke:var(--accent)}
+.board .btn:active .shape polygon{fill:var(--raised-hover)}
+.board .btn.whole .shape polygon{stroke:color-mix(in srgb,var(--accent) 55%,var(--line));stroke-dasharray:7 5}
+.board .btn.whole:hover .shape polygon{stroke:var(--accent)}
+.board .btn:focus-visible{outline:none;box-shadow:none}
+.board .btn:focus-visible .shape polygon{stroke:var(--focus);stroke-width:5;stroke-dasharray:none}
+.board .btn:active{transform:none}
+.board .btn>.in{position:absolute;display:flex;flex-direction:column;align-items:center;gap:.1rem;transform-origin:0 0;white-space:normal;pointer-events:none}
 .board .btn .t{font-size:.95rem;font-weight:800;color:#fff;letter-spacing:.01em;text-shadow:0 1px 2px rgba(0,0,0,.6)}
 .board .btn.flat>.in{flex-direction:row;gap:.4rem}
-.board .btn.narrow .t{font-size:.85rem;line-height:1.1}
 .scene{position:absolute;left:0;top:0;width:0;height:0;perspective:calc(var(--s) * 13);perspective-origin:0 0;z-index:1;pointer-events:none}
 .shadow{position:absolute;left:0;top:0;width:calc(var(--s)*4);height:calc(var(--s)*1);transform:translate(-50%,calc(var(--s)*1.45));
   background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);filter:blur(6px)}
@@ -117,7 +124,6 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .hint b{color:var(--text)}
 
 /* whole-cube turns sit around the cube too, drawn with a dashed edge so they read as "the whole cube" */
-.board .btn.whole{border-style:dashed;border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
 .board .btn.whole .t{font-size:.95rem}
 .gamebar{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.45rem}
 .gamebar .btn{min-height:3.4rem;padding:.3rem .9rem}
@@ -755,6 +761,7 @@ function layoutBoard(){
   // depth slices: under the right face's bottom edge, front to back, as deep as the columns so the two groups meet in a clean V
   const downR=unit(sub(P(1.5,-1.5,0),P(1.5,1.5,0)));
   [["F'",1],["S'",0],['B',-1]].forEach(([m,z])=>along(m,P(1.5,-1.5,z+.5),P(1.5,-1.5,z-.5),downR));
+  const K=P(-1.5,-1.5,1.5),Cc=P(1.5,-1.5,1.5);
   probe.remove();
   // whole-cube turns sit one ring further out, each one long button spanning all three layer buttons on its side:
   // spin along the rows, tip under the columns, roll under the depth slices
@@ -763,22 +770,59 @@ function layoutBoard(){
   put(btn('y'),add(U.p,ur,-(gap+d)),add({x:0,y:0},ur,d),sub(add(D.p,D.v),U.p));
   const L=by("L'"),R=by('R');put(btn('x'),add(L.p,down,b+gap),sub(add(R.p,R.u),L.p),add({x:0,y:0},down,d));
   const F=by("F'"),B=by('B');put(btn("z'"),add(F.p,downR,b+gap),sub(add(B.p,B.u),F.p),add({x:0,y:0},downR,d));
+  // corners: where two groups meet, both buttons are cut along one mitre line (inner cube corner to outer frame corner),
+  // each pulled back half a gap, so the groups fit together like a picture frame
+  placed.forEach(q=>q.pts=[q.p,add(q.p,q.u),add(add(q.p,q.u),q.v),add(q.p,q.v)]);
+  const X=(p1,d1,p2,d2)=>{const den=d1.x*d2.y-d1.y*d2.x;if(Math.abs(den)<1e-9)return p1;const t=((p2.x-p1.x)*d2.y-(p2.y-p1.y)*d2.x)/den;return add(p1,d1,t);};
+  const mid4=q=>({x:q.pts.reduce((a,c)=>a+c.x,0)/4,y:q.pts.reduce((a,c)=>a+c.y,0)/4});
+  // the mitre through corner c towards outer point o, shifted half a gap towards button q
+  const mitre=(c,o,q)=>{const dir=unit(sub(o,c));let n={x:-dir.y,y:dir.x};const m=sub(mid4(q),c);if(n.x*m.x+n.y*m.y<0)n={x:-n.x,y:-n.y};return {p:add(c,n,gap/2),d:dir};};
+  const Sp=by('y'),Ti=by('x'),Ro=by("z'");
+  const QL=X(Sp.pts[0],Sp.v,Ti.pts[3],Ti.u),QR=X(Ti.pts[3],Ti.u,Ro.pts[3],Ro.u);
+  // rows and spin: cut their bottom end
+  [D,Sp].forEach(q=>{const M=mitre(K,QL,q);q.pts[2]=X(q.pts[1],q.v,M.p,M.d);q.pts[3]=X(q.pts[0],q.v,M.p,M.d);});
+  // columns and tip: cut their left end at the left corner, their right end at the right corner
+  [L,Ti].forEach(q=>{const M=mitre(K,QL,q);q.pts[0]=X(q.pts[0],q.u,M.p,M.d);q.pts[3]=X(q.pts[3],q.u,M.p,M.d);});
+  [R,Ti].forEach(q=>{const M=mitre(Cc,QR,q);q.pts[1]=X(q.pts[0],q.u,M.p,M.d);q.pts[2]=X(q.pts[3],q.u,M.p,M.d);});
+  // depth slices and roll: cut their front end
+  [F,Ro].forEach(q=>{const M=mitre(Cc,QR,q);q.pts[0]=X(q.pts[0],q.u,M.p,M.d);q.pts[3]=X(q.pts[3],q.u,M.p,M.d);});
   // bounding box of cube faces and buttons
   let l=Infinity,t=Infinity,r=-Infinity,bt=-Infinity;
   const grow=(x1,y1,x2,y2)=>{l=Math.min(l,x1);t=Math.min(t,y1);r=Math.max(r,x2);bt=Math.max(bt,y2);};
   cubies.forEach(c=>c.faces.forEach(f=>{const q=f.parentElement.getBoundingClientRect();grow(q.left-o.left,q.top-o.top,q.right-o.left,q.bottom-o.top);}));
-  placed.forEach(q=>[q.p,add(q.p,q.u),add(q.p,q.v),add(add(q.p,q.u),q.v)].forEach(c=>grow(c.x,c.y,c.x,c.y)));
+  placed.forEach(q=>q.pts.forEach(c=>grow(c.x,c.y,c.x,c.y)));
   const pad=6;l-=pad;t-=pad;r+=pad;bt+=pad;
   board.style.width=(r-l)+'px';board.style.height=(bt-t)+'px';
   scene.style.left=(-l)+'px';scene.style.top=(-t)+'px';
+  const inside=(pts,x,y)=>{let sg=0;for(let i=0;i<pts.length;i++){const a=pts[i],c=pts[(i+1)%pts.length],cr=(c.x-a.x)*(y-a.y)-(c.y-a.y)*(x-a.x);if(Math.abs(cr)<1e-9)continue;const k=Math.sign(cr);if(sg&&k!==sg)return false;sg=k;}return true;};
   placed.forEach(q=>{
-    // lay the button out as a plain box, then shear it onto its parallelogram
-    const W=len(q.u),H=len(q.v),A=q.u.x/W,B=q.u.y/W,C=q.v.x/H,D=q.v.y/H;
-    q.el.classList.toggle('narrow',W<b*.75);q.el.classList.toggle('flat',q.el.classList.contains('whole')&&W>H*1.8&&Math.abs(B/A)<.6);
-    Object.assign(q.el.style,{left:(q.p.x-l)+'px',top:(q.p.y-t)+'px',width:W+'px',height:H+'px'});
-    q.el.style.setProperty('--m',`matrix(${A},${B},${C},${D},0,0)`);
-    // undo half the shear on the label: (I + M⁻¹) / 2, so the text ends up halfway between upright and the full slant
-    const det=A*D-B*C;q.el.style.setProperty('--mi',`matrix(${(1+D/det)/2},${-B/det/2},${-C/det/2},${(1+A/det)/2},0,0)`);});
+    const xs=q.pts.map(c=>c.x),ys=q.pts.map(c=>c.y),bx=Math.min(...xs),by0=Math.min(...ys),w=Math.max(...xs)-bx,h=Math.max(...ys)-by0;
+    const el=q.el;
+    Object.assign(el.style,{left:(bx-l)+'px',top:(by0-t)+'px',width:w+'px',height:h+'px'});
+    let svg=el.querySelector('svg.shape');
+    if(!svg){svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('class','shape');svg.setAttribute('aria-hidden','true');
+      svg.appendChild(document.createElementNS('http://www.w3.org/2000/svg','polygon'));el.prepend(svg);}
+    // pull the outline in by a pixel so the stroke stays inside the shape
+    const c0=mid4(q),loc=q.pts.map(c=>{const v=sub(c,c0),n=len(v)||1;return {x:c.x-bx-v.x/n,y:c.y-by0-v.y/n};});
+    svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+    svg.firstChild.setAttribute('points',loc.map(c=>c.x.toFixed(1)+','+c.y.toFixed(1)).join(' '));
+    // upright label at the shape's centre, as wide as the shape is there, shrunk until all its corners sit inside the shape
+    const ux=len(q.u),vy=len(q.v);
+    el.classList.toggle('flat',el.classList.contains('whole')&&ux>vy*1.8&&Math.abs(q.u.y/q.u.x)<.6);
+    const cx=c0.x-bx,cy=c0.y-by0,lp=loc;
+    let x0=-Infinity,x1=Infinity;
+    for(let i=0;i<4;i++){const a=lp[i],c=lp[(i+1)%4];if((a.y-cy)*(c.y-cy)<=0&&a.y!==c.y){const x=a.x+(c.x-a.x)*(cy-a.y)/(c.y-a.y);if(x<cx)x0=Math.max(x0,x);else x1=Math.min(x1,x);}}
+    const chord=isFinite(x0)&&isFinite(x1)?x1-x0:w;
+    const lab=el.querySelector('.in');
+    // try the label on one line and wrapped narrow; keep whichever can stay bigger
+    const fit=mw=>{lab.style.maxWidth=mw+'px';lab.style.transform='none';const lw=lab.offsetWidth,lh=lab.offsetHeight;let k=1;
+      for(let i=0;i<20;i++){const hw=lw*k/2+3,hh=lh*k/2+3;
+        if([[-hw,-hh],[hw,-hh],[hw,hh],[-hw,hh]].every(([dx,dy])=>inside(lp,cx+dx,cy+dy)))break;k*=.93;}
+      return k;};
+    const wide=Math.max(30,chord-10),k1=fit(wide),k2=fit(30),k=k2>k1*1.05?k2:fit(wide);
+    lab.style.left=cx+'px';lab.style.top=cy+'px';
+    lab.style.transform=`scale(${k.toFixed(3)}) translate(-50%,-50%)`;
+  });
   layoutPending=false;
   return {w:r-l,h:bt-t};
 }
