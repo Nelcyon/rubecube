@@ -8,12 +8,12 @@ no build step and nothing to install: open it in any modern browser, or send the
 
 - The cube sits in the middle, seen from slightly left and above, with one button per layer placed right
   against the edge it turns: along the left edge for rows, along the bottom edge for columns, and along the
-  bottom of the right side for the front, middle and back slices (twisted as seen from the front). The labels above the cube name the colors of the
-  front, top and right sides.
+  bottom of the right side for the front, middle and back slices (twisted as seen from the front). Each button
+  is slanted to follow the cube edge it sits on.
 - **Left click** turns a layer the way the big arrow points. **Right click** turns it the other way.
 - Hover over a button first and the pieces it will move get a pink outline.
-- The dashed buttons turn the whole cube to show other sides: Spin on the left, Tip at the bottom left and
-  Roll on the right. This never counts as a move.
+- The dashed buttons turn the whole cube to show other sides: they sit one step further out, with Spin on the
+  left, Tip under the bottom left and Roll under the bottom right. This never counts as a move.
 - The game bar at the top has Undo, Redo, Scramble and Reset. Scramble and Reset ask for a second click
   while a game is in progress.
 - Nothing needs dragging, holding, or pressing two things together, and nothing times out.
