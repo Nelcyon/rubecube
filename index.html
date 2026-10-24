@@ -126,6 +126,7 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 /* Roll: arrows up and to the right of the letters, following the slant of its shape */
 .board>.btn.diag>.in{flex-direction:column;align-items:flex-start;gap:.15rem}
 .board>.btn.diag>.in .g{align-self:flex-end;margin-left:1rem}
+.mirror .board>.btn.diag>.in{align-items:flex-end}.mirror .board>.btn.diag>.in .g{align-self:flex-start;margin-left:0;margin-right:1rem}
 .board>.btn .n{font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--accent);margin-top:.05rem;white-space:normal;text-align:center}
 .board>.btn .n small{font-size:.8em;font-weight:500;color:var(--muted)}
 /* lessons: the button for the next turn glows */
@@ -166,11 +167,17 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .btn.algpick b{font-size:1rem}
 .btn.algpick .nt{font-family:var(--font-display);font-weight:500;color:var(--accent);font-size:.85rem;line-height:1.3}
 @media (min-width:1000px){main.lessoning{flex-wrap:nowrap}.coach{width:25rem;flex:none;max-height:calc(100vh - 6.5rem);overflow:auto}}
+/* wide: the Algorithms panel opens on the right, beside the Algorithms button; the cube centres in the room left */
+@media (min-width:1001px){
+  main.lessoning{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:start;column-gap:1.2rem}
+  main.lessoning .middle{justify-self:center}
+}
 .scene{position:absolute;left:0;top:0;width:0;height:0;perspective:calc(var(--s) * 13);perspective-origin:0 0;z-index:1;pointer-events:none}
 .shadow{position:absolute;left:0;top:0;width:calc(var(--s)*4);height:calc(var(--s)*1);transform:translate(-50%,calc(var(--s)*1.45));
   background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);filter:blur(6px)}
 /* view: turned a little to the left and tipped a little down, more left than down, well short of corner-on */
 .cube{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d;transform:rotateX(-24deg) rotateY(-33deg)}
+.mirror .cube{transform:rotateX(-24deg) rotateY(33deg)} /* right-hand view: the left side shows, buttons on the right */
 .cubie{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}
 .face{position:absolute;width:var(--s);height:var(--s);left:calc(var(--s) / -2);top:calc(var(--s) / -2);background:var(--plastic);border-radius:7%}
 .st{position:absolute;inset:7.5%;border-radius:15%;display:none;
@@ -387,7 +394,7 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
     <h3>Turning pieces</h3>
     <ul>
       <li>The buttons around the cube act on its <b>front</b>, the side facing you.</li>
-      <li>Each button sits right against the edge it turns: the buttons along the left edge move a row, the buttons along the bottom edge move a column, and the buttons along the bottom of the right side twist the front, middle or back slice like a steering wheel (as seen from the front).</li>
+      <li>Each button sits right against the edge it turns: the buttons along the left edge move a row (the right edge if you choose the mirrored layout under <b>Button side</b> in Settings), the buttons along the bottom edge move a column, and the buttons along the bottom of the right side twist the front, middle or back slice like a steering wheel (as seen from the front).</li>
       <li><b>Left click</b> turns it one way. <b>Right click</b> turns it the other way.</li>
       <li>Point at any button first: the pieces it will move get a pink outline, so there are no surprises.</li>
     </ul>
@@ -437,6 +444,8 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <button class="btn" type="button" data-v="on">On</button><button class="btn" type="button" data-v="off">Off</button></div></div>
     <div class="opt"><span>Letters on buttons (R, U', …) instead of words</span><div class="seg" data-set="notation">
       <button class="btn" type="button" data-v="on">On</button><button class="btn" type="button" data-v="off">Off</button></div></div>
+    <div class="opt"><span>Button side</span><div class="seg" data-set="hand">
+      <button class="btn" type="button" data-v="left">Rows on the left</button><button class="btn" type="button" data-v="right">Mirrored: rows on the right</button></div></div>
     <div class="opt"><span>Keys and QuadStick buttons</span><button class="btn wide" id="keysBtn" type="button"><span class="g" aria-hidden="true">⌨</span>Set up keys</button></div>
     <button class="btn wide" type="button" data-close>Done</button>
   </div>
@@ -513,7 +522,7 @@ let history=[],redo=[],scrambled=false,timerStart=null,timerElapsed=0,armed=fals
 let chal=null; // {level,par,spent}: a challenge game in progress
 const record={solved:0,best:{}}; // games solved without help, and the best medal per challenge level
 const queue=[];
-const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on'};
+const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on',hand:'left'};
 const SPEED={slow:520,normal:300,fast:140,instant:0};
 
 const $=id=>document.getElementById(id);
@@ -1146,6 +1155,7 @@ function applySettings(){
   cubeEl.classList.toggle('labels',settings.labels==='on');
   $('app').classList.toggle('no-notation',settings.notation==='off');
   $('timeStat').hidden=settings.timer==='off';
+  $('app').classList.toggle('mirror',settings.hand==='right');
   document.querySelectorAll('[data-set]').forEach(g=>g.querySelectorAll('[data-v]').forEach(b=>b.setAttribute('aria-pressed',String(settings[g.dataset.set]===b.dataset.v))));
   render();sizeCube();
 }
@@ -1360,9 +1370,11 @@ function layoutBoard(){
   // a button whose side runs along the edge a→c, pushed out by the gap along the unit direction n, b deep
   const along=(m,a,c,n,depth=b)=>{const e=unit(sub(c,a)),l=len(sub(c,a))-gap;put(btn(m),add(add(a,e,gap/2),n,gap),add({x:0,y:0},e,l),add({x:0,y:0},n,depth));};
   // rows: left of the front face; top and bottom follow the row's lines
-  const xl=unit(sub(P(-1.5,0,1.5),P(1.5,0,1.5)));
+  // mirrored (right-hand) view: the rows go on the front's right edge and the slices under the left side
+  const H=settings.hand==='right'?-1:1;
+  const xl=unit(sub(P(-1.5*H,0,1.5),P(1.5*H,0,1.5)));
   [['U',1],["E'",0],["D'",-1]].forEach(([m,y])=>{
-    const a=P(-1.5,y+.5,1.5),c=P(-1.5,y-.5,1.5),e=unit(sub(c,a)),l=len(sub(c,a))-gap;
+    const a=P(-1.5*H,y+.5,1.5),c=P(-1.5*H,y-.5,1.5),e=unit(sub(c,a)),l=len(sub(c,a))-gap;
     // the box's right side lies on the edge, so its top-left corner is b further out along the row
     const top=add(add(a,e,gap/2),xl,gap+b);put(btn(m),top,add({x:0,y:0},xl,-b),add({x:0,y:0},e,l));
   });
@@ -1370,9 +1382,9 @@ function layoutBoard(){
   const down=unit(sub(P(0,-1.5,1.5),P(0,1.5,1.5)));
   [["L'",-1],["M'",0],['R',1]].forEach(([m,x])=>along(m,P(x-.5,-1.5,1.5),P(x+.5,-1.5,1.5),down));
   // depth slices: under the right face's bottom edge, front to back, as deep as the columns so the two groups meet in a clean V
-  const downR=unit(sub(P(1.5,-1.5,0),P(1.5,1.5,0)));
-  [["F'",1],["S'",0],['B',-1]].forEach(([m,z])=>along(m,P(1.5,-1.5,z+.5),P(1.5,-1.5,z-.5),downR));
-  const K=P(-1.5,-1.5,1.5),Cc=P(1.5,-1.5,1.5);
+  const downR=unit(sub(P(1.5*H,-1.5,0),P(1.5*H,1.5,0)));
+  [["F'",1],["S'",0],['B',-1]].forEach(([m,z])=>along(m,P(1.5*H,-1.5,z+.5),P(1.5*H,-1.5,z-.5),downR));
+  const K=P(-1.5*H,-1.5,1.5),Cc=P(1.5*H,-1.5,1.5);
   probe.remove();
   // whole-cube turns sit one ring further out, each one long button spanning all three layer buttons on its side:
   // spin along the rows, tip under the columns, roll under the depth slices
@@ -1393,8 +1405,10 @@ function layoutBoard(){
   // rows and spin: cut their bottom end
   [D,Sp].forEach(q=>{const M=mitre(K,QL,q);q.pts[2]=X(q.pts[1],q.v,M.p,M.d);q.pts[3]=X(q.pts[0],q.v,M.p,M.d);});
   // columns and tip: cut their left end at the left corner, their right end at the right corner
-  [L,Ti].forEach(q=>{const M=mitre(K,QL,q);q.pts[0]=X(q.pts[0],q.u,M.p,M.d);q.pts[3]=X(q.pts[3],q.u,M.p,M.d);});
-  [R,Ti].forEach(q=>{const M=mitre(Cc,QR,q);q.pts[1]=X(q.pts[0],q.u,M.p,M.d);q.pts[2]=X(q.pts[3],q.u,M.p,M.d);});
+  const cutLeft=(q,c,o)=>{const M=mitre(c,o,q);q.pts[0]=X(q.pts[0],q.u,M.p,M.d);q.pts[3]=X(q.pts[3],q.u,M.p,M.d);};
+  const cutRight=(q,c,o)=>{const M=mitre(c,o,q);q.pts[1]=X(q.pts[0],q.u,M.p,M.d);q.pts[2]=X(q.pts[3],q.u,M.p,M.d);};
+  if(H>0){[L,Ti].forEach(q=>cutLeft(q,K,QL));[R,Ti].forEach(q=>cutRight(q,Cc,QR));}
+  else{[R,Ti].forEach(q=>cutRight(q,K,QL));[L,Ti].forEach(q=>cutLeft(q,Cc,QR));}
   // depth slices and roll: cut their front end
   [F,Ro].forEach(q=>{const M=mitre(Cc,QR,q);q.pts[0]=X(q.pts[0],q.u,M.p,M.d);q.pts[3]=X(q.pts[3],q.u,M.p,M.d);});
   // bounding box of cube faces and buttons
