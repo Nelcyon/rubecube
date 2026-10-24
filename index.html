@@ -56,12 +56,17 @@ h1 .logo i{width:.42rem;height:.42rem;border-radius:2px;display:block}
 .head-btns{display:flex;gap:.6rem}
 
 /* main */
-main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:1.2rem}
-.middle{display:flex;flex-direction:column;align-items:center;gap:.7rem;min-width:0}
+main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-start;gap:1.2rem}
+.middle{display:flex;flex-direction:column;align-items:center;gap:1.5rem;min-width:0;margin-top:-.5rem}
 /* board: buttons are placed by JS right against the cube edge they turn:
    rows along the left edge, columns along the bottom edge, front-to-back slices along the right face's bottom edge */
 .board{position:relative;--b:4.6rem;width:20rem;height:20rem}
 .board .btn{position:absolute;min-height:0;z-index:2;background:color-mix(in srgb,var(--raised) 92%,transparent)}
+.board .btn{--m:none;--mi:none;transform-origin:0 0;transform:var(--m);border-radius:10px;padding:.2rem;gap:0}
+.board .btn:active{transform:var(--m) translate(2%,2%) scale(.96)}
+.board .btn>span{transform:var(--mi)}
+.board .btn.narrow .alt{display:none}
+.board .btn.narrow .t{font-size:.7rem;line-height:1.1}
 .scene{position:absolute;left:0;top:0;width:0;height:0;perspective:calc(var(--s) * 13);perspective-origin:0 0;z-index:1;pointer-events:none}
 .shadow{position:absolute;left:0;top:0;width:calc(var(--s)*4);height:calc(var(--s)*1);transform:translate(-50%,calc(var(--s)*1.45));
   background:radial-gradient(closest-side,rgba(0,0,0,.6),transparent);filter:blur(6px)}
@@ -79,8 +84,6 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:cente
 .cube.previewing .cubie.hl .st.on{box-shadow:0 0 0 calc(var(--s) * .02) var(--plastic)}
 
 .dot{width:.9rem;height:.9rem;border-radius:50%;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.4)}
-.history{min-height:1.4rem;color:var(--muted);font-family:var(--font-display);font-size:.9rem;letter-spacing:.04em;overflow-wrap:anywhere}
-.history:empty::before{content:"Your moves will appear here"}
 
 /* solved banner */
 .banner{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:5;background:var(--panel);border:3px solid var(--good);border-radius:18px;
@@ -117,7 +120,6 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:cente
 .board .btn.whole .t{font-size:.72rem}
 .gamebar{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:.45rem}
 .gamebar .btn{min-height:3.4rem;padding:.3rem .9rem}
-.gamebar .history{flex-basis:100%;text-align:center}
 
 /* overlays */
 .overlay{position:fixed;inset:0;background:rgba(3,6,12,.78);display:grid;place-items:center;padding:1rem;z-index:20}
@@ -173,7 +175,6 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
 </head>
 <body>
 
-
 <div class="app" id="app">
   <header>
     <h1><span class="logo" aria-hidden="true"><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i><i style="background:#16a34a"></i><i style="background:#ffd60a"></i><i style="background:#1d6fe0"></i><i style="background:#f97316"></i><i style="background:#16a34a"></i><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i></span>RubeCube</h1>
@@ -196,7 +197,6 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         <button class="btn wide" type="button" data-act="redo" id="redoBtn"><span class="g" aria-hidden="true">↷</span>Redo</button>
         <button class="btn wide" type="button" data-act="scramble" id="scrambleBtn"><span class="g" aria-hidden="true">⇄</span><span class="lbl">Scramble</span></button>
         <button class="btn wide" type="button" data-act="reset" id="resetBtn"><span class="g" aria-hidden="true">⟲</span><span class="lbl">Reset</span></button>
-        <div class="history" id="history" aria-hidden="true"></div>
       </div>
       <div class="board" id="board" aria-label="Cube and turn buttons">
       <button class="btn whole" type="button" data-move="y"><span class="g">⇇</span><span class="t">Spin cube left</span><span class="alt">right-click ⇉</span></button>
@@ -458,7 +458,6 @@ function scramble(){
     if(isSolved())applyMove('R');
     history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;
     render();save();updateStats();
-    $('history').textContent='';
     say('Cube scrambled. Good luck!');
   });
   pump();
@@ -483,7 +482,6 @@ function updateStats(){
   $('moves').textContent=countMoves();
   $('time').textContent=fmt(elapsed());
   $('undoBtn').disabled=!history.length;$('redoBtn').disabled=!redo.length;
-  $('history').textContent=history.slice(-14).join('  ');
   $('armed').hidden=!armed;
 }
 setInterval(()=>{if(timerStart!==null)$('time').textContent=fmt(elapsed());},250);
@@ -719,60 +717,63 @@ function sizeCube(){
     sz=Math.min(125,Math.max(22,sz*(1+(f-1)*1.15)));
   }
 }
-// place the turn buttons against the projected cube edges they act on
+// place the turn buttons against the projected cube edges they act on.
+// Each button is a parallelogram with one side running along the cube edge it turns.
+let probe=null;
 function layoutBoard(){
   if(animating){layoutPending=true;return null;}
-  const board=$('board'),scene=$('scene'),rem=parseFloat(getComputedStyle(document.documentElement).fontSize);
-  const b=parseFloat(getComputedStyle(board).getPropertyValue('--b'))*rem||4.6*rem,gap=Math.max(5,.35*rem);
+  const board=$('board'),scene=$('scene'),cube=$('cube'),rem=parseFloat(getComputedStyle(document.documentElement).fontSize);
+  const b=parseFloat(getComputedStyle(board).getPropertyValue('--b'))*rem||4.6*rem,gap=Math.max(6,.4*rem);
+  const s=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s'));
+  if(!isFinite(s))return null;
   scene.style.left='0px';scene.style.top='0px';
   const o=scene.getBoundingClientRect();
-  const R=(p,di)=>{const c=cubies.find(c=>key(c.p)===key(p));const r=c.faces[di].parentElement.getBoundingClientRect();
-    return {l:r.left-o.left,t:r.top-o.top,r:r.right-o.left,b:r.bottom-o.top,cx:(r.left+r.right)/2-o.left,cy:(r.top+r.bottom)/2-o.top};};
+  if(!probe){probe=document.createElement('div');probe.style.cssText='position:absolute;left:0;top:0;width:0;height:0';}
+  cube.appendChild(probe);
+  // screen point of a logical cube point (x right, y up, z toward the viewer; the cube spans -1.5..1.5)
+  const P=(x,y,z)=>{probe.style.transform=`translate3d(${x*s}px,${-y*s}px,${z*s}px)`;const r=probe.getBoundingClientRect();return {x:r.left-o.left,y:r.top-o.top};};
+  const add=(p,q,f=1)=>({x:p.x+q.x*f,y:p.y+q.y*f}),sub=(p,q)=>({x:p.x-q.x,y:p.y-q.y}),len=v=>Math.hypot(v.x,v.y),unit=v=>{const n=len(v)||1;return {x:v.x/n,y:v.y/n};};
   const btn=m=>board.querySelector(`[data-move="${m}"]`);
   const placed=[];
-  const put=(el,x,y,w,h)=>placed.push({el,x,y,w,h});
-  // rows: left of the front face's left column
-  const rows=[['U',1],["E'",0],["D'",-1]].map(([m,y])=>[m,R([-1,y,1],4)]);
-  const rh=Math.min(b,Math.abs(rows[2][1].cy-rows[0][1].cy)/2-gap);
-  rows.forEach(([m,r])=>put(btn(m),r.l-gap-b,r.cy-rh/2,b,rh));
-  // columns: under the front face's bottom row
-  const cols=[["L'",-1],["M'",0],['R',1]].map(([m,x])=>[m,R([x,-1,1],4)]);
-  const cw=Math.min(b,Math.abs(cols[2][1].cx-cols[0][1].cx)/2-gap);
-  cols.forEach(([m,r])=>put(btn(m),r.cx-cw/2,r.b+gap,cw,b));
-  // slices: along the right face's bottom edge, front to back
-  const sl=[['F',1],['S',0],["B'",-1]].map(([m,z])=>[m,R([1,-1,z],0)]);
-  const A=sl.map(([,r])=>({x:r.cx,y:r.b}));
-  let dx=A[2].x-A[0].x,dy=A[2].y-A[0].y;const len=Math.hypot(dx,dy)||1;dx/=len;dy/=len;
-  let nx=-dy,ny=dx;if(ny<0){nx=-nx;ny=-ny;}
-  const L=Math.max(len/2,(b+gap)/Math.max(Math.abs(dx),Math.abs(dy)));
-  const hit=(a,c)=>a.x<c.x+c.w&&c.x<a.x+a.w&&a.y<c.y+c.h&&c.y<a.y+a.h;
-  const avoid=placed.slice(3).concat(sl.map(([,r])=>({x:r.l,y:r.t,w:r.r-r.l,h:r.b-r.t})));
-  let off=gap,boxes;
-  for(let k=0;k<120;k++){
-    boxes=[-1,0,1].map(i=>({x:A[1].x+dx*L*i+nx*(off+b/2)-b/2,y:A[1].y+dy*L*i+ny*(off+b/2)-b/2,w:b,h:b}));
-    if(!boxes.some(q=>avoid.some(a=>hit(q,a))))break;
-    off+=3;
-  }
-  sl.forEach(([m],i)=>put(btn(m),boxes[i].x,boxes[i].y,b,b));
-  // whole-cube turns: spin on the left (beside the middle row), tip at the bottom left, roll on the right
-  const all=()=>placed.map(q=>({x:q.x,y:q.y,w:q.w,h:q.h}));
-  const free=(x,y,w,h,step)=>{for(let k=0;k<200;k++){const q={x,y,w,h};if(!all().some(a=>hit(q,a)))return q;x+=step[0];y+=step[1];}return {x,y,w,h};};
-  const rowsBox=placed.slice(0,3),colsBox=placed.slice(3,6);
-  const mid=rowsBox[1];
-  let q=free(mid.x-gap-b,mid.y+mid.h/2-b/2,b,b,[-3,0]);put(btn('y'),q.x,q.y,q.w,q.h);
-  q=free(rowsBox[2].x+rowsBox[2].w/2-b/2,colsBox[0].y,b,b,[-3,0]);put(btn('x'),q.x,q.y,q.w,q.h);
-  const rf=[];for(const y of [1,0,-1])for(const z of [1,0,-1])rf.push(R([1,y,z],0));
-  const fr=Math.max(...rf.map(r=>r.r)),rmid=R([1,0,0],0);
-  q=free(fr+gap,rmid.cy-b/2-b*0.3,b,b,[3,0]);put(btn("z'"),q.x,q.y,q.w,q.h);
+  // p: top-left corner, u: top side, v: left side (screen vectors)
+  const put=(el,p,u,v)=>placed.push({el,p,u,v});
+  // a button whose side runs along the edge a→c, pushed out by the gap along the unit direction n, b deep
+  const along=(m,a,c,n,depth=b)=>{const e=unit(sub(c,a)),l=len(sub(c,a))-gap;put(btn(m),add(add(a,e,gap/2),n,gap),add({x:0,y:0},e,l),add({x:0,y:0},n,depth));};
+  // rows: left of the front face; top and bottom follow the row's lines
+  const xl=unit(sub(P(-1.5,0,1.5),P(1.5,0,1.5)));
+  [['U',1],["E'",0],["D'",-1]].forEach(([m,y])=>{
+    const a=P(-1.5,y+.5,1.5),c=P(-1.5,y-.5,1.5),e=unit(sub(c,a)),l=len(sub(c,a))-gap;
+    // the box's right side lies on the edge, so its top-left corner is b further out along the row
+    const top=add(add(a,e,gap/2),xl,gap+b);put(btn(m),top,add({x:0,y:0},xl,-b),add({x:0,y:0},e,l));
+  });
+  // columns: under the front face's bottom edge, sides following the columns' lines
+  const down=unit(sub(P(0,-1.5,1.5),P(0,1.5,1.5)));
+  [["L'",-1],["M'",0],['R',1]].forEach(([m,x])=>along(m,P(x-.5,-1.5,1.5),P(x+.5,-1.5,1.5),down));
+  // depth slices: under the right face's bottom edge, front to back (that face is narrow, so these are taller)
+  const downR=unit(sub(P(1.5,-1.5,0),P(1.5,1.5,0)));
+  [['F',1],['S',0],["B'",-1]].forEach(([m,z])=>along(m,P(1.5,-1.5,z+.5),P(1.5,-1.5,z-.5),downR,b*1.2));
+  probe.remove();
+  // whole-cube turns sit one ring further out: spin beside the middle row,
+  // tip under the Left/Middle columns, roll beyond the Mid slice/Back slices
+  const by=m=>placed.find(q=>q.el===btn(m));
+  const E=by("E'");put(btn('y'),add(E.p,E.u,-(1+gap/b)),E.u,E.v);
+  const L=by("L'"),M=by("M'");put(btn('x'),add(add(L.p,sub(M.p,L.p),.5),down,b+gap),L.u,L.v);
+  const S=by('S'),B=by("B'");put(btn("z'"),add(add(S.p,sub(B.p,S.p),.5),downR,b*1.2+gap),add(S.u,unit(S.u),Math.max(0,b-len(S.u))),S.v);
   // bounding box of cube faces and buttons
   let l=Infinity,t=Infinity,r=-Infinity,bt=-Infinity;
   const grow=(x1,y1,x2,y2)=>{l=Math.min(l,x1);t=Math.min(t,y1);r=Math.max(r,x2);bt=Math.max(bt,y2);};
   cubies.forEach(c=>c.faces.forEach(f=>{const q=f.parentElement.getBoundingClientRect();grow(q.left-o.left,q.top-o.top,q.right-o.left,q.bottom-o.top);}));
-  placed.forEach(q=>grow(q.x,q.y,q.x+q.w,q.y+q.h));
+  placed.forEach(q=>[q.p,add(q.p,q.u),add(q.p,q.v),add(add(q.p,q.u),q.v)].forEach(c=>grow(c.x,c.y,c.x,c.y)));
   const pad=6;l-=pad;t-=pad;r+=pad;bt+=pad;
   board.style.width=(r-l)+'px';board.style.height=(bt-t)+'px';
   scene.style.left=(-l)+'px';scene.style.top=(-t)+'px';
-  placed.forEach(q=>Object.assign(q.el.style,{left:(q.x-l)+'px',top:(q.y-t)+'px',width:q.w+'px',height:q.h+'px'}));
+  placed.forEach(q=>{
+    // lay the button out as a plain box, then shear it onto its parallelogram; the label is sheared back upright
+    const W=len(q.u),H=len(q.v),A=q.u.x/W,B=q.u.y/W,C=q.v.x/H,D=q.v.y/H,det=A*D-B*C;
+    q.el.classList.toggle('narrow',W<b*.75);
+    Object.assign(q.el.style,{left:(q.p.x-l)+'px',top:(q.p.y-t)+'px',width:W+'px',height:H+'px'});
+    q.el.style.setProperty('--m',`matrix(${A},${B},${C},${D},0,0)`);
+    q.el.style.setProperty('--mi',`matrix(${D/det},${-B/det},${-C/det},${A/det},0,0)`);});
   layoutPending=false;
   return {w:r-l,h:bt-t};
 }
