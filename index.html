@@ -105,6 +105,11 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .coach .listhead .btn{min-height:2.6rem;padding:.2rem .8rem;font-size:.9rem}
 .coach h3{margin:.4rem 0 0;font-family:var(--font-display);font-size:.95rem;color:var(--accent)}
 .coach .alglist{grid-template-columns:1fr}
+.coach .illus{display:flex;align-items:center;justify-content:center;gap:.4rem;margin-top:.5rem}
+.coach .illus figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:.1rem}
+.coach .illus svg{width:8.6rem;height:auto;display:block}
+.coach .illus figcaption{font-size:.8rem;color:var(--muted)}
+.coach .illus .to{font-size:1.4rem;color:var(--muted)}
 .coach h2{margin:0;font-family:var(--font-display);font-size:1.45rem}
 .coach .kicker{margin:0;color:var(--good);font-weight:700;font-size:.85rem;text-transform:uppercase;letter-spacing:.1em}
 .coach .about{margin:0;color:var(--muted)}
@@ -314,7 +319,6 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <p class="kicker" id="coachKicker"></p>
       <h2 id="coachTitle"></h2>
       <p class="about" id="coachAbout"></p>
-      <div class="now" id="coachNow" aria-live="polite"></div>
       <div class="ctl">
         <button class="btn wide" type="button" id="lessonBack"><span class="g" aria-hidden="true">◀</span>Back</button>
         <button class="btn wide primary" type="button" id="lessonNext"><span class="g" aria-hidden="true">▶</span>Next move</button>
@@ -323,6 +327,7 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         <button class="btn wide" type="button" id="lessonReplay"><span class="g" aria-hidden="true">↺</span>Start over</button>
         <button class="btn wide" type="button" id="lessonExit"><span class="g" aria-hidden="true">✕</span><span class="lbl">Exit lesson</span></button>
       </div>
+      <div class="now" id="coachNow" aria-live="polite"></div>
       <div class="stepbox">
         <p class="steptext" id="coachStep"></p>
         <div class="chips" id="coachChips" aria-hidden="true"></div>
@@ -1324,7 +1329,7 @@ function closeAlgList(){
 }
 function showCoach(){
   $('coach').hidden=false;$('main').classList.add('lessoning');
-  $('coachList').hidden=true;$('coachLesson').hidden=false;setTab(lesson.kind==='alg');
+  $('coachList').hidden=true;$('coachLesson').hidden=false;setTab(lesson.kind==='alg');$('coach').scrollTop=0;
   $('coachPick').hidden=lesson.kind!=='alg';$('lessonReplay').hidden=lesson.kind!=='alg';
   updateCoach();sizeCube();
   $('lessonNext').focus({preventScroll:true});
@@ -1412,7 +1417,7 @@ function updateCoach(){
   const si=cur?cur.si:L.steps.length-1,st=L.steps[si];
   if(L.kind==='alg'){
     $('coachKicker').textContent='Algorithm tutor';$('coachTitle').textContent=L.title;
-    $('coachAbout').innerHTML=L.about;
+    $('coachAbout').innerHTML=L.about+(L.pic||(L.pic=algPicture(L.alg,L.start)));
     $('coachStep').innerHTML='';
   } else {
     $('coachKicker').textContent=`Solver · stage ${st.stageNo} of ${st.stages}`;$('coachTitle').textContent=st.stage;
@@ -1444,6 +1449,53 @@ function updateCoach(){
   $('lessonPlay').querySelector('.lbl').textContent=L.auto?'Pause':'Play all';
   $('lessonPlay').querySelector('.g').textContent=L.auto?'⏸':'⏵';
   applyPreview();updateStats();
+}
+// ---------- algorithm pictures: the cube before and after, with arrows for the pieces that move ----------
+// Drawn as a small 3D view (top, front and right sides), the same way round as the big cube.
+const ISO=(x,y,z)=>({x:(x-z)*.866*14,y:(-y+(x+z)*.5)*14});
+function stickerPts(p,d,inset=.44){
+  const c=[p[0]+d[0]*.5,p[1]+d[1]*.5,p[2]+d[2]*.5],ax=[0,1,2].filter(i=>!d[i]);
+  return [[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b])=>{const q=c.slice();q[ax[0]]+=a*inset;q[ax[1]]+=b*inset;return ISO(...q);});
+}
+// where a piece shows on the picture: its top sticker if it's in the top layer, else its front or right sticker
+function pieceSpot(p){
+  const d=p[1]===1?[0,1,0]:p[2]===1?[0,0,1]:p[0]===1?[1,0,0]:null;if(!d)return null;
+  return ISO(p[0]+d[0]*.5,p[1]+d[1]*.5,p[2]+d[2]*.5);
+}
+function cubePic(cs,arrows,label){
+  const faces=[[0,1,0],[0,0,1],[1,0,0]],shade={'0,1,0':1,'0,0,1':.86,'1,0,0':.72};
+  let polys='';
+  faces.forEach(d=>cs.forEach(c=>{
+    if(c.p[0]*d[0]+c.p[1]*d[1]+c.p[2]*d[2]!==1)return;
+    const col=c.s[key(d)];if(!col)return;
+    const pts=stickerPts(c.p,d).map(q=>q.x.toFixed(1)+','+q.y.toFixed(1)).join(' ');
+    polys+=`<polygon points="${pts}" fill="${COLORS[col]}" fill-opacity="${shade[key(d)]}" stroke="#07080b" stroke-width="1.2"/>`;
+  }));
+  const body=['0,1,0','0,0,1','1,0,0'].map(k=>{const d=k.split(',').map(Number);
+    return `<polygon points="${stickerPts([d[0],d[1],d[2]],d,1.5).map(q=>q.x.toFixed(1)+','+q.y.toFixed(1)).join(' ')}" fill="#07080b"/>`;}).join('');
+  // a swap is one straight two-headed arrow; a longer cycle uses gently bowed one-way arrows
+  const arr=(arrows||[]).map(([a,b,both])=>{
+    const dx=b.x-a.x,dy=b.y-a.y,n=Math.hypot(dx,dy)||1,sh=3.5,ax=a.x+dx/n*sh,ay=a.y+dy/n*sh,bx=b.x-dx/n*sh,by=b.y-dy/n*sh,bow=both?0:4;
+    const mx=(ax+bx)/2-dy/n*bow,my=(ay+by)/2+dx/n*bow;
+    return `<path d="M${ax.toFixed(1)},${ay.toFixed(1)} Q${mx.toFixed(1)},${my.toFixed(1)} ${bx.toFixed(1)},${by.toFixed(1)}" fill="none" stroke="#fff" stroke-width="1.8" stroke-linecap="round" marker-end="url(#ah)"${both?' marker-start="url(#ah)"':''}/>`;
+  }).join('');
+  return `<figure><svg viewBox="-42 -46 84 92" role="img" aria-label="${label}"><defs><marker id="ah" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="3.2" markerHeight="3.2" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#fff"/></marker></defs>${body}${polys}<g style="filter:drop-shadow(0 0 1.5px #000)">${arr}</g></svg><figcaption>${label}</figcaption></figure>`;
+}
+function algPicture(a,start){
+  const before=cloneState(start),after=applyAll(cloneState(start),a.moves);
+  // arrows only where they tell the story: a piece dropping out of the top layer if there is one,
+  // otherwise the pieces swapped around the top. A recipe shown from a solved cube gets none.
+  let moved=a.setup==='solved'?[]:before.map((c,i)=>({i,from:c.p,to:after[i].p})).filter(m=>m.from.join()!==m.to.join()&&m.from.filter(v=>v).length>1);
+  const drops=moved.filter(m=>m.from[1]===1&&m.to[1]<1);
+  moved=drops.length?drops:moved.filter(m=>m.from[1]===1&&m.to[1]===1);
+  const arrows=[],seen=new Set();
+  moved.forEach(m=>{
+    if(seen.has(m.i))return;
+    const back=moved.find(o=>o.from.join()===m.to.join()&&o.to.join()===m.from.join());
+    if(back)seen.add(back.i);
+    const A=pieceSpot(m.from),B=pieceSpot(m.to);if(A&&B)arrows.push([A,B,!!back]);
+  });
+  return `<div class="illus">${cubePic(before,arrows,'Before')}<span class="to" aria-hidden="true">→</span>${cubePic(after,[],'After')}</div>`;
 }
 function renderAlgList(){
   const groups=[...new Set(ALGS.map(a=>a.group))];
