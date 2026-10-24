@@ -1680,8 +1680,8 @@ function headPts(tip,dir){
 }
 // one arrow as a single shape with one outline: every dark part first, then every white part over it,
 // so there's no seam where the head meets the shaft; each arrow is drawn whole over the ones before it
-function arrowShape(d,heads){
-  return `<g><path d="${d}" fill="none" stroke="#07080b" stroke-width="5.6" stroke-linecap="butt"/>`+
+function arrowShape(d,heads,dOut=d,cap='butt'){
+  return `<g><path d="${dOut}" fill="none" stroke="#07080b" stroke-width="5.6" stroke-linecap="${cap}"/>`+
     heads.map(h=>`<polygon points="${h}" fill="#07080b" stroke="#07080b" stroke-width="2.6" stroke-linejoin="round"/>`).join('')+
     `<path d="${d}" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="butt"/>`+
     heads.map(h=>`<polygon points="${h}" fill="#fff"/>`).join('')+'</g>';
@@ -1696,12 +1696,14 @@ function picArrow(a,b,both,C=ISO(0,1.5,0),straight=false){
   const pull=(P,from,k)=>{const vx=P.x-from.x,vy=P.y-from.y,m=Math.hypot(vx,vy)||1;return {x:P.x-vx/m*k,y:P.y-vy/m*k};};
   const Bs=pull(B,M,5),As=both?pull(A,M,5):A;
   const d=`M${f1(As.x)},${f1(As.y)} Q${f1(M.x)},${f1(M.y)} ${f1(Bs.x)},${f1(Bs.y)}`;
-  return arrowShape(d,[headPts(B,{x:B.x-M.x,y:B.y-M.y}),...(both?[headPts(A,{x:A.x-M.x,y:A.y-M.y})]:[])]);
+  // the outline runs a little past a plain tail so that end is closed off too
+  const At=both?As:pull(A,M,-1.3),dOut=`M${f1(At.x)},${f1(At.y)} Q${f1(M.x)},${f1(M.y)} ${f1(Bs.x)},${f1(Bs.y)}`;
+  return arrowShape(d,[headPts(B,{x:B.x-M.x,y:B.y-M.y}),...(both?[headPts(A,{x:A.x-M.x,y:A.y-M.y})]:[])],dOut);
 }
 function twistMark(at,cw=true){
   // a three-quarter circle ending at the top with its head pointing the way the corner turns (as seen from outside it)
   const r=5.4,k=cw?1:-1,d=`M${f1(at.x+k*r)},${f1(at.y)} A${r},${r} 0 1 ${cw?1:0} ${f1(at.x)},${f1(at.y-r)}`;
-  return arrowShape(d,[headPts({x:at.x+k*5,y:at.y-r},{x:k,y:0})]);
+  return arrowShape(d,[headPts({x:at.x+k*5,y:at.y-r},{x:k,y:0})],d,'square');
 }
 function cubePic(cs,keep,marks,label){
   const faces=[[0,1,0],[0,0,1],[1,0,0]],shade={'0,1,0':1,'0,0,1':.86,'1,0,0':.72};
