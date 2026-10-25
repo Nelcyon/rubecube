@@ -344,9 +344,9 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <button class="btn" type="button" data-move="U"><span class="in"><span class="g">⬌</span><span class="t">Top</span><span class="n" aria-hidden="true" title="the turn and its reverse">U <small>/&nbsp;U′</small></span></span></button>
       <button class="btn" type="button" data-move="E'"><span class="in"><span class="g">⬌</span><span class="t">Middle</span><span class="n" aria-hidden="true" title="the turn and its reverse">E <small>/&nbsp;E′</small></span></span></button>
       <button class="btn" type="button" data-move="D'"><span class="in"><span class="g">⬌</span><span class="t">Bottom</span><span class="n" aria-hidden="true" title="the turn and its reverse">D <small>/&nbsp;D′</small></span></span></button>
-      <button class="btn" type="button" data-move="B"><span class="in"><span class="g">⬍</span><span class="t">Back</span><span class="n" aria-hidden="true" title="the turn and its reverse">B <small>/&nbsp;B′</small></span></span></button>
-      <button class="btn" type="button" data-move="S'"><span class="in"><span class="g">⬍</span><span class="t">Mid</span><span class="n" aria-hidden="true" title="the turn and its reverse">S <small>/&nbsp;S′</small></span></span></button>
-      <button class="btn" type="button" data-move="F'"><span class="in"><span class="g">⬍</span><span class="t">Front</span><span class="n" aria-hidden="true" title="the turn and its reverse">F <small>/&nbsp;F′</small></span></span></button>
+      <button class="btn" type="button" data-move="B'"><span class="in"><span class="g">⬍</span><span class="t">Back</span><span class="n" aria-hidden="true" title="the turn and its reverse">B <small>/&nbsp;B′</small></span></span></button>
+      <button class="btn" type="button" data-move="S"><span class="in"><span class="g">⬍</span><span class="t">Mid</span><span class="n" aria-hidden="true" title="the turn and its reverse">S <small>/&nbsp;S′</small></span></span></button>
+      <button class="btn" type="button" data-move="F"><span class="in"><span class="g">⬍</span><span class="t">Front</span><span class="n" aria-hidden="true" title="the turn and its reverse">F <small>/&nbsp;F′</small></span></span></button>
         <div class="scene" id="scene"><div class="shadow"></div><div class="cube" id="cube"></div></div>
         <div class="banner" id="banner" hidden>
           <h2>Solved!</h2>
@@ -1413,7 +1413,7 @@ function layoutBoard(){
   [["L'",-1],["M'",0],['R',1]].forEach(([m,x])=>along(m,P(x-.5,-1.5,1.5),P(x+.5,-1.5,1.5),down));
   // depth slices: under the right face's bottom edge, front to back, as deep as the columns so the two groups meet in a clean V
   const downR=unit(sub(P(1.5*H,-1.5,0),P(1.5*H,1.5,0)));
-  [["F'",1],["S'",0],['B',-1]].forEach(([m,z])=>along(m,P(1.5*H,-1.5,z+.5),P(1.5*H,-1.5,z-.5),downR));
+  [['F',1],['S',0],["B'",-1]].forEach(([m,z])=>along(m,P(1.5*H,-1.5,z+.5),P(1.5*H,-1.5,z-.5),downR));
   const K=P(-1.5*H,-1.5,1.5),Cc=P(1.5*H,-1.5,1.5);
   probe.remove();
   // whole-cube turns sit one ring further out, each one long button spanning all three layer buttons on its side:
@@ -1422,7 +1422,7 @@ function layoutBoard(){
   const U=by('U'),D=by("D'"),ur=unit(U.u);
   put(btn('y'),add(U.p,ur,-(gap+d)),add({x:0,y:0},ur,d),sub(add(D.p,D.v),U.p));
   const L=by("L'"),R=by('R');put(btn('x'),add(L.p,down,b+gap),sub(add(R.p,R.u),L.p),add({x:0,y:0},down,d));
-  const F=by("F'"),B=by('B');put(btn("z'"),add(F.p,downR,b+gap),sub(add(B.p,B.u),F.p),add({x:0,y:0},downR,d));
+  const F=by('F'),B=by("B'");put(btn("z'"),add(F.p,downR,b+gap),sub(add(B.p,B.u),F.p),add({x:0,y:0},downR,d));
   // corners: where two groups meet, both buttons are cut along one mitre line (inner cube corner to outer frame corner),
   // each pulled back half a gap, so the groups fit together like a picture frame
   placed.forEach(q=>q.pts=[q.p,add(q.p,q.u),add(add(q.p,q.u),q.v),add(q.p,q.v)]);
