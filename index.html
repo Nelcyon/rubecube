@@ -546,6 +546,13 @@ const DESC={
   "z":"<b>Roll whole cube right</b> (not counted)","z'":"<b>Roll whole cube left</b> (not counted)"
 };
 const isRot=t=>'xyz'.includes(t[0]);
+// what the player reads: the mark (′) always means counter-clockwise as seen from where the player sits:
+// rows as seen from above, columns as seen from the right, front-to-back slices as seen from the front.
+// Standard notation names L, M, D, E and B from the far side, so those letters swap their mark on screen.
+const FLIPPED='LMDEB';
+const nota=t=>{if(!FLIPPED.includes(t[0])||/2/.test(t))return t.replace(/'/g,'′');return t.endsWith("'")?t[0]:t[0]+'′';};
+// the same for a written-out recipe such as "(R′ D′ R D) ×2"
+const notaStr=str=>str.replace(/(^|[^A-Za-z])([LMDEB])(['′]?)(2?)(?![A-Za-z])/g,(m,pre,l,pm,two)=>pre+(two?l+'2':pm?l:l+'′'));
 const inv=t=>t.endsWith("'")?t.slice(0,-1):t+"'";
 const parse=t=>{const m=MOVES[t[0]];return {k:m.k,f:m.f,s:t.endsWith("'")?1:-1};}; // s = sin(angle); clockwise = -90°
 
@@ -1422,7 +1429,7 @@ function applyView(){
 
 // ---------- button edit mode: choose right on the board which way each button turns ----------
 let editing=false,edBtn=null;
-const pr=t=>t.replace("'",'′');
+const pr=t=>nota(t);
 function applyButtons(){
   if(!settings.btns||typeof settings.btns!=='object')settings.btns={};
   const split=settings.split!=='off';
@@ -1466,7 +1473,7 @@ function fillEditor(){
   $('edDirN').textContent=split?'The other half turns the other way. The arrows show which way.':'Right click turns the other way.';
   $('edLabK').hidden=split;$('edLab').hidden=split;
   const left=settings.swapClick?prime(b.dataset.move):b.dataset.move;
-  $('edDir').innerHTML=opt(L,L,left===L)+opt(L+"'",L+'′',left!==L);
+  $('edDir').innerHTML=opt(L,nota(L),left===L)+opt(L+"'",nota(L+"'"),left!==L);
   $('edLab').innerHTML=opt(0,`${L} / ${L}′`,!o.lab)+opt(1,`${L}′ / ${L}`,!!o.lab);
 }
 function openEditor(b){
@@ -1673,7 +1680,7 @@ window.addEventListener('resize',sizeCube);
 // the button for the next turn glows and its layer gets the pink outline.
 let lesson=null,lessonSnap=null,autoTimer=null;
 const AUTO_GAP={slow:1300,normal:850,fast:450,instant:350};
-const pretty=t=>t.replace(/'/g,'′');
+const pretty=t=>nota(t);
 function makeLesson(kind,title,about,steps){
   const flat=[];
   steps.forEach((st,si)=>{let qi=0;st.toks.forEach((tok,ti)=>{const n=quarterTurns(tok).length;for(let k=0;k<n;k++)flat.push({t:st.moves[qi++],si,ti,part:k,of:n});});});
@@ -1818,7 +1825,7 @@ function updateCoach(){
   } else {
     $('coachKicker').textContent=`Solver · stage ${st.stageNo} of ${st.stages}`;$('coachTitle').textContent=st.stage;
     $('coachAbout').textContent=st.intro;
-    $('coachStep').innerHTML=`Step ${si+1} of ${L.steps.length}: ${st.text}`+(st.alg?`<span class="uses">Uses the algorithm: ${st.alg}</span>`:'');
+    $('coachStep').innerHTML=`Step ${si+1} of ${L.steps.length}: ${st.text}`+(st.alg?`<span class="uses">Uses the algorithm: ${notaStr(st.alg)}</span>`:'');
   }
   // chips: one per notation token of this step
   const doneQ=L.flat.slice(0,L.pos);
@@ -1977,7 +1984,7 @@ function algMini(a){
 }
 function renderAlgList(){
   const groups=[...new Set(ALGS.map(a=>a.group))];
-  $('algList').innerHTML=groups.map(g=>`<h3>${g}</h3><div class="alglist">`+ALGS.map((a,i)=>a.group!==g?'':`<button class="btn algpick" type="button" data-alg="${i}"><span class="at"><b>${a.name}</b><span class="nt">${a.show||a.toks.map(pretty).join(' ')}</span></span>${algMini(a)}</button>`).join('')+'</div>').join('');
+  $('algList').innerHTML=groups.map(g=>`<h3>${g}</h3><div class="alglist">`+ALGS.map((a,i)=>a.group!==g?'':`<button class="btn algpick" type="button" data-alg="${i}"><span class="at"><b>${a.name}</b><span class="nt">${a.show?notaStr(a.show):a.toks.map(pretty).join(' ')}</span></span>${algMini(a)}</button>`).join('')+'</div>').join('');
 }
 renderAlgList();
 $('algList').addEventListener('click',e=>{const b=e.target.closest('[data-alg]');if(!b||!pointerOk(b))return;startAlgLesson(ALGS[+b.dataset.alg]);});
