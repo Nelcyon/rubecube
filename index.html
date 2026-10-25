@@ -1441,8 +1441,8 @@ function applyButtons(){
     if(split){
       // the left or upper half takes the turn that moves stickers left or up; the edit card can swap them
       const first=towardUpLeft(base)?base:prime(base),a=o.flip?prime(first):first,c=prime(a);
-      // letter colours as on the whole buttons: plain turn grey, prime turn in the accent colour
-      const lab=t=>`<span class="${t.endsWith("'")?'pm':'pl'}">${pr(t)}</span>`;
+      // letter colours as on the whole buttons: the half for the whole button's left-click turn in the accent colour, the other half grey
+      const lc=o.flip?prime(base):base,lab=t=>`<span class="${t===lc?'pm':'pl'}">${pr(t)}</span>`;
       set(b,a,lab(a),arrowFor(a));set(tw,c,lab(c),arrowFor(c));
     }else{
       const t=o.flip?prime(base):base;
