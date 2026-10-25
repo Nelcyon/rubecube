@@ -186,6 +186,11 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 /* view: turned a little to the left and tipped a little down, more left than down, well short of corner-on */
 .cube{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d;transform:rotateX(-24deg) rotateY(-33deg)}
 .mirror .cube{transform:rotateX(-24deg) rotateY(33deg)} /* right-hand view: the left side shows, buttons on the right */
+/* the corner grip: drag it to change the view angle; the buttons re-fit to the new view as it moves */
+.viewgrip{position:absolute;z-index:4;width:2rem;height:2rem;margin:-1rem 0 0 -1rem;border-radius:50%;display:grid;place-items:center;cursor:grab;touch-action:none;
+  background:color-mix(in srgb,var(--gold) 22%,var(--panel));border:2px solid var(--gold);color:var(--gold);font-weight:800;font-size:1rem;opacity:.55;transition:opacity .15s;user-select:none}
+.viewgrip[hidden]{display:none}.viewgrip:hover,.viewgrip.dragging{opacity:1}.viewgrip.dragging{cursor:grabbing}
+.mirror .viewgrip span{display:inline-block;transform:scaleX(-1)}
 .cubie{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}
 .face{position:absolute;width:var(--s);height:var(--s);left:calc(var(--s) / -2);top:calc(var(--s) / -2);background:var(--plastic);border-radius:7%}
 .st{position:absolute;inset:7.5%;border-radius:15%;display:none;
@@ -383,6 +388,7 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <button class="btn" type="button" data-move="S"><span class="in"><span class="g">⬍</span><span class="t">Mid</span><span class="n" aria-hidden="true" title="the turn and its reverse">S <small>/&nbsp;S′</small></span></span></button>
       <button class="btn" type="button" data-move="F"><span class="in"><span class="g">⬍</span><span class="t">Front</span><span class="n" aria-hidden="true" title="the turn and its reverse">F <small>/&nbsp;F′</small></span></span></button>
         <div class="scene" id="scene"><div class="shadow"></div><div class="cube" id="cube"></div></div>
+        <div class="viewgrip" id="viewGrip" role="slider" tabindex="-1" aria-label="Cube view angle: drag to tilt and turn the cube" title="Drag to change the view. Double-click to reset."><span aria-hidden="true">⤡</span></div>
         <div class="banner" id="banner" hidden>
           <h2>Solved!</h2>
           <p id="bannerText"></p>
@@ -486,6 +492,8 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <button class="btn" type="button" data-v="on">On</button><button class="btn" type="button" data-v="off">Off</button></div></div>
     <div class="opt"><span>Button side</span><div class="seg" data-set="hand">
       <button class="btn" type="button" data-v="left">Rows on the left</button><button class="btn" type="button" data-v="right">Mirrored: rows on the right</button></div></div>
+    <div class="opt"><span>Change the view by dragging the cube's corner</span><div class="seg" data-set="viewDrag">
+      <button class="btn" type="button" data-v="on">On: show the corner grip</button><button class="btn" type="button" data-v="off">Off</button></div></div>
     <div class="opt"><span>Buttons</span><div class="seg" data-set="split">
       <button class="btn" type="button" data-v="on">Split in two: one half each way</button><button class="btn" type="button" data-v="off">Whole: right click turns back</button></div></div>
     <div class="opt"><span>Which way each button turns and how it's labelled</span><button class="btn wide" id="editBtn" type="button"><span class="g" aria-hidden="true">✎</span>Edit buttons</button></div>
@@ -567,7 +575,7 @@ const prime=t=>t.endsWith("'")?t.slice(0,-1):t+"'";
 let chalDone=null; // the challenge just won: its score stays on the bar until the next game or turn
 const record={solved:0,best:{}}; // games solved without help, and the best medal per challenge level
 const queue=[];
-const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on',hand:'left',split:'on',swapClick:false,btns:{}}; // btns: per button {flip, lab} from edit mode
+const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on',hand:'left',split:'on',view:{x:24,y:33},viewDrag:'off',swapClick:false,btns:{}}; // btns: per button {flip, lab} from edit mode
 const SPEED={slow:520,normal:300,fast:140,instant:0};
 
 const $=id=>document.getElementById(id);
@@ -1216,7 +1224,7 @@ function applySettings(){
   $('app').classList.toggle('no-notation',settings.notation==='off');
   $('timeStat').hidden=settings.timer==='off';
   $('app').classList.toggle('mirror',settings.hand==='right');
-  applyButtons();
+  applyView();applyButtons();
   document.querySelectorAll('[data-set]').forEach(g=>g.querySelectorAll('[data-v]').forEach(b=>b.setAttribute('aria-pressed',String(settings[g.dataset.set]===b.dataset.v))));
   render();sizeCube();
 }
@@ -1389,6 +1397,29 @@ $('presetQ').onclick=()=>{settings.keys={...PRESETS.quadstick};save();renderKeys
 $('presetL').onclick=()=>{settings.keys={...PRESETS.letters};save();renderKeys();say('Letter keys layout');};
 $('keysBtn').onclick=()=>openOverlay('keysOv');
 
+// ---------- view angle: drag the corner grip; the whole button frame is laid out again from the new view ----------
+const VIEW0={x:24,y:33},VLIM={x:[14,45],y:[22,55]};
+const clampV=v=>({x:Math.min(VLIM.x[1],Math.max(VLIM.x[0],+v.x||VIEW0.x)),y:Math.min(VLIM.y[1],Math.max(VLIM.y[0],+v.y||VIEW0.y))});
+function applyView(){
+  settings.view=clampV(settings.view||VIEW0);const H=settings.hand==='right'?1:-1;
+  cubeEl.style.transform=`rotateX(${-settings.view.x}deg) rotateY(${H*settings.view.y}deg)`;
+  $('viewGrip').hidden=settings.viewDrag!=='on'; // the angle chosen stays when the grip is switched off
+}
+{
+  const g=$('viewGrip');let drag=null,raf=0;
+  g.addEventListener('pointerdown',e=>{if(e.button!==0)return;e.preventDefault();g.setPointerCapture(e.pointerId);g.classList.add('dragging');
+    drag={x:e.clientX,y:e.clientY,v:{...settings.view}};});
+  g.addEventListener('pointermove',e=>{if(!drag)return;
+    // the corner follows the pointer: sideways turns the cube, up and down tilts it
+    const H=settings.hand==='right'?-1:1;
+    settings.view=clampV({x:drag.v.x+(e.clientY-drag.y)*.2,y:drag.v.y-H*(e.clientX-drag.x)*.22});
+    if(!raf)raf=requestAnimationFrame(()=>{raf=0;applyView();layoutBoard();});});
+  const end=()=>{if(!drag)return;drag=null;g.classList.remove('dragging');applyView();sizeCube();save();
+    say(`View: tilted ${Math.round(settings.view.x)} degrees, turned ${Math.round(settings.view.y)} degrees.`);};
+  g.addEventListener('pointerup',end);g.addEventListener('pointercancel',end);
+  g.addEventListener('dblclick',()=>{settings.view={...VIEW0};applyView();sizeCube();save();say('View reset.');});
+}
+
 // ---------- button edit mode: choose right on the board which way each button turns ----------
 let editing=false,edBtn=null;
 const pr=t=>t.replace("'",'′');
@@ -1461,7 +1492,7 @@ function announceBtn(){const t=edBtn.dataset.move,l=settings.swapClick?prime(t):
 $('edClose').onclick=()=>{const b=edBtn;closeEditor();if(b)b.focus({preventScroll:true});};
 $('editBtn').onclick=()=>{closeOverlay();setEditing(true);};
 $('editDone').onclick=()=>setEditing(false);
-$('editReset').onclick=()=>{settings.btns={};settings.swapClick=false;applyButtons();save();say('Every button is back to how it started.');};
+$('editReset').onclick=()=>{settings.btns={};settings.swapClick=false;settings.view={...VIEW0};applyView();sizeCube();applyButtons();save();say('Every button is back to how it started.');};
 document.addEventListener('pointerdown',e=>{if(edBtn&&!e.target.closest('#edPop,#board .btn'))closeEditor();});
 
 // ---------- sizing ----------
@@ -1536,6 +1567,7 @@ function layoutBoard(){
   const downR=unit(sub(P(1.5*H,-1.5,0),P(1.5*H,1.5,0)));
   [['F',1],['S',0],["B'",-1]].forEach(([m,z])=>along(m,P(1.5*H,-1.5,z+.5),P(1.5*H,-1.5,z-.5),downR));
   const K=P(-1.5*H,-1.5,1.5),Cc=P(1.5*H,-1.5,1.5);
+  const grip=P(1.5*H,1.5,1.5); // the cube's top front outer corner, where the view grip sits
   probe.remove();
   // whole-cube turns sit one ring further out, each one long button spanning all three layer buttons on its side:
   // spin along the rows, tip under the columns, roll under the depth slices
@@ -1630,6 +1662,7 @@ function layoutBoard(){
     lab.style.left=best.x+'px';lab.style.top=best.y+'px';
     lab.style.transform=`scale(${k.toFixed(3)}) translate(-50%,-50%)`;
   });
+  const vg=$('viewGrip');vg.style.left=(grip.x-l)+'px';vg.style.top=(grip.y-t)+'px';
   layoutPending=false;
   return {w:r-l,h:bt-t};
 }
