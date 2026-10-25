@@ -81,6 +81,17 @@ h1 .logo i{width:.42rem;height:.42rem;border-radius:2px;display:block}
 .gamebar .stats .stat.par b,.gamebar .stats .stat.par span{color:var(--gold)}
 .chal-moves b{color:var(--gold)}
 /* challenge */
+/* won games list: fewest moves on top */
+.gamebar .stats .solvedbtn{cursor:pointer;color:inherit;font:inherit;border-radius:10px}
+.gamebar .stats .solvedbtn:hover,.gamebar .stats .solvedbtn:focus-visible{background:var(--raised);outline:2px solid var(--accent)}
+.wins{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.35rem;max-height:55vh;overflow:auto}
+.wins li{display:grid;grid-template-columns:2.2rem 1fr auto auto;gap:.8rem;align-items:baseline;background:var(--raised);border:2px solid var(--line);border-radius:10px;padding:.45rem .8rem}
+.wins li:first-child{border-color:var(--gold)}
+.wins .rk{color:var(--muted);font-weight:700}.wins li:first-child .rk{color:var(--gold)}
+.wins .mv{font-family:var(--font-display);font-size:1.2rem;font-weight:700;white-space:nowrap}
+.wins .dt{white-space:nowrap}
+@media (max-width:480px){.wins li{gap:.5rem;grid-template-columns:1.6rem 1fr auto auto}.wins .yr{display:none}}
+.wins .tm,.wins .dt{color:var(--muted);font-variant-numeric:tabular-nums}
 .levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:.5rem}
 .levels .btn{min-height:4.2rem;flex-direction:column;align-items:flex-start;gap:.1rem;padding:.45rem .8rem;border-color:color-mix(in srgb,var(--gold) 35%,var(--line));text-align:left}
 .levels .btn:hover{border-color:var(--gold)}
@@ -319,8 +330,8 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
 }
 @media (prefers-reduced-motion:reduce){.btn{transition:none}.btn:active{transform:none}}
 </style>
-</head><body>
 
+</head><body>
 <div class="app" id="app">
   <header>
     <nav class="gamebar" aria-label="Game">
@@ -328,7 +339,7 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <div class="stat"><span>Moves</span><b id="moves">0</b></div>
       <div class="stat" id="timeStat"><span>Time</span><b id="time">0:00</b></div>
       <div class="stat par" id="parStat" hidden><span>Par</span><b id="par">0</b></div>
-      <div class="stat" id="solvedStat" title="Scrambled games you solved yourself (Challenge and Solve with me games don't count)"><span>Solved</span><b id="solvedCount">0</b></div>
+      <button class="stat solvedbtn" type="button" id="solvedStat" title="Your won games, fewest moves first (Challenge and Solve with me games don't count)"><span>Solved</span><b id="solvedCount">0</b></button>
       <div class="stat armed" id="armed" hidden><span>Next key</span><b>↺ reverse</b></div>
     </div>
       <div class="grp">
@@ -477,6 +488,15 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
   </div>
 </div>
 
+<div class="overlay" id="winsOv" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="winsTitle">
+    <h2 id="winsTitle">Your wins</h2>
+    <p class="muted" id="winsNote"></p>
+    <ol class="wins" id="winsList"></ol>
+    <button class="btn wide" type="button" data-close>Close</button>
+  </div>
+</div>
+
 <div class="overlay" id="setOv" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <h2 id="setTitle">Settings</h2>
@@ -580,7 +600,7 @@ let history=[],redo=[],scrambled=false,timerStart=null,timerElapsed=0,armed=fals
 let chal=null; // {level,par,spent}: a challenge game in progress
 const prime=t=>t.endsWith("'")?t.slice(0,-1):t+"'";
 let chalDone=null; // the challenge just won: its score stays on the bar until the next game or turn
-const record={solved:0,best:{}}; // games solved without help, and the best medal per challenge level
+const record={solved:0,best:{},wins:[]}; // games solved without help, and the best medal per challenge level
 const queue=[];
 const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on',hand:'left',split:'on',view:{x:24,y:33},viewDrag:'off',swapClick:false,btns:{}}; // btns: per button {flip, lab} from edit mode
 const SPEED={slow:520,normal:300,fast:140,instant:0};
@@ -979,7 +999,9 @@ async function pump(){
 function afterMove(t){
   if(scrambled&&!isRot(t)&&isSolved()){
     timerElapsed=elapsed();timerStart=null;scrambled=false;
-    if(!chal)record.solved++; // only full scrambles count, not challenges
+    if(!chal){record.solved++; // only full scrambles count, not challenges
+      record.wins.push({moves:countMoves(),ms:timerElapsed,at:Date.now()});
+      record.wins.sort((a,b)=>a.moves-b.moves||a.ms-b.ms);record.wins.length=Math.min(record.wins.length,100);}
     const time=settings.timer==='on'?' in '+fmt(timerElapsed):'';
     const b=$('banner');b.classList.remove('gold','silver','bronze');
     if(chal){
@@ -1156,6 +1178,12 @@ function renderLevels(){
     return `<button class="btn" type="button" data-level="${i+1}"><b>Level ${i+1}</b><span>Par ${par} move${par===1?'':'s'}</span><small>${b?`<i class="medal ${b}"></i>Best: ${b}`:`Silver ≤ ${t.silver}, bronze ≤ ${t.bronze}`}</small></button>`;}).join('');
   $('levels').querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>{if(pointerOk(b))startChallenge(+b.dataset.level);});
 }
+function openWins(){
+  const w=record.wins,day=t=>{const d=new Date(t);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+`<span class="yr">, ${d.getFullYear()}</span>`;};
+  $('winsList').innerHTML=w.map((g,i)=>`<li><span class="rk">${i+1}</span><span class="mv">${g.moves} move${g.moves===1?'':'s'}</span><span class="tm">${fmt(g.ms)}</span><span class="dt">${day(g.at)}</span></li>`).join('');
+  $('winsNote').textContent=!w.length?'No wins yet. Press Scramble and solve the cube to get on this list.':`Best score: ${w[0].moves} moves.`;
+  openOverlay('winsOv');}
+$('solvedStat').addEventListener('click',openWins);
 function openChallenge(){renderLevels();openOverlay('chalOv');}
 $('chalBtn').onclick=()=>{if(pointerOk($('chalBtn')))openChallenge();};
 $('chalAgain').onclick=()=>{if(pointerOk($('chalAgain'))&&chalLast)startChallenge(chalLast);};
@@ -2015,7 +2043,9 @@ function load(){
   try{
     const d=JSON.parse(localStorage.getItem(STORE)||'null');if(!d)return;
     if(d.settings)Object.assign(settings,d.settings);
-    if(d.record){record.solved=d.record.solved||0;Object.assign(record.best,d.record.best||{});}
+    if(d.record){Object.assign(record.best,d.record.best||{});
+      // wins from before the list existed have no move counts, so the Solved count starts over with the list
+      if(Array.isArray(d.record.wins)){record.wins=d.record.wins;record.solved=d.record.solved||0;}}
     if(Array.isArray(d.c)&&d.c.length===26){d.c.forEach((x,i)=>{cubies[i].p=x.p;cubies[i].s=x.s;});
       history=d.history||[];redo=d.redo||[];scrambled=!!d.scrambled;chal=d.scrambled&&d.chal||null;if(chal)chalLast=chal.level;timerElapsed=d.elapsed||0;timerStart=d.running?Date.now()-timerElapsed:null;}
   }catch(e){}
