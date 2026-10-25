@@ -241,6 +241,21 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .gamebar .btn.confirm{border-color:var(--warn);background:#3a2414}
 
 /* overlays */
+/* button edit mode: a bar docked at the bottom, each turn button outlined, a small card for the button being edited */
+.editbar{grid-area:bar;justify-self:stretch;max-width:60rem;width:100%;margin:0 auto;background:var(--panel);
+  border:3px solid var(--gold);border-radius:18px;padding:.6rem .8rem;display:flex;flex-direction:column;gap:.5rem}
+.editing .gamebar{display:none}
+.editbar{flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.editbar p{margin:0}.editbar .row{display:flex;flex-wrap:wrap;gap:.5rem;align-items:center}
+.editbar .btn{min-height:2.8rem}
+.editbar .btn.good{border-color:var(--good);color:var(--good)}
+.editing .board>.btn .shape polygon{stroke:var(--gold);stroke-dasharray:6 4}
+.editing .board>.btn.editing-this .shape polygon{stroke-dasharray:none;stroke-width:5;fill:color-mix(in srgb,var(--gold) 20%,var(--raised))}
+.editing .board>.btn.custom .n::after{content:' ✎';color:var(--gold);font-size:.8em}
+.edpop{position:fixed;z-index:16;width:min(17rem,calc(100vw - 2rem));box-sizing:border-box;background:var(--panel);border:3px solid var(--gold);border-radius:16px;padding:.8rem;display:flex;flex-direction:column;gap:.45rem;box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.edpop h3{margin:0;font-family:var(--font-display);color:var(--gold)}
+.edpop .edk{font-size:.85rem;color:var(--muted)}
+.edpop .seg .btn{font-family:var(--font-display);font-weight:700;font-size:1.05rem}
 .overlay{position:fixed;inset:0;background:rgba(3,6,12,.78);display:grid;place-items:center;padding:1rem;z-index:20}
 .sheet{background:var(--panel);border:2px solid var(--line);border-radius:22px;width:min(40rem,100%);max-height:calc(100vh - 2rem);overflow:auto;padding:1.2rem 1.3rem;display:flex;flex-direction:column;gap:.9rem}
 .sheet h2{margin:0;font-family:var(--font-display);font-size:1.5rem}
@@ -317,6 +332,13 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
         <button class="btn wide learn" type="button" id="solveBtn"><span class="g" aria-hidden="true">✓</span><span class="lbl">Solve with me</span></button>
       </div>
     </nav>
+  <div class="editbar" id="editBar" hidden role="region" aria-label="Edit buttons">
+    <p><b>Edit buttons.</b> Click any button around the cube to change it.</p>
+    <div class="row">
+      <button class="btn wide" type="button" id="editReset"><span class="g" aria-hidden="true">⟲</span>Reset all</button>
+      <button class="btn wide good" type="button" id="editDone"><span class="g" aria-hidden="true">✓</span>Done</button>
+    </div>
+  </div>
     <div class="side">
     <div class="brand">
     <h1><span class="logo" aria-hidden="true"><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i><i style="background:#16a34a"></i><i style="background:#ffd60a"></i><i style="background:#1d6fe0"></i><i style="background:#f97316"></i><i style="background:#16a34a"></i><i style="background:#dc2626"></i><i style="background:#f2f3ee"></i></span>RubeCube</h1>
@@ -332,6 +354,13 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
     </div>
   </header>
 
+  <div class="edpop" id="edPop" hidden role="dialog" aria-labelledby="edTitle">
+    <h3 id="edTitle"></h3>
+    <span class="edk">Left click turns</span><div class="seg" id="edDir"></div>
+    <span class="edk">Right click turns the other way.</span>
+    <span class="edk">Label on the button</span><div class="seg" id="edLab"></div>
+    <button class="btn wide" type="button" id="edClose">Close</button>
+  </div>
   <main id="main">
     <section class="middle">
       <div class="board" id="board" aria-label="Cube and turn buttons">
@@ -451,6 +480,7 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <button class="btn" type="button" data-v="on">On</button><button class="btn" type="button" data-v="off">Off</button></div></div>
     <div class="opt"><span>Button side</span><div class="seg" data-set="hand">
       <button class="btn" type="button" data-v="left">Rows on the left</button><button class="btn" type="button" data-v="right">Mirrored: rows on the right</button></div></div>
+    <div class="opt"><span>Which way each button turns and how it's labelled</span><button class="btn wide" id="editBtn" type="button"><span class="g" aria-hidden="true">✎</span>Edit buttons</button></div>
     <div class="opt"><span>Keys and QuadStick buttons</span><button class="btn wide" id="keysBtn" type="button"><span class="g" aria-hidden="true">⌨</span>Set up keys</button></div>
     <button class="btn wide" type="button" data-close>Done</button>
   </div>
@@ -528,7 +558,7 @@ let chal=null; // {level,par,spent}: a challenge game in progress
 let chalDone=null; // the challenge just won: its score stays on the bar until the next game or turn
 const record={solved:0,best:{}}; // games solved without help, and the best medal per challenge level
 const queue=[];
-const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on',hand:'left'};
+const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on',hand:'left',swapClick:false,btns:{}}; // btns: per button {flip, lab} from edit mode
 const SPEED={slow:520,normal:300,fast:140,instant:0};
 
 const $=id=>document.getElementById(id);
@@ -1135,12 +1165,12 @@ function applyPreview(){
   cubies.forEach(c=>c.el.classList.toggle('hl',!!f&&f(c.p)));
 }
 document.querySelectorAll('[data-move]').forEach(b=>{
-  const t=b.dataset.move;
-  b.setAttribute('aria-label',DESC[t].replace(/<[^>]+>/g,''));
-  b.addEventListener('click',()=>{if(pointerOk(b))doMove(t);});
-  b.addEventListener('mouseenter',()=>{hoverTok=t;applyPreview();});
+  b.dataset.base=b.dataset.move;
+  // a mouse click (not Enter or a key) follows the "swap left and right click" choice
+  b.addEventListener('click',e=>{if(!pointerOk(b))return;if(editing){openEditor(b);return;}const t=b.dataset.move;doMove(e.detail>0&&settings.swapClick?inv(t):t);});
+  b.addEventListener('mouseenter',()=>{if(editing)return;hoverTok=b.dataset.move;applyPreview();});
   b.addEventListener('mouseleave',()=>{hoverTok=null;applyPreview();});
-  b.addEventListener('focus',()=>{if(b.matches(':focus-visible')){focusTok=t;applyPreview();}});
+  b.addEventListener('focus',()=>{if(b.matches(':focus-visible')&&!editing){focusTok=b.dataset.move;applyPreview();}});
   b.addEventListener('blur',()=>{focusTok=null;applyPreview();});
   b.querySelectorAll('.g').forEach(g=>g.setAttribute('aria-hidden','true'));
 });
@@ -1171,6 +1201,7 @@ function applySettings(){
   $('app').classList.toggle('no-notation',settings.notation==='off');
   $('timeStat').hidden=settings.timer==='off';
   $('app').classList.toggle('mirror',settings.hand==='right');
+  applyButtons();
   document.querySelectorAll('[data-set]').forEach(g=>g.querySelectorAll('[data-v]').forEach(b=>b.setAttribute('aria-pressed',String(settings[g.dataset.set]===b.dataset.v))));
   render();sizeCube();
 }
@@ -1265,7 +1296,7 @@ document.addEventListener('keyup',e=>downCodes.delete(e.code));
 
 // mouse: right click on a turn button turns it the other way; middle and side buttons can be bound
 document.querySelectorAll('[data-move]').forEach(b=>b.addEventListener('contextmenu',e=>{
-  e.preventDefault();if(!pointerOk(b))return;doMove(inv(b.dataset.move));
+  e.preventDefault();if(editing||!pointerOk(b))return;const t=b.dataset.move;doMove(settings.swapClick?t:inv(t));
 }));
 // no browser menu anywhere in the game: a stray right click between buttons should do nothing
 document.addEventListener('contextmenu',e=>{if(!e.target.closest('input,textarea,select'))e.preventDefault();});
@@ -1343,6 +1374,57 @@ $('presetQ').onclick=()=>{settings.keys={...PRESETS.quadstick};save();renderKeys
 $('presetL').onclick=()=>{settings.keys={...PRESETS.letters};save();renderKeys();say('Letter keys layout');};
 $('keysBtn').onclick=()=>openOverlay('keysOv');
 
+// ---------- button edit mode: choose right on the board which way each button turns ----------
+let editing=false,edBtn=null;
+const prime=t=>t.endsWith("'")?t.slice(0,-1):t+"'",pr=t=>t.replace("'",'′');
+function applyButtons(){
+  if(!settings.btns||typeof settings.btns!=='object')settings.btns={};
+  document.querySelectorAll('#board [data-base]').forEach(b=>{
+    const base=b.dataset.base,o=settings.btns[base]||{},t=o.flip?prime(base):base,L=base[0];
+    b.dataset.move=t;b.setAttribute('aria-label',DESC[t].replace(/<[^>]+>/g,''));
+    const n=b.querySelector('.n');if(n)n.innerHTML=o.lab?`${L}′ <small>/&nbsp;${L}</small>`:`${L} <small>/&nbsp;${L}′</small>`;
+    b.classList.toggle('custom',!!(o.flip||o.lab));
+  });
+  if(edBtn)fillEditor();
+}
+function setEditing(on){
+  editing=on;$('app').classList.toggle('editing',on);$('editBar').hidden=!on;sizeCube();
+  if(!on)closeEditor();hoverTok=null;focusTok=null;applyPreview();
+  say(on?'Edit buttons. Click any button around the cube to choose which way it turns. Press Done when finished.':'Buttons saved.');
+}
+function closeEditor(){if(edBtn)edBtn.classList.remove('editing-this');edBtn=null;$('edPop').hidden=true;}
+function fillEditor(){
+  const b=edBtn,base=b.dataset.base,o=settings.btns[base]||{},L=base[0],word=b.querySelector('.t').textContent;
+  $('edTitle').textContent=`${word} (${L})`;
+  const opt=(v,label,on)=>`<button class="btn" type="button" data-v="${v}" aria-pressed="${on}">${label}</button>`;
+  const left=settings.swapClick?prime(b.dataset.move):b.dataset.move;
+  $('edDir').innerHTML=opt(L,L,left===L)+opt(L+"'",L+'′',left!==L);
+  $('edLab').innerHTML=opt(0,`${L} / ${L}′`,!o.lab)+opt(1,`${L}′ / ${L}`,!!o.lab);
+}
+function openEditor(b){
+  closeEditor();edBtn=b;b.classList.add('editing-this');fillEditor();
+  const pop=$('edPop');pop.hidden=false;
+  const r=b.querySelector('.shape polygon').getBoundingClientRect(),w=pop.offsetWidth,h=pop.offsetHeight;
+  // beside the whole board if there's room, so the card never hides other buttons; else beside the button
+  const bd=$('board').getBoundingClientRect();
+  let x=bd.right+12<=innerWidth-w-8?bd.right+12:bd.left-w-12>=8?bd.left-w-12:r.right+12,y=r.top+r.height/2-h/2;if(x+w>innerWidth-8)x=r.left-w-12;if(x<8)x=Math.max(8,Math.min(innerWidth-w-8,r.left+r.width/2-w/2));
+  const vw=document.documentElement.clientWidth;x=Math.max(8,Math.min(vw-w-8,x));
+  y=Math.max(8,Math.min(innerHeight-h-8,y));pop.style.left=x+'px';pop.style.top=y+'px';
+  pop.querySelector('[aria-pressed="true"]').focus({preventScroll:true});
+}
+$('edDir').addEventListener('click',e=>{const v=e.target.closest('[data-v]');if(!v||!edBtn)return;
+  const base=edBtn.dataset.base,want=v.dataset.v,o={...(settings.btns[base]||{})};
+  // the button's own turn is what a plain left click does; with swapped clicks it's the right click
+  const own=settings.swapClick?prime(want):want;o.flip=own!==base;settings.btns[base]=o;applyButtons();save();announceBtn();});
+$('edLab').addEventListener('click',e=>{const v=e.target.closest('[data-v]');if(!v||!edBtn)return;
+  const base=edBtn.dataset.base;settings.btns[base]={...(settings.btns[base]||{}),lab:v.dataset.v==='1'};applyButtons();save();});
+function announceBtn(){const t=edBtn.dataset.move,l=settings.swapClick?prime(t):t;say(`Left click now turns ${pr(l)}, right click turns ${pr(prime(l))}.`);}
+$('edClose').onclick=()=>{const b=edBtn;closeEditor();if(b)b.focus({preventScroll:true});};
+$('editBtn').onclick=()=>{closeOverlay();setEditing(true);};
+$('editDone').onclick=()=>setEditing(false);
+$('editReset').onclick=()=>{settings.btns={};settings.swapClick=false;applyButtons();save();say('Every button is back to how it started.');};
+document.addEventListener('pointerdown',e=>{if(edBtn&&!e.target.closest('#edPop,#board .btn'))closeEditor();});
+
 // ---------- sizing ----------
 let layoutPending=false;
 function sizeCube(){
@@ -1393,7 +1475,7 @@ function layoutBoard(){
   // screen point of a logical cube point (x right, y up, z toward the viewer; the cube spans -1.5..1.5)
   const P=(x,y,z)=>{probe.style.transform=`translate3d(${x*s}px,${-y*s}px,${z*s}px)`;const r=probe.getBoundingClientRect();return {x:r.left-o.left,y:r.top-o.top};};
   const add=(p,q,f=1)=>({x:p.x+q.x*f,y:p.y+q.y*f}),sub=(p,q)=>({x:p.x-q.x,y:p.y-q.y}),len=v=>Math.hypot(v.x,v.y),unit=v=>{const n=len(v)||1;return {x:v.x/n,y:v.y/n};};
-  const btn=m=>board.querySelector(`[data-move="${m}"]`);
+  const btn=m=>board.querySelector(`[data-base="${m}"]`); // by the button's own (default) turn, whatever it's been set to
   const placed=[];
   // p: top-left corner, u: top side, v: left side (screen vectors)
   const put=(el,p,u,v)=>placed.push({el,p,u,v});
@@ -1478,7 +1560,7 @@ function layoutBoard(){
         if(parts.every(([l0,t0,r0,b0])=>[[l0*k-5,t0*k-3],[r0*k+5,t0*k-3],[r0*k+5,b0*k+3],[l0*k-5,b0*k+3]].every(([dx,dy])=>inside(lp,x+dx,y+dy))))return k;k*=.93;}
       return k;};
     let best={k:0};
-    const isWhole=el.classList.contains('whole'),flat0=el.classList.contains('flat'),roll=el.dataset.move==="z'";
+    const isWhole=el.classList.contains('whole'),flat0=el.classList.contains('flat'),roll=el.dataset.base==="z'";
     el.classList.toggle('diag',roll);
     (roll?[false]:isWhole?[flat0,!flat0]:[flat0]).forEach(fl=>[400,Math.max(30,chord-10),30].forEach(mw=>{
       el.classList.toggle('flat',fl);lab.style.left='0px';lab.style.top='0px';lab.style.width='max-content';lab.style.maxWidth=mw+'px';lab.style.transform='none';const lw=lab.offsetWidth,lh=lab.offsetHeight,parts=partsOf(lw,lh);
