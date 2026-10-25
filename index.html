@@ -106,6 +106,7 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 /* board: buttons are placed by JS right against the cube edge they turn:
    rows along the left edge, columns along the bottom edge, front-to-back slices along the right face's bottom edge */
 .board{position:relative;--b:4.4rem;width:20rem;height:20rem}
+.board>.btn[hidden]{display:none}
 .board>.btn{position:absolute;min-height:0;z-index:2;background:none;border:0;border-radius:0;padding:0;pointer-events:none;transform:none}
 /* each button is drawn as a polygon so neighbouring buttons can meet in clean mitred corners; only the shape takes clicks */
 .board>.btn .shape{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible}
@@ -356,9 +357,9 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
 
   <div class="edpop" id="edPop" hidden role="dialog" aria-labelledby="edTitle">
     <h3 id="edTitle"></h3>
-    <span class="edk">Left click turns</span><div class="seg" id="edDir"></div>
-    <span class="edk">Right click turns the other way.</span>
-    <span class="edk">Label on the button</span><div class="seg" id="edLab"></div>
+    <span class="edk" id="edDirK">Left click turns</span><div class="seg" id="edDir"></div>
+    <span class="edk" id="edDirN">Right click turns the other way.</span>
+    <span class="edk" id="edLabK">Label on the button</span><div class="seg" id="edLab"></div>
     <button class="btn wide" type="button" id="edClose">Close</button>
   </div>
   <main id="main">
@@ -480,6 +481,8 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <button class="btn" type="button" data-v="on">On</button><button class="btn" type="button" data-v="off">Off</button></div></div>
     <div class="opt"><span>Button side</span><div class="seg" data-set="hand">
       <button class="btn" type="button" data-v="left">Rows on the left</button><button class="btn" type="button" data-v="right">Mirrored: rows on the right</button></div></div>
+    <div class="opt"><span>Buttons</span><div class="seg" data-set="split">
+      <button class="btn" type="button" data-v="on">Split in two: one half each way</button><button class="btn" type="button" data-v="off">Whole: right click turns back</button></div></div>
     <div class="opt"><span>Which way each button turns and how it's labelled</span><button class="btn wide" id="editBtn" type="button"><span class="g" aria-hidden="true">✎</span>Edit buttons</button></div>
     <div class="opt"><span>Keys and QuadStick buttons</span><button class="btn wide" id="keysBtn" type="button"><span class="g" aria-hidden="true">⌨</span>Set up keys</button></div>
     <button class="btn wide" type="button" data-close>Done</button>
@@ -555,10 +558,11 @@ function solvedState(){
 let cubies=solvedState();
 let history=[],redo=[],scrambled=false,timerStart=null,timerElapsed=0,armed=false,confirmAct=null,animating=false;
 let chal=null; // {level,par,spent}: a challenge game in progress
+const prime=t=>t.endsWith("'")?t.slice(0,-1):t+"'";
 let chalDone=null; // the challenge just won: its score stays on the bar until the next game or turn
 const record={solved:0,best:{}}; // games solved without help, and the best medal per challenge level
 const queue=[];
-const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on',hand:'left',swapClick:false,btns:{}}; // btns: per button {flip, lab} from edit mode
+const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on',hand:'left',split:'on',swapClick:false,btns:{}}; // btns: per button {flip, lab} from edit mode
 const SPEED={slow:520,normal:300,fast:140,instant:0};
 
 const $=id=>document.getElementById(id);
@@ -1164,10 +1168,16 @@ function applyPreview(){
   const f=t&&!isRot(t)?MOVES[t[0]].f:null;
   cubies.forEach(c=>c.el.classList.toggle('hl',!!f&&f(c.p)));
 }
+// split buttons: every board button gets a twin for the other direction; layoutBoard cuts the shape in two
+// (inner half against the cube, outer half beyond it) and applyButtons gives each half its turn
+document.querySelectorAll('#board [data-move]').forEach(b=>{
+  b.dataset.base=b.dataset.move;const tw=b.cloneNode(true);tw.classList.add('twin');tw.dataset.move=prime(b.dataset.move);
+  b.after(tw);b.twin=tw;tw.primary=b;
+});
 document.querySelectorAll('[data-move]').forEach(b=>{
-  b.dataset.base=b.dataset.move;
+  if(!b.dataset.base)b.dataset.base=b.dataset.move;
   // a mouse click (not Enter or a key) follows the "swap left and right click" choice
-  b.addEventListener('click',e=>{if(!pointerOk(b))return;if(editing){openEditor(b);return;}const t=b.dataset.move;doMove(e.detail>0&&settings.swapClick?inv(t):t);});
+  b.addEventListener('click',e=>{if(!pointerOk(b))return;if(editing){openEditor(b.primary||b);return;}const t=b.dataset.move;doMove(e.detail>0&&settings.swapClick?inv(t):t);});
   b.addEventListener('mouseenter',()=>{if(editing)return;hoverTok=b.dataset.move;applyPreview();});
   b.addEventListener('mouseleave',()=>{hoverTok=null;applyPreview();});
   b.addEventListener('focus',()=>{if(b.matches(':focus-visible')&&!editing){focusTok=b.dataset.move;applyPreview();}});
@@ -1376,33 +1386,53 @@ $('keysBtn').onclick=()=>openOverlay('keysOv');
 
 // ---------- button edit mode: choose right on the board which way each button turns ----------
 let editing=false,edBtn=null;
-const prime=t=>t.endsWith("'")?t.slice(0,-1):t+"'",pr=t=>t.replace("'",'′');
+const pr=t=>t.replace("'",'′');
 function applyButtons(){
   if(!settings.btns||typeof settings.btns!=='object')settings.btns={};
-  document.querySelectorAll('#board [data-base]').forEach(b=>{
-    const base=b.dataset.base,o=settings.btns[base]||{},t=o.flip?prime(base):base,L=base[0];
-    b.dataset.move=t;b.setAttribute('aria-label',DESC[t].replace(/<[^>]+>/g,''));
-    const n=b.querySelector('.n');if(n)n.innerHTML=o.lab?`${L}′ <small>/&nbsp;${L}</small>`:`${L} <small>/&nbsp;${L}′</small>`;
-    b.classList.toggle('custom',!!(o.flip||o.lab));
+  const split=settings.split!=='off';
+  document.querySelectorAll('#board [data-base]:not(.twin)').forEach(b=>{
+    const base=b.dataset.base,o=settings.btns[base]||{},L=base[0],tw=b.twin;
+    const set=(el,t,label,glyph)=>{el.dataset.move=t;el.setAttribute('aria-label',DESC[t].replace(/<[^>]+>/g,''));
+      const n=el.querySelector('.n');if(n)n.innerHTML=label;const g=el.querySelector('.g');if(g){if(!g.dataset.orig)g.dataset.orig=g.innerHTML;g.innerHTML=glyph||g.dataset.orig;g.classList.toggle('stack',!glyph&&g.dataset.orig.includes('<br>'));}};
+    tw.hidden=!split;
+    if(split){
+      // the left or upper half takes the turn that moves stickers left or up; the edit card can swap them
+      const first=towardUpLeft(base)?base:prime(base),a=o.flip?prime(first):first,c=prime(a);
+      set(b,a,pr(a),arrowFor(a));set(tw,c,pr(c),arrowFor(c));
+    }else{
+      const t=o.flip?prime(base):base;
+      set(b,t,o.lab?`${L}′ <small>/&nbsp;${L}</small>`:`${L} <small>/&nbsp;${L}′</small>`,null);
+    }
+    b.classList.toggle('custom',!!(o.flip||(!split&&o.lab)));tw.classList.toggle('custom',!!o.flip);
   });
+  $('app').classList.toggle('split',split);
   if(edBtn)fillEditor();
 }
+// which turns move the front stickers up or left on screen (the slices sit on the left face in the mirrored view, where that flips)
+const UPLEFT=new Set(['U',"E'","D'",'y',"L'","M'",'R','x',"F'","S'",'B',"z'"]);
+const HORIZ=new Set(['U',"E'","D'",'y']);
+function towardUpLeft(t){const slice='FSBz'.includes(t[0]);return UPLEFT.has(t)!==(slice&&settings.hand==='right');}
+function arrowFor(t){const h=HORIZ.has(t)||HORIZ.has(prime(t)),up=towardUpLeft(t);return h?(up?'⬅':'➡'):(up?'⬆':'⬇');}
 function setEditing(on){
   editing=on;$('app').classList.toggle('editing',on);$('editBar').hidden=!on;sizeCube();
   if(!on)closeEditor();hoverTok=null;focusTok=null;applyPreview();
   say(on?'Edit buttons. Click any button around the cube to choose which way it turns. Press Done when finished.':'Buttons saved.');
 }
-function closeEditor(){if(edBtn)edBtn.classList.remove('editing-this');edBtn=null;$('edPop').hidden=true;}
+function closeEditor(){if(edBtn){edBtn.classList.remove('editing-this');edBtn.twin.classList.remove('editing-this');}edBtn=null;$('edPop').hidden=true;}
 function fillEditor(){
   const b=edBtn,base=b.dataset.base,o=settings.btns[base]||{},L=base[0],word=b.querySelector('.t').textContent;
   $('edTitle').textContent=`${word} (${L})`;
   const opt=(v,label,on)=>`<button class="btn" type="button" data-v="${v}" aria-pressed="${on}">${label}</button>`;
+  const split=settings.split!=='off';
+  $('edDirK').textContent=split?(HORIZ.has(base)?'Left half turns':'Top half turns'):'Left click turns';
+  $('edDirN').textContent=split?'The other half turns the other way. The arrows show which way.':'Right click turns the other way.';
+  $('edLabK').hidden=split;$('edLab').hidden=split;
   const left=settings.swapClick?prime(b.dataset.move):b.dataset.move;
   $('edDir').innerHTML=opt(L,L,left===L)+opt(L+"'",L+'′',left!==L);
   $('edLab').innerHTML=opt(0,`${L} / ${L}′`,!o.lab)+opt(1,`${L}′ / ${L}`,!!o.lab);
 }
 function openEditor(b){
-  closeEditor();edBtn=b;b.classList.add('editing-this');fillEditor();
+  closeEditor();edBtn=b;b.classList.add('editing-this');if(!b.twin.hidden)b.twin.classList.add('editing-this');fillEditor();
   const pop=$('edPop');pop.hidden=false;
   const r=b.querySelector('.shape polygon').getBoundingClientRect(),w=pop.offsetWidth,h=pop.offsetHeight;
   // beside the whole board if there's room, so the card never hides other buttons; else beside the button
@@ -1415,10 +1445,12 @@ function openEditor(b){
 $('edDir').addEventListener('click',e=>{const v=e.target.closest('[data-v]');if(!v||!edBtn)return;
   const base=edBtn.dataset.base,want=v.dataset.v,o={...(settings.btns[base]||{})};
   // the button's own turn is what a plain left click does; with swapped clicks it's the right click
-  const own=settings.swapClick?prime(want):want;o.flip=own!==base;settings.btns[base]=o;applyButtons();save();announceBtn();});
+  const own=settings.swapClick?prime(want):want;
+  o.flip=settings.split!=='off'?own!==(towardUpLeft(base)?base:prime(base)):own!==base;settings.btns[base]=o;applyButtons();save();announceBtn();});
 $('edLab').addEventListener('click',e=>{const v=e.target.closest('[data-v]');if(!v||!edBtn)return;
   const base=edBtn.dataset.base;settings.btns[base]={...(settings.btns[base]||{}),lab:v.dataset.v==='1'};applyButtons();save();});
-function announceBtn(){const t=edBtn.dataset.move,l=settings.swapClick?prime(t):t;say(`Left click now turns ${pr(l)}, right click turns ${pr(prime(l))}.`);}
+function announceBtn(){const t=edBtn.dataset.move,l=settings.swapClick?prime(t):t;
+  say(settings.split!=='off'?`This half now turns ${pr(l)}, the other half ${pr(prime(l))}.`:`Left click now turns ${pr(l)}, right click turns ${pr(prime(l))}.`);}
 $('edClose').onclick=()=>{const b=edBtn;closeEditor();if(b)b.focus({preventScroll:true});};
 $('editBtn').onclick=()=>{closeOverlay();setEditing(true);};
 $('editDone').onclick=()=>setEditing(false);
@@ -1467,7 +1499,7 @@ function layoutBoard(){
   const s=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--s'));
   if(!isFinite(s))return null;
   // buttons grow with the cube, from the board's --b up to a third more
-  const b0=parseFloat(getComputedStyle(board).getPropertyValue('--b'))*rem||4.4*rem,b=Math.min(b0*1.35,Math.max(b0,s*.74)),gap=Math.max(6,.4*rem);
+  const b0=parseFloat(getComputedStyle(board).getPropertyValue('--b'))*rem||4.4*rem,b=Math.min(b0*1.35,Math.max(b0,s*.74))*(settings.split!=='off'&&innerWidth>700?1.3:1),gap=Math.max(6,.4*rem);
   scene.style.left='0px';scene.style.top='0px';
   const o=scene.getBoundingClientRect();
   if(!probe){probe=document.createElement('div');probe.style.cssText='position:absolute;left:0;top:0;width:0;height:0';}
@@ -1475,7 +1507,7 @@ function layoutBoard(){
   // screen point of a logical cube point (x right, y up, z toward the viewer; the cube spans -1.5..1.5)
   const P=(x,y,z)=>{probe.style.transform=`translate3d(${x*s}px,${-y*s}px,${z*s}px)`;const r=probe.getBoundingClientRect();return {x:r.left-o.left,y:r.top-o.top};};
   const add=(p,q,f=1)=>({x:p.x+q.x*f,y:p.y+q.y*f}),sub=(p,q)=>({x:p.x-q.x,y:p.y-q.y}),len=v=>Math.hypot(v.x,v.y),unit=v=>{const n=len(v)||1;return {x:v.x/n,y:v.y/n};};
-  const btn=m=>board.querySelector(`[data-base="${m}"]`); // by the button's own (default) turn, whatever it's been set to
+  const btn=m=>board.querySelector(`[data-base="${m}"]:not(.twin)`); // by the button's own (default) turn, whatever it's been set to
   const placed=[];
   // p: top-left corner, u: top side, v: left side (screen vectors)
   const put=(el,p,u,v)=>placed.push({el,p,u,v});
@@ -1523,6 +1555,18 @@ function layoutBoard(){
   else{[R,Ti].forEach(q=>cutRight(q,K,QL));[L,Ti].forEach(q=>cutLeft(q,Cc,QR));}
   // depth slices and roll: cut their front end
   [F,Ro].forEach(q=>{const M=mitre(Cc,QR,q);q.pts[0]=X(q.pts[0],q.u,M.p,M.d);q.pts[3]=X(q.pts[3],q.u,M.p,M.d);});
+  // split buttons: cut each shape in two along the line of the outer buttons, inner half against the cube;
+  // with a small gap between
+  if(settings.split!=='off')placed.slice().forEach(q=>{
+    const P=q.pts,mid=(a,c,f=.5)=>({x:a.x+(c.x-a.x)*f,y:a.y+(c.y-a.y)*f}),g=Math.min(.06,gap/2/Math.max(len(q.u),len(q.v)));
+    let A,B;
+    if(HORIZ.has(q.el.dataset.base)){A=[P[0],mid(P[0],P[1],.5-g),mid(P[3],P[2],.5-g),P[3]];B=[mid(P[0],P[1],.5+g),P[1],P[2],mid(P[3],P[2],.5+g)];}
+    else{A=[P[0],P[1],mid(P[1],P[2],.5-g),mid(P[0],P[3],.5-g)];B=[mid(P[0],P[3],.5+g),mid(P[1],P[2],.5+g),P[2],P[3]];}
+    const cen=Q=>({x:(Q[0].x+Q[1].x+Q[2].x+Q[3].x)/4,y:(Q[0].y+Q[1].y+Q[2].y+Q[3].y)/4}),cA=cen(A),cB=cen(B);
+    // the main button takes the left half of a sideways turn, the upper half of an up-down one
+    if(HORIZ.has(q.el.dataset.base)?cA.x>cB.x:cA.y>cB.y)[A,B]=[B,A];
+    q.pts=A;placed.push({el:q.el.twin,pts:B,u:q.u,v:q.v,p:B[0]});
+  });
   // bounding box of cube faces and buttons
   let l=Infinity,t=Infinity,r=-Infinity,bt=-Infinity;
   const grow=(x1,y1,x2,y2)=>{l=Math.min(l,x1);t=Math.min(t,y1);r=Math.max(r,x2);bt=Math.max(bt,y2);};
@@ -1562,10 +1606,11 @@ function layoutBoard(){
     let best={k:0};
     const isWhole=el.classList.contains('whole'),flat0=el.classList.contains('flat'),roll=el.dataset.base==="z'";
     el.classList.toggle('diag',roll);
-    (roll?[false]:isWhole?[flat0,!flat0]:[flat0]).forEach(fl=>[400,Math.max(30,chord-10),30].forEach(mw=>{
+    // a half of a split button may be long and low: let its arrow sit beside the letter
+    (settings.split!=='off'?[true,false]:roll?[false]:isWhole?[flat0,!flat0]:[flat0]).forEach(fl=>[400,Math.max(30,chord-10),30].forEach(mw=>{
       el.classList.toggle('flat',fl);lab.style.left='0px';lab.style.top='0px';lab.style.width='max-content';lab.style.maxWidth=mw+'px';lab.style.transform='none';const lw=lab.offsetWidth,lh=lab.offsetHeight,parts=partsOf(lw,lh);
       // whole-cube labels stay centred in their long shape (Roll may shift a little to clear its slanted edges)
-      const A=roll?[-1,1]:isWhole?[0,0]:[-2,2],B=roll?[-1,1]:isWhole?[0,0]:[-2,2];
+      const A=roll?[-1,1]:isWhole&&settings.split==='off'?[0,0]:[-2,2],B=roll?[-1,1]:isWhole&&settings.split==='off'?[0,0]:[-2,2];
       for(let a=A[0];a<=A[1];a++)for(let b=B[0];b<=B[1];b++){const x=cx+a*w*.05,y=cy+b*h*.05;if(!inside(lp,x,y))continue;
         const kk=Math.min(1,kAt(parts,x,y)),score=kk-(Math.abs(a)+Math.abs(b))*.03; // prefer the centre when it's a tie
         if(score>best.k)best={k:score,kk,mw,x,y,fl};}
@@ -1708,8 +1753,8 @@ function coachNote(msg){
   clearTimeout(noteTimer);noteTimer=setTimeout(updateCoach,2600);
 }
 function boardButtonFor(t){
-  const direct=document.querySelector(`#board [data-move="${t}"]`);if(direct)return {b:direct,rev:false};
-  const back=document.querySelector(`#board [data-move="${inv(t)}"]`);return back?{b:back,rev:true}:null;
+  const direct=document.querySelector(`#board [data-move="${t}"]:not([hidden])`);if(direct)return {b:direct,rev:false};
+  const back=document.querySelector(`#board [data-move="${inv(t)}"]:not([hidden])`);return back?{b:back,rev:true}:null;
 }
 function updateCoach(){
   if(!lesson)return;
