@@ -135,6 +135,7 @@ main{flex:1;display:flex;flex-wrap:wrap;justify-content:center;align-items:flex-
 .mirror .board>.btn.diag>.in{align-items:flex-end}.mirror .board>.btn.diag>.in .g{align-self:flex-start;margin-left:0;margin-right:1rem}
 .board>.btn .n{font-family:var(--font-display);font-size:.9rem;font-weight:700;color:var(--accent);margin-top:.05rem;white-space:normal;text-align:center}
 .board>.btn .n small{font-size:.8em;font-weight:500;color:var(--muted)}
+.board>.btn .n .pl{color:var(--muted)}.board>.btn .n .pm{color:var(--accent)}
 /* lessons: the button for the next turn glows */
 .board>.btn.next .shape polygon{stroke:var(--good);stroke-width:5;stroke-dasharray:none;fill:color-mix(in srgb,var(--good) 18%,var(--raised))}
 .btn.learn{border-color:color-mix(in srgb,var(--good) 45%,var(--line))}
@@ -1402,7 +1403,9 @@ function applyButtons(){
     if(split){
       // the left or upper half takes the turn that moves stickers left or up; the edit card can swap them
       const first=towardUpLeft(base)?base:prime(base),a=o.flip?prime(first):first,c=prime(a);
-      set(b,a,pr(a),arrowFor(a));set(tw,c,pr(c),arrowFor(c));
+      // letter colours as on the whole buttons: plain turn grey, prime turn in the accent colour
+      const lab=t=>`<span class="${t.endsWith("'")?'pm':'pl'}">${pr(t)}</span>`;
+      set(b,a,lab(a),arrowFor(a));set(tw,c,lab(c),arrowFor(c));
     }else{
       const t=o.flip?prime(base):base;
       set(b,t,o.lab?`${L}′ <small>/&nbsp;${L}</small>`:`${L} <small>/&nbsp;${L}′</small>`,null);
