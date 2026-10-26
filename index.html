@@ -24,6 +24,8 @@
   --gold:#f5c542;
   --silver:#cfd8e6;
   --bronze:#d9925a;
+  --platinum:#a8e6ff;
+  --expert:#a46bff; /* regal purple */
   --plastic:#07080b;
   --outline:#ff4fd8; /* magenta: unlike any sticker colour */
   --font-display:"Lexend",system-ui,-apple-system,"Segoe UI",sans-serif;
@@ -85,26 +87,49 @@ h1 .logo i{width:.42rem;height:.42rem;border-radius:2px;display:block}
 .gamebar .stats .solvedbtn{cursor:pointer;color:inherit;font:inherit;border-radius:10px}
 .gamebar .stats .solvedbtn:hover,.gamebar .stats .solvedbtn:focus-visible{background:var(--raised);outline:2px solid var(--accent)}
 .wins{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.35rem;max-height:55vh;overflow:auto}
-.wins li{display:grid;grid-template-columns:2.2rem 1fr auto auto;gap:.8rem;align-items:baseline;background:var(--raised);border:2px solid var(--line);border-radius:10px;padding:.45rem .8rem}
-.wins li:first-child{border-color:var(--gold)}
+.wins .winrow{width:100%;display:grid;grid-template-columns:2.3rem 1.6rem 1.25rem 1.25rem 1fr auto auto 1rem;gap:.6rem;align-items:center;background:var(--raised);border:2px solid var(--line);border-radius:9px;padding:.1rem .7rem .1rem .3rem;min-height:2.4rem;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.wins .winrow:hover,.wins .winrow:focus-visible{border-color:var(--accent);outline:2px solid var(--accent)}
+.wins li:first-child .winrow{border-color:var(--gold)}
+.wins li.open .winrow{border-bottom-left-radius:0;border-bottom-right-radius:0;border-color:var(--accent)}
+.wins .thumb svg{width:2.3rem;height:2.3rem;display:block}
+.wico{width:1.25rem;height:1.25rem;display:block}
+.windet p .wico,.tiers .wico{display:inline-block;vertical-align:-.25em;margin-right:.3em;width:1.1rem;height:1.1rem}
 .wins .rk{color:var(--muted);font-weight:700}.wins li:first-child .rk{color:var(--gold)}
-.wins .mv{font-family:var(--font-display);font-size:1.2rem;font-weight:700;white-space:nowrap}
-.wins .dt{white-space:nowrap}
-@media (max-width:480px){.wins li{gap:.5rem;grid-template-columns:1.6rem 1fr auto auto}.wins .yr{display:none}}
-.wins .tm,.wins .dt{color:var(--muted);font-variant-numeric:tabular-nums}
+.wins .mv{font-family:var(--font-display);font-size:1.05rem;font-weight:700;white-space:nowrap}
+.wins .tm,.wins .dt{color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wins .chev{color:var(--muted)}
+.windet{position:relative;border:2px solid var(--accent);border-top:0;border-radius:0 0 9px 9px;padding:.7rem .8rem;display:flow-root;background:var(--bg)}
+.windet>*+*{margin-top:.6rem!important} /* beats .sheet p{margin:0} */
+.windet>.winpic+*{margin-top:0!important}
+.windet p{margin:0}
+.windet .tiers{display:inline-grid}
+.windet .row{clear:both}
+.windet>.winpic{float:right;width:25%;margin:0 0 .4rem .8rem;display:flex;flex-direction:column;align-items:center}
+.winpic svg{width:100%;height:auto;display:block}
+.winpic small{color:var(--muted);font-size:.8rem;margin-top:-.2rem}
+.winpic .btn{min-height:2.4rem;margin-top:.35rem;width:100%;flex-direction:row;gap:.3rem;font-size:.85rem;padding:.2rem .4rem}
+.winpic .btn .g{font-size:1rem}
+.windet .got{color:var(--good)}
+.windet .row{display:flex;gap:.5rem;flex-wrap:wrap}
+@media (max-width:480px){.wins .winrow{gap:.4rem;padding:.2rem .5rem;grid-template-columns:2rem 1.2rem 1.2rem 1.2rem 1fr auto .8rem}.wins .thumb svg{width:2rem;height:2rem}.wins .dt{display:none}.windet>.winpic{width:32%}}
 .levels{display:grid;grid-template-columns:repeat(auto-fill,minmax(11rem,1fr));gap:.5rem}
 .levels .btn{min-height:4.2rem;flex-direction:column;align-items:flex-start;gap:.1rem;padding:.45rem .8rem;border-color:color-mix(in srgb,var(--gold) 35%,var(--line));text-align:left}
 .levels .btn:hover{border-color:var(--gold)}
 .levels .btn b{font-family:var(--font-display);color:var(--gold)}
 .levels .btn small{color:var(--muted);font-size:.8rem}
 .medal{display:inline-block;width:1.05em;height:1.05em;border-radius:50%;vertical-align:-.15em;margin-right:.25em;box-shadow:inset 0 -2px 0 rgba(0,0,0,.25)}
-.medal.gold{background:var(--gold)}.medal.silver{background:var(--silver)}.medal.bronze{background:var(--bronze)}
+.medal.gold{background:var(--gold)}.medal.silver{background:var(--silver)}.medal.bronze{background:var(--bronze)}.medal.platinum{background:var(--platinum)}
 .tiers{display:grid;grid-template-columns:auto 1fr;gap:.25rem .7rem;align-items:center}
 .sheet.chal-sheet{border-color:color-mix(in srgb,var(--gold) 55%,var(--line))}
 .sheet.chal-sheet h2{color:var(--gold)}
 .banner.gold{border-color:var(--gold)}.banner.gold h2{color:var(--gold)}
 .banner.silver{border-color:var(--silver)}.banner.silver h2{color:var(--silver)}
 .banner.bronze{border-color:var(--bronze)}.banner.bronze h2{color:var(--bronze)}
+.banner.platinum{border-color:var(--platinum)}.banner.platinum h2{color:var(--platinum)}
+.spoil{appearance:none;background:none;border:0;padding:0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer;text-align:left}
+.spoilpop{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:3;width:min(22rem,calc(100% - 1rem));background:var(--panel);border:3px solid var(--warn);border-radius:14px;padding:.8rem .9rem;display:flex;flex-direction:column;gap:.5rem;box-shadow:0 12px 40px rgba(0,0,0,.6)}
+.sheet .spoilpop h3{margin:0;color:var(--warn)}
+.spoilpop p{padding:0!important}
 .banner .row{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
 .stat.armed span{color:var(--warn)}
 .head-btns{display:flex;gap:.4rem}
@@ -339,7 +364,7 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
       <div class="stat"><span>Moves</span><b id="moves">0</b></div>
       <div class="stat" id="timeStat"><span>Time</span><b id="time">0:00</b></div>
       <div class="stat par" id="parStat" hidden><span>Par</span><b id="par">0</b></div>
-      <button class="stat solvedbtn" type="button" id="solvedStat" title="Your won games, fewest moves first (Challenge and Solve with me games don't count)"><span>Solved</span><b id="solvedCount">0</b></button>
+      <button class="stat solvedbtn" type="button" id="solvedStat" title="Your won games with their medals, fewest moves first (Challenge and Solve with me games don't count)"><span>Solved</span><b id="solvedCount">0</b></button>
       <div class="stat armed" id="armed" hidden><span>Next key</span><b>↺ reverse</b></div>
     </div>
       <div class="grp">
@@ -462,7 +487,9 @@ kbd{font-family:var(--font-display);background:var(--raised);border:2px solid va
     <h3>Letters on the buttons</h3>
     <p>Each turn button also shows its letter in standard cube notation: <b>R</b> right, <b>L</b> left, <b>U</b> up (top), <b>D</b> down (bottom), <b>F</b> front, <b>B</b> back, <b>M</b>, <b>E</b> and <b>S</b> for the three middle slices, and <b>x</b>, <b>y</b>, <b>z</b> for turning the whole cube. Each button shows the turn and its reverse; a mark (′) means the other way round. On the turn buttons the letters replace the words; turn the letters off in Settings to see words instead.</p>
     <h3>Challenge</h3>
-    <p><b>Challenge</b> mixes the cube with a few turns and gives a par: the fewest moves that solve it. Solve it in exactly par for gold; a few more earn silver or bronze. <b>Solved</b> counts the scrambled games you solved yourself; challenges and games finished with Solve it with me don't count.</p>
+    <p><b>Challenge</b> mixes the cube with a few turns and gives a par: the fewest moves that solve it. Solve it in exactly par for gold; a few more earn silver or bronze.</p>
+    <h3>Your wins and medals</h3>
+    <p><b>Solved</b> counts the scrambled games you solved yourself; challenges and games finished with Solve it with me don't count. After each Scramble the game works out the <b>best possible</b> number of moves for that mix and shows it on the top bar as <b>Best</b>. Solve it in exactly that many for <b>platinum</b>, a perfect score, or in up to 3 times that for <b>gold</b>, 5 times for <b>silver</b> or 8 times for <b>bronze</b>. Only moves count, not time. Solve a game without ever opening <b>Algorithms</b> and it also earns the <b>★ Expert</b> badge. Click <b>Solved</b> to see every win and its medal. The best solution stays hidden until you choose to show it; once shown, that mix can no longer earn platinum.</p>
     <h3>Algorithms and the solver</h3>
     <p><b>Algorithms</b> teaches a recipe one turn at a time on the real cube. <b>Solve it with me</b> walks you through solving your own cube, stage by stage. In both, the button for the next turn glows green: press it yourself, or press <b>Next move</b>. Undo and Redo step back and forward too.</p>
     <h3>Keys and QuadStick</h3>
@@ -599,8 +626,11 @@ let cubies=solvedState();
 let history=[],redo=[],scrambled=false,timerStart=null,timerElapsed=0,armed=false,confirmAct=null,animating=false;
 let chal=null; // {level,par,spent}: a challenge game in progress
 const prime=t=>t.endsWith("'")?t.slice(0,-1):t+"'";
+let game={start:null,algs:false,best:null}; // the scrambled game: its mix, whether Algorithms was opened, the best solution found
+const newGame=start=>({start:start||null,algs:false,best:null});
+let lastWin=null; // the win shown on the banner
 let chalDone=null; // the challenge just won: its score stays on the bar until the next game or turn
-const record={solved:0,best:{},wins:[]}; // games solved without help, and the best medal per challenge level
+const record={solved:0,best:{},wins:[],v:2,seen:{}}; // games solved without help, and the best medal per challenge level; v2 wins keep their mix and moves
 const queue=[];
 const settings={speed:'normal',text:'m',labels:'off',timer:'on',notation:'on',hand:'left',split:'on',view:{x:24,y:33},viewDrag:'off',swapClick:false,btns:{}}; // btns: per button {flip, lab} from edit mode
 const SPEED={slow:520,normal:300,fast:140,instant:0};
@@ -946,6 +976,137 @@ function solveBeginner(input){
 function compact(moves){const out=[];moves.forEach(t=>{const l=out[out.length-1];if(l&&l===t&&!l.endsWith('2'))out[out.length-1]=t[0]+'2';else out.push(t);});return out;}
 // ---------- learn: end core ----------
 
+// ---------- best solution: a two-phase search (Kociemba's method) for a short way to solve a scrambled cube ----------
+// The cube is read as corner and edge pieces in Kociemba's numbering. toCubie runs on the page; TWOPHASE is
+// self-contained so it can run in a background worker and never freeze the game.
+const C_SLOTS=[['U','R','F'],['U','F','L'],['U','L','B'],['U','B','R'],['D','F','R'],['D','L','F'],['D','B','L'],['D','R','B']];
+const E_SLOTS=[['U','R'],['U','F'],['U','L'],['U','B'],['D','R'],['D','F'],['D','L'],['D','B'],['F','R'],['F','L'],['B','L'],['B','R']];
+const FACE_DIR={U:[0,1,0],D:[0,-1,0],R:[1,0,0],L:[-1,0,0],F:[0,0,1],B:[0,0,-1]},FACE_COL={U:'W',D:'Y',R:'R',L:'O',F:'G',B:'B'};
+function toCubie(cs){
+  const at=fs=>cs.find(c=>veq(c.p,fs.map(f=>FACE_DIR[f]).reduce(vadd)));
+  const read=fs=>{const c=at(fs);return fs.map(f=>c.s[key(FACE_DIR[f])]);};
+  const same=(a,b)=>a.length===b.length&&a.every(x=>b.includes(x));
+  const out={cp:[],co:[],ep:[],eo:[]};
+  C_SLOTS.forEach((fs,i)=>{const cols=read(fs);out.cp[i]=C_SLOTS.findIndex(h=>same(h.map(f=>FACE_COL[f]),cols));out.co[i]=cols.findIndex(x=>x==='W'||x==='Y');});
+  E_SLOTS.forEach((fs,i)=>{const cols=read(fs),j=E_SLOTS.findIndex(h=>same(h.map(f=>FACE_COL[f]),cols));out.ep[i]=j;out.eo[i]=cols[0]===FACE_COL[E_SLOTS[j][0]]?0:1;});
+  return out;
+}
+function TWOPHASE(MV){ // MV: the face turns U R F D L B as pieces; returns solve(cube, ms, hint) → {sol, n}
+  const mul=(a,b)=>({cp:b.cp.map(j=>a.cp[j]),co:b.cp.map((j,i)=>(a.co[j]+b.co[i])%3),ep:b.ep.map(j=>a.ep[j]),eo:b.ep.map((j,i)=>(a.eo[j]+b.eo[i])%2)});
+  const r8=[0,1,2,3,4,5,6,7],r12=[0,1,2,3,4,5,6,7,8,9,10,11],z8=r8.map(()=>0),z12=r12.map(()=>0);
+  const ID={cp:r8,co:z8,ep:r12,eo:z12};
+  const M18=[];for(let f=0;f<6;f++){let c=ID;for(let p=0;p<3;p++){c=mul(c,MV[f]);M18.push(c);}}
+  const P2=[0,1,2,9,10,11,4,13,7,16]; // moves that keep the cube in phase two: U, D any way, R2 L2 F2 B2
+  const isP2=new Array(18).fill(false);P2.forEach(m=>isP2[m]=true);
+  const Cn=(n,k)=>{if(k>n)return 0;let r=1;for(let i=0;i<k;i++)r=r*(n-i)/(i+1);return Math.round(r);};
+  const permIdx=a=>{let r=0;for(let i=0;i<a.length;i++){let c=0;for(let j=i+1;j<a.length;j++)if(a[j]<a[i])c++;r=r*(a.length-i)+c;}return r;};
+  const idxPerm=(r,n)=>{const c=[];for(let i=n-1;i>=0;i--){c[i]=r%(n-i);r=Math.floor(r/(n-i));}const av=[...Array(n).keys()];return c.map(x=>av.splice(x,1)[0]);};
+  const twist=c=>{let t=0;for(let i=0;i<7;i++)t=t*3+c.co[i];return t;};
+  const flip=c=>{let t=0;for(let i=0;i<11;i++)t=t*2+c.eo[i];return t;};
+  const slice=c=>{let s=0,x=0;for(let j=11;j>=0;j--)if(c.ep[j]>=8){s+=Cn(11-j,x+1);x++;}return s;};
+  const setTwist=t=>{const co=[];let s=0;for(let i=6;i>=0;i--){co[i]=t%3;s+=co[i];t=(t/3)|0;}co[7]=(3-s%3)%3;return co;};
+  const setFlip=t=>{const eo=[];let s=0;for(let i=10;i>=0;i--){eo[i]=t%2;s+=eo[i];t=t>>1;}eo[11]=s%2;return eo;};
+  // move tables: coordinate × move → coordinate
+  const NT=2187,NF=2048,NS=495,NP=40320;
+  const TW=new Uint16Array(NT*18),FL=new Uint16Array(NF*18),SL=new Uint16Array(NS*18);
+  for(let t=0;t<NT;t++){const c={...ID,co:setTwist(t)};for(let m=0;m<18;m++)TW[t*18+m]=twist(mul(c,M18[m]));}
+  for(let t=0;t<NF;t++){const c={...ID,eo:setFlip(t)};for(let m=0;m<18;m++)FL[t*18+m]=flip(mul(c,M18[m]));}
+  for(let a=0;a<12;a++)for(let b=a+1;b<12;b++)for(let d=b+1;d<12;d++)for(let e=d+1;e<12;e++){
+    const pos=[a,b,d,e],ep=[];let k=8,o=0;for(let j=0;j<12;j++)ep[j]=pos.includes(j)?k++:o++;
+    const c={...ID,ep},s=slice(c);for(let m=0;m<18;m++)SL[s*18+m]=slice(mul(c,M18[m]));
+  }
+  const CP=new Uint16Array(NP*18),E8=new Uint16Array(NP*10),SP=new Uint8Array(24*10);
+  for(let r=0;r<NP;r++){
+    const p=idxPerm(r,8),c={...ID,cp:p,ep:[...p,8,9,10,11]};
+    for(let m=0;m<18;m++)CP[r*18+m]=permIdx(mul(c,M18[m]).cp);
+    for(let k=0;k<10;k++)E8[r*10+k]=permIdx(mul(c,M18[P2[k]]).ep.slice(0,8));
+  }
+  for(let r=0;r<24;r++){const c={...ID,ep:[...r8,...idxPerm(r,4).map(v=>v+8)]};for(let k=0;k<10;k++)SP[r*10+k]=permIdx(mul(c,M18[P2[k]]).ep.slice(8).map(v=>v-8));}
+  // pruning tables: fewest turns to reach the goal of each phase, for pairs of coordinates
+  // fewest clicks to each phase's goal for pairs of coordinates (a half turn costs two)
+  const bfs=(nA,nB,mA,mB,sA,sB,ms)=>{
+    const N=nA*nB,T=new Int8Array(N).fill(-1);T[0]=0;let top=0;
+    for(let d=0;d<=top;d++)for(let i=0;i<N;i++)if(T[i]===d){const a=(i/nB)|0,b=i-a*nB;
+      for(let k=0;k<ms.length;k++){const j=mA[a*sA+ms[k].a]*nB+mB[b*sB+ms[k].b],v=d+ms[k].c;if(T[j]<0||T[j]>v){T[j]=v;if(v>top)top=v;}}}
+    return T;
+  };
+  const qcost=m=>m%3===1?2:1; // a half turn is two clicks in the game
+  const all18=[...Array(18).keys()].map(m=>({a:m,b:m,c:qcost(m)})),p2a=P2.map((m,k)=>({a:k,b:m,c:qcost(m)})),p2b=P2.map((m,k)=>({a:k,b:k,c:qcost(m)}));
+  const PST=bfs(NS,NT,SL,TW,18,18,all18),PSF=bfs(NS,NF,SL,FL,18,18,all18);
+  const PSC=bfs(24,NP,SP,CP,10,18,p2a),PSE=bfs(24,NP,SP,E8,10,10,p2b);
+  const d4=k=>[0,1,2,1][((k%4)+4)%4];
+  // clicks the game needs: a side and its opposite side turned together count as one middle-slice move
+  // plus a free whole-cube turn, so each pair on one axis costs the fewest layer turns that make it
+  const clicks=sol=>{let n=0;for(let i=0;i<sol.length;){const ax=((sol[i]/3)|0)%3;let a=0,b=0;
+    while(i<sol.length&&((sol[i]/3)|0)%3===ax){const f=(sol[i]/3)|0,p=sol[i]%3+1;if(f<3)a-=p;else b+=p;i++;}
+    let m=9;for(let r=0;r<4;r++)m=Math.min(m,d4(a-r)+d4(-r)+d4(b-r));n+=m;}return n;};
+  // write a solution the way the game counts it: each axis run becomes the cheapest layer turns plus a free
+  // whole-cube turn, so its clicks match n. Angles are quarter turns about R, U and F's side of the axis.
+  const AX=[['U','D','E','y',-1,1,1],['R','L','M','x',-1,1,1],['F','B','S','z',-1,1,-1]]; // in the order of the axes U, R, F
+  const tok=(l,sig,k)=>{k=((k%4)+4)%4;return k===0?[]:k===2?[l+'2']:[k===(sig+4)%4?l:l+"'"];};
+  const spell=sol=>{const out=[];for(let i=0;i<sol.length;){const ax=((sol[i]/3)|0)%3;let a=0,b=0;
+    while(i<sol.length&&((sol[i]/3)|0)%3===ax){const f=(sol[i]/3)|0,p=sol[i]%3+1;if(f<3)a-=p;else b+=p;i++;}
+    let br=0,bm=9;for(let r=0;r<4;r++){const m=d4(a-r)+d4(-r)+d4(b-r);if(m<bm){bm=m;br=r;}}
+    const [P,N,M,X,sp,sn,sm]=AX[ax];
+    out.push(...tok(X,-1,br),...tok(P,sp,a-br),...tok(M,sm,-br),...tok(N,sn,b-br));}
+    return out;};
+  return function solve(start,ms,hint){ // hint: a known solution (the mix played backwards) the search has to beat
+    const deadline=Date.now()+ms;let best=null,bestQ=99,bestN=99,nodes=0,stop=false;
+    if(hint&&hint.length){best=hint.map(t=>'URFDLB'.indexOf(t[0])*3+(t[1]==='2'?1:t[1]==="'"?2:0));bestN=clicks(best);bestQ=best.reduce((a,m)=>a+qcost(m),0);}
+    const s1=[],s2=[];
+    const tick=()=>{if((++nodes&4095)===0&&best&&Date.now()>deadline)stop=true;return stop;};
+    function ph2(cp,e8,sp,g,bound,lastF){
+      const h=Math.max(PSC[sp*NP+cp],PSE[sp*NP+e8]);
+      if(g+h>bound||tick())return false;
+      if(h===0)return true;
+      for(let k=0;k<10;k++){const m=P2[k],f=(m/3)|0;if(f===lastF||f===lastF-3)continue;
+        s2.push(m);if(ph2(CP[cp*18+m],E8[e8*10+k],SP[sp*10+k],g+qcost(m),bound,f))return true;s2.pop();}
+      return false;
+    }
+    function phase2(g1,lastF){
+      let c=start;s1.forEach(m=>c=mul(c,M18[m]));
+      const cp=permIdx(c.cp),e8=permIdx(c.ep.slice(0,8)),sp=permIdx(c.ep.slice(8).map(v=>v-8));
+      const limit=Math.min(bestQ-1-g1,16); // a long second phase is slow to search; a different first phase does better
+      for(let b=Math.max(PSC[sp*NP+cp],PSE[sp*NP+e8]);b<=limit&&!stop;b++){
+        s2.length=0;
+        if(ph2(cp,e8,sp,0,b,lastF)){const sol=[...s1,...s2],n=clicks(sol);bestQ=g1+b;if(n<bestN){bestN=n;best=sol;}return;}
+      }
+    }
+    function ph1(tw,fl,sl,g,bound,lastF){
+      const h=Math.max(PST[sl*NT+tw],PSF[sl*NF+fl]);
+      if(g+h>bound||tick())return;
+      if(h===0&&g===bound&&(!s1.length||!isP2[s1[s1.length-1]])){phase2(g,lastF);return;}
+      for(let m=0;m<18&&!stop;m++){const f=(m/3)|0;if(f===lastF||f===lastF-3)continue;
+        s1.push(m);ph1(TW[tw*18+m],FL[fl*18+m],SL[sl*18+m],g+qcost(m),bound,f);s1.pop();}
+    }
+    const t0=twist(start),f0=flip(start),c0=slice(start);
+    for(let b=0;b<bestQ&&!stop;b++)ph1(t0,f0,c0,0,b,-1);
+    return {sol:spell(best),n:bestN};
+  };
+}
+
+// the search runs in a background worker so the game never stalls; if the page can't start one, it runs here
+const BEST_MS=2500,bestJobs=new Map();let bestWorker=null,bestHere=null,bestSeq=0,hereBusy=false;
+const MV6=()=>'URFDLB'.split('').map(f=>toCubie(applyTo(solvedState(),f)));
+function bestHereRun(){
+  if(hereBusy||!bestJobs.size)return;hereBusy=true;
+  setTimeout(()=>{const [id,j]=bestJobs.entries().next().value;bestJobs.delete(id);
+    try{bestHere=bestHere||TWOPHASE(MV6());j.done(bestHere(j.cube,600,j.hint));}catch(e){}
+    hereBusy=false;bestHereRun();},400);
+}
+function findBest(start,done){
+  const id=++bestSeq,cube=toCubie(applyAll(solvedState(),start)),hint=invertAlg(start);bestJobs.set(id,{cube,hint,done});
+  if(bestWorker===null){
+    try{
+      const src=`const solve=(${TWOPHASE})(${JSON.stringify(MV6())});onmessage=e=>postMessage({id:e.data.id,r:solve(e.data.cube,e.data.ms,e.data.hint)});`;
+      bestWorker=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));
+      bestWorker.onmessage=e=>{const j=bestJobs.get(e.data.id);bestJobs.delete(e.data.id);if(j)j.done(e.data.r);};
+      bestWorker.onerror=e=>{if(e.preventDefault)e.preventDefault();bestWorker.terminate();bestWorker=false;bestHereRun();};
+    }catch(e){bestWorker=false;}
+  }
+  if(bestWorker)bestWorker.postMessage({id,cube,hint,ms:BEST_MS});else bestHereRun();
+}
+
 // ---------- animation queue ----------
 // The sticker shine is lit from fixed places on the cube, so it must not travel
 // with a turning sticker. For each face of a turning cubie, find how far its
@@ -1000,7 +1161,8 @@ function afterMove(t){
   if(scrambled&&!isRot(t)&&isSolved()){
     timerElapsed=elapsed();timerStart=null;scrambled=false;
     if(!chal){record.solved++; // only full scrambles count, not challenges
-      record.wins.push({moves:countMoves(),ms:timerElapsed,at:Date.now()});
+      lastWin={moves:countMoves(),ms:timerElapsed,at:Date.now(),start:game.start,play:history.join(' '),best:game.best,expert:!game.algs,spoiled:!!record.seen[game.start]};
+      record.wins.push(lastWin);
       record.wins.sort((a,b)=>a.moves-b.moves||a.ms-b.ms);record.wins.length=Math.min(record.wins.length,100);}
     const time=settings.timer==='on'?' in '+fmt(timerElapsed):'';
     const b=$('banner');b.classList.remove('gold','silver','bronze');
@@ -1021,11 +1183,8 @@ function afterMove(t){
       say((m?m+' medal. ':'Solved. ')+$('bannerText').textContent);
       chalLast=c.level;chal=null;
     }else{
-      b.querySelector('h2').textContent='Solved!';
-      const n=countMoves();
-      $('bannerText').textContent=`${n} move${n===1?'':'s'}${time}. Nicely done.`;
-      $('chalAgain').hidden=true;$('chalNext').hidden=true;$('bannerSaved').hidden=true;$('againBtn').querySelector('.lbl').textContent='Play again';
-      say('Solved! Congratulations.');
+      $('chalAgain').hidden=true;$('chalNext').hidden=true;$('againBtn').querySelector('.lbl').textContent='Play again';
+      winBanner(lastWin);say('Solved! '+$('banner').querySelector('h2').textContent+'. '+$('bannerText').textContent+' '+$('bannerSaved').textContent);
     }
     b.hidden=false;
   }
@@ -1077,8 +1236,9 @@ function scramble(){
       if(axisOf[f]===prevAxis&&list.length>1&&axisOf[list[list.length-2][0]]===prevAxis)continue;
       const t=f+(Math.random()<.5?"'":"");list.push(t);applyMove(t);last=f;prevAxis=axisOf[f];
     }
-    if(isSolved())applyMove('R');
+    if(isSolved()){applyMove('R');list.push('R');}
     history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;chal=null;chalDone=null;
+    game=newGame(list.join(' '));requestBest(game);
     render();save();updateStats();
     say('Cube scrambled. Good luck!');
   });
@@ -1090,7 +1250,7 @@ function reset(){
   $('banner').hidden=true;
   queue.push(()=>{
     cubies.forEach((c,i)=>{const s=solvedState()[i];c.p=s.p;c.s=s.s;});
-    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;chal=null;chalDone=null;
+    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;chal=null;chalDone=null;game=newGame();
     render();save();updateStats();say('Cube reset to solved.');
   });
   pump();
@@ -1164,7 +1324,7 @@ function startChallenge(level){
     cubies.forEach((c,i)=>{const s=solvedState()[i];c.p=s.p;c.s=s.s;});
     list.forEach(applyMove);
     history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;
-    chal={level,par:LEVELS[level-1],spent:0,mix:list};chalLast=level;chalDone=null;
+    chal={level,par:LEVELS[level-1],spent:0,mix:list};chalLast=level;chalDone=null;game=newGame();
     render();save();updateStats();
     say(`Challenge level ${level}. Par is ${chal.par}. Good luck!`);
   });
@@ -1178,11 +1338,116 @@ function renderLevels(){
     return `<button class="btn" type="button" data-level="${i+1}"><b>Level ${i+1}</b><span>Par ${par} move${par===1?'':'s'}</span><small>${b?`<i class="medal ${b}"></i>Best: ${b}`:`Silver ≤ ${t.silver}, bronze ≤ ${t.bronze}`}</small></button>`;}).join('');
   $('levels').querySelectorAll('[data-level]').forEach(b=>b.onclick=()=>{if(pointerOk(b))startChallenge(+b.dataset.level);});
 }
-function openWins(){
-  const w=record.wins,day=t=>{const d=new Date(t);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+`<span class="yr">, ${d.getFullYear()}</span>`;};
-  $('winsList').innerHTML=w.map((g,i)=>`<li><span class="rk">${i+1}</span><span class="mv">${g.moves} move${g.moves===1?'':'s'}</span><span class="tm">${fmt(g.ms)}</span><span class="dt">${day(g.at)}</span></li>`).join('');
-  $('winsNote').textContent=!w.length?'No wins yet. Press Scramble and solve the cube to get on this list.':`Best score: ${w[0].moves} moves.`;
-  openOverlay('winsOv');}
+// ---------- medals for scrambled games ----------
+// Platinum is solving it in the best possible, and only while the solution for that mix has never been shown.
+// Each scrambled game keeps its mix, and a search finds a short solution for it (the best possible, as near as
+// a browser can work it out in a few seconds). Medals are moves only: gold within 3 times the best, silver 5, bronze 8.
+const winTiers=n=>({gold:n*3,silver:n*5,bronze:n*8});
+const bestOf=w=>w.best?Math.min(w.best.n,w.moves):null; // a player who beats the search sets the best
+const winMedal=w=>{const n=bestOf(w);if(n===null)return null;const t=winTiers(n);return w.moves<=n&&!w.spoiled?'platinum':w.moves<=t.gold?'gold':w.moves<=t.silver?'silver':w.moves<=t.bronze?'bronze':null;};
+const pl=n=>`${n} move${n===1?'':'s'}`,cap=x=>x[0].toUpperCase()+x.slice(1);
+const asked=new WeakSet();
+function requestBest(g){
+  if(!g||!g.start||g.best||asked.has(g))return;asked.add(g);
+  findBest(tokens(g.start),r=>{
+    const best={n:r.n,sol:r.sol.join(' ')};g.best=best;
+    if(game.start===g.start&&!game.best)game.best=best;
+    record.wins.forEach(w=>{if(w.start===g.start&&!w.best)w.best=best;});
+    save();updateStats();
+    if(lastWin&&lastWin.best===best&&!$('banner').hidden&&$('chalAgain').hidden)winBanner(lastWin);
+    if(openOv===$('winsOv')&&!replayArm)renderWins();
+  });
+}
+function bestLine(w){
+  const n=bestOf(w);
+  if(n===null)return w.start?'Working out the best possible…':'';
+  const t=winTiers(n),beat=w.best.n>w.moves;
+  return (w.moves<=n?(w.spoiled?'That matches the best possible, but its solution was shown before, so no platinum. ':beat?'Fewer moves than the computer found! ':'That matches the best possible! '):'')+`Best possible: ${n}. Gold ≤ ${t.gold}, silver ≤ ${t.silver}, bronze ≤ ${t.bronze}.`;
+}
+function winBanner(w){
+  const b=$('banner'),m=winMedal(w),time=settings.timer==='on'?' in '+fmt(w.ms):'';
+  b.classList.remove('gold','silver','bronze','platinum');if(m)b.classList.add(m);
+  b.querySelector('h2').textContent=m==='platinum'?'Platinum! Perfect score':m?`${cap(m)} medal`:'Solved!';
+  $('bannerText').textContent=`${pl(w.moves)}${time}. ${bestLine(w)}`;
+  $('bannerSaved').textContent=w.expert?'★ Expert: solved without opening Algorithms.':'';$('bannerSaved').hidden=!w.expert;
+}
+const winDay=(t,yr=true)=>{const d=new Date(t);return d.toLocaleDateString(undefined,{month:'short',day:'numeric'})+(yr?`<span class="yr">, ${d.getFullYear()}</span>`:'');};
+// medal and Expert icons, the same size so they line up; an empty medal or star is drawn black with an outline
+const medalIcon=m=>`<svg class="wico" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" ${m?`fill="var(--${m})" stroke="rgba(0,0,0,.35)"`:'fill="#07080b" stroke="var(--muted)"'} stroke-width="1.5"/></svg>`;
+const starIcon=on=>`<svg class="wico" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.6l2.5 5.4 5.9.6-4.4 4 1.2 5.8L10 14.5l-5.2 2.9 1.2-5.8-4.4-4 5.9-.6z" ${on?'fill="var(--expert)" stroke="var(--expert)"':'fill="#07080b" stroke="var(--muted)"'} stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+let winOpen=-1,replayArm=null,watchTimer=null;
+const startPics={}; // the starting mix drawn as a little cube, kept per mix
+const startPic=st=>st?(startPics[st]=startPics[st]||(cubePic(applyAll(solvedState(),tokens(st)),null,'','').match(/<svg[\s\S]*?<\/svg>/)||[''])[0].replace('aria-label=""','aria-hidden="true"')):'';
+function renderWins(){
+  const w=record.wins;replayArm=null;clearTimeout(watchTimer);watchTimer=null;
+  $('winsList').innerHTML=w.map((g,i)=>{const m=winMedal(g),open=i===winOpen;
+    return `<li class="${open?'open':''}"><button type="button" class="winrow" data-win="${i}" aria-expanded="${open}" aria-label="Game ${i+1}: ${pl(g.moves)}${settings.timer==='on'?' in '+fmt(g.ms):''}${m?', '+m+' medal':', no medal'}${g.expert?', expert':''}. ${open?'Hide':'Show'} details."><span class="thumb">${startPic(g.start)}</span><span class="rk">${i+1}</span>${medalIcon(m)}${starIcon(g.expert)}<span class="mv">${pl(g.moves)}</span><span class="tm">${settings.timer==='on'?fmt(g.ms):''}</span><span class="dt">${winDay(g.at)}</span><span class="chev" aria-hidden="true">${open?'▴':'▾'}</span></button>${open?winDetail(g):''}</li>`;}).join('');
+  $('winsList').querySelectorAll('[data-win]').forEach(b=>b.onclick=()=>{if(!pointerOk(b))return;const i=+b.dataset.win;winOpen=winOpen===i?-1:i;renderWins();
+    const nb=document.querySelector(`[data-win="${i}"]`);if(nb){nb.focus({preventScroll:true});nb.parentElement.scrollIntoView({block:'nearest'});}});
+  const d=$('winsList').querySelector('.windet');
+  if(d){const g=w[winOpen];
+    const rb=d.querySelector('.winReplay');rb.onclick=()=>{if(pointerOk(rb))replayWin(g,rb);};
+    const sp=d.querySelector('.spoil');
+    if(sp)sp.onclick=()=>{if(!pointerOk(sp))return;
+      // a warning card over the open game: showing the solution gives up Platinum on this mix for good
+      const pop=document.createElement('div');pop.className='spoilpop';pop.setAttribute('role','alertdialog');pop.setAttribute('aria-label','Show the solution?');
+      pop.innerHTML=`<h3>Show the solution?</h3><p>You will never be able to earn <b>Platinum</b> on this starting mix once you see it.</p><div class="row"><button class="btn wide spYes" type="button">Show solution</button><button class="btn wide spNo" type="button">Keep it hidden</button></div>`;
+      d.appendChild(pop);const no=pop.querySelector('.spNo'),yes=pop.querySelector('.spYes');no.focus({preventScroll:true});say('Show the solution? You will never be able to earn Platinum on this mix once you see it.');
+      no.onclick=()=>{if(!pointerOk(no))return;pop.remove();sp.focus({preventScroll:true});};
+      yes.onclick=()=>{if(!pointerOk(yes))return;record.seen[g.start]=true;save();renderWins();const wb2=document.querySelector('.winWatch');if(wb2)wb2.focus({preventScroll:true});};};
+    const wb=d.querySelector('.winWatch');if(wb)wb.onclick=()=>{if(pointerOk(wb))watchOnPic(g,d,wb);};}
+  $('winsNote').textContent=!w.length?'No wins yet. Press Scramble and solve the cube to get on this list.':`Best score: ${pl(w[0].moves)}. Click a game to see its best solution or play the same mix again.`;
+}
+function winDetail(w){
+  const m=winMedal(w),n=bestOf(w),t=n===null?null:winTiers(n);
+  const row=(k,lab,v)=>`<span>${k?medalIcon(k):''}<b>${lab}</b></span><span>${v}${m===k&&k?' <b class="got">✓ yours</b>':''}</span>`;
+  const pic=startPic(w.start),shown=!w.start||!!record.seen[w.start]||m==='platinum'; // a perfect solve has earned its solution
+  return `<div class="windet">
+    ${pic?`<div class="winpic" title="The mix this game started from">${pic}<small>Start</small>${t&&shown?'<button class="btn winWatch" type="button"><span class="g" aria-hidden="true">⏵</span><span class="lbl">Play solution</span></button>':''}</div>`:''}
+    <p>${starIcon(w.expert)} ${w.expert?'Expert: solved without opening Algorithms.':'Algorithms was opened, so no Expert star.'}</p>
+    ${t?`<div class="tiers">${row('platinum','Platinum',`${n}: perfect`+(shown?'':` <button type="button" class="spoil">(show solution)</button>`)+(w.spoiled&&m!=='platinum'?' <span class="muted">(solution was shown before this game)</span>':''))}${row('gold','Gold',`${t.gold} or fewer`)}${row('silver','Silver',`${t.silver} or fewer`)}${row('bronze','Bronze',`${t.bronze} or fewer`)}</div>
+    ${shown?`<p>A shortest solution the computer found (a 2 means turn it twice):</p><div class="chips">${tokens(w.best.sol).map(x=>`<span class="chip">${nota(x)}</span>`).join('')}</div>`:''}`
+    :`<p class="muted">${w.start?'Still working out the best possible for this game…':'This game has no best solution saved.'}</p>`}
+    <div class="row">${w.start?'<button class="btn wide winReplay" type="button"><span class="g" aria-hidden="true">↻</span><span class="lbl">Play this mix again</span></button>':''}</div>
+  </div>`;
+}
+// play the best solution on the little start picture, one chip at a time
+function watchOnPic(w,d,btn){
+  const lbl=btn.querySelector('.lbl'),g=btn.querySelector('.g');
+  if(watchTimer){clearTimeout(watchTimer);watchTimer=null;lbl.textContent='Play solution';g.textContent='⏵';return;}
+  const toks=tokens(w.best.sol),chips=d.querySelectorAll('.chip'),pic=d.querySelector('.winpic'),cs=applyAll(solvedState(),tokens(w.start));
+  const draw=()=>{pic.querySelector('svg').outerHTML=(cubePic(cs,null,'','').match(/<svg[\s\S]*?<\/svg>/)||[''])[0].replace('aria-label=""','aria-hidden="true"');};
+  chips.forEach(c=>c.classList.remove('cur','done'));draw();
+  lbl.textContent='Stop';g.textContent='⏸';let i=0;
+  const step=()=>{
+    if(i>0)chips[i-1].classList.replace('cur','done');
+    if(i>=toks.length){watchTimer=null;lbl.textContent='Play again';g.textContent='⏵';say('Solved.');return;}
+    chips[i].classList.add('cur');quarterTurns(toks[i]).forEach(t=>applyTo(cs,t));draw();i++;
+    watchTimer=setTimeout(step,AUTO_GAP[settings.speed]||850);
+  };
+  watchTimer=setTimeout(step,500);
+}
+// start a new game from a won game's mix, to try for a better score; it counts as a new win
+function replayWin(w,btn){
+  if(!w.start)return;
+  if(scrambled&&(countMoves()>0||chal&&chal.spent>0)&&replayArm!==btn){
+    replayArm=btn;btn.classList.add('confirm');btn.querySelector('.lbl').textContent='Click again: your current game will be lost';
+    say('Your current game will be lost. Press again to confirm.');return;
+  }
+  replayArm=null;closeOverlay();
+  if(lesson)stopLesson(true);
+  clearConfirm();$('banner').hidden=true;
+  queue.push(()=>{
+    cubies.forEach((c,i)=>{const s=solvedState()[i];c.p=s.p;c.s=s.s;});
+    tokens(w.start).forEach(applyMove);
+    history=[];redo=[];scrambled=true;timerStart=null;timerElapsed=0;chal=null;chalDone=null;
+    game={...newGame(w.start),best:w.best};requestBest(game);
+    render();save();updateStats();
+    say(`Same mix as your ${pl(w.moves)} game. Good luck!`);
+  });
+  pump();
+}
+function openWins(){winOpen=-1;renderWins();openOverlay('winsOv');}
 $('solvedStat').addEventListener('click',openWins);
 function openChallenge(){renderLevels();openOverlay('chalOv');}
 $('chalBtn').onclick=()=>{if(pointerOk($('chalBtn')))openChallenge();};
@@ -1199,7 +1464,9 @@ function fmt(ms){const s=Math.floor(ms/1000),m=Math.floor(s/60),h=Math.floor(m/6
 function updateStats(){
   const c=chal||chalDone;
   $('moves').textContent=c?c.spent:countMoves();
-  $('parStat').hidden=!c;if(c)$('par').textContent=c.par;
+  const gb=!c&&game.start&&game.best;
+  $('parStat').hidden=!c&&!gb;$('par').textContent=c?c.par:gb?game.best.n:0;
+  $('parStat').querySelector('span').textContent=c?'Par':'Best';$('parStat').title=c?'':'The best possible for this game. Gold is 3 times this or fewer.';
   $('moves').parentElement.classList.toggle('chal-moves',!!c);$('chalBtn').classList.toggle('on',!!chal);
   $('solvedCount').textContent=record.solved;
   $('time').textContent=fmt(elapsed());
@@ -1245,7 +1512,7 @@ function announce(t){say(DESC[t].replace(/<[^>]+>/g,''));}
 // ---------- overlays ----------
 let openOv=null,lastFocus=null;
 function openOverlay(id){closeOverlay();renderKeys();openOv=$(id);lastFocus=document.activeElement;openOv.hidden=false;openOv.querySelector('[data-close]').focus({preventScroll:true});openOv.querySelector('.sheet').scrollTop=0;}
-function closeOverlay(){if(!openOv)return;capture=null;openOv.hidden=true;openOv=null;if(lastFocus)lastFocus.focus();}
+function closeOverlay(){if(!openOv)return;clearTimeout(watchTimer);watchTimer=null;capture=null;openOv.hidden=true;openOv=null;if(lastFocus)lastFocus.focus();}
 $('helpBtn').onclick=()=>openOverlay('helpOv');
 $('setBtn').onclick=()=>openOverlay('setOv');
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeOverlay);
@@ -1741,7 +2008,7 @@ function startSolve(){
     const steps=[];
     r.stages.forEach((stg,k)=>stg.steps.forEach(st=>steps.push({...st,stage:stg.name,intro:stg.intro,stageNo:k+1,stages:r.stages.length})));
     // helping with a solve ends the timed game; the moves made from here are the lesson's
-    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;chal=null;
+    history=[];redo=[];scrambled=false;timerStart=null;timerElapsed=0;chal=null;game=newGame();
     lesson=makeLesson('solve','Solve it with me','',steps);
     showCoach();
   });
@@ -1750,6 +2017,7 @@ function startSolve(){
 function setTab(open){$('learnBtn').setAttribute('aria-expanded',String(open));}
 // the Algorithms tab: a side panel listing the algorithms; a lesson picked from it runs on its own cube over the game
 function openAlgTab(){
+  if(scrambled&&game.start&&!game.algs){game.algs=true;save();} // this game can't earn the Expert badge now
   $('coach').hidden=false;$('main').classList.add('lessoning');
   $('coachList').hidden=false;$('coachLesson').hidden=true;setTab(true);
   sizeCube();const f=document.querySelector('#algList [data-alg]');if(f)f.focus({preventScroll:true});
@@ -2037,15 +2305,16 @@ const STORE='easy-reach-cube-v1'; // the test copy keeps its own save, apart fro
 function save(){
   // during an algorithm lesson the cube on screen is borrowed; save the game that was put aside instead
   const g=lessonSnap||{c:cubies.map(c=>({p:c.p,s:c.s})),history,redo,scrambled,chal,elapsed:elapsed(),running:timerStart!==null};
-  try{localStorage.setItem(STORE,JSON.stringify({...g,settings,record}));}catch(e){}
+  try{localStorage.setItem(STORE,JSON.stringify({...g,settings,record,game}));}catch(e){}
 }
 function load(){
   try{
     const d=JSON.parse(localStorage.getItem(STORE)||'null');if(!d)return;
     if(d.settings)Object.assign(settings,d.settings);
-    if(d.record){Object.assign(record.best,d.record.best||{});
-      // wins from before the list existed have no move counts, so the Solved count starts over with the list
-      if(Array.isArray(d.record.wins)){record.wins=d.record.wins;record.solved=d.record.solved||0;}}
+    if(d.record){Object.assign(record.best,d.record.best||{});Object.assign(record.seen,d.record.seen||{});
+      // older wins have no mix or moves saved, so there's no best to measure them by: the list and the Solved count start over
+      if(Array.isArray(d.record.wins)&&d.record.v===2){record.wins=d.record.wins;record.solved=d.record.solved||0;}}
+    if(d.game&&'start' in d.game)game={...newGame(),...d.game};
     if(Array.isArray(d.c)&&d.c.length===26){d.c.forEach((x,i)=>{cubies[i].p=x.p;cubies[i].s=x.s;});
       history=d.history||[];redo=d.redo||[];scrambled=!!d.scrambled;chal=d.scrambled&&d.chal||null;if(chal)chalLast=chal.level;timerElapsed=d.elapsed||0;timerStart=d.running?Date.now()-timerElapsed:null;}
   }catch(e){}
@@ -2055,11 +2324,13 @@ window.addEventListener('beforeunload',save);
 load();
 if(!settings.keys||(settings.keys['Ctrl+C']==='turn:x'&&settings.keys.Tab==='focusNext'))settings.keys={...PRESETS.quadstick}; // first run, or the earlier QuadStick layout
 applySettings();updateStats();
+if(scrambled&&!chal)requestBest(game);
+record.wins.forEach(w=>requestBest(w)); // a win saved before its search finished
 if(!scrambled&&!history.length&&isSolved()){
   // open in a playable state: first visit starts scrambled
   try{if(!localStorage.getItem(STORE))scramble();}catch(e){scramble();}
 }
-window.__cube={cubies,applyMove,isSolved,doMove,parOf,makeChallenge,get chal(){return chal;},record};
+window.__cube={cubies,applyMove,isSolved,doMove,parOf,makeChallenge,get chal(){return chal;},get game(){return game;},record};
 })();
 </script>
 
