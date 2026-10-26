@@ -1355,7 +1355,7 @@ function requestBest(g){
     record.wins.forEach(w=>{if(w.start===g.start&&!w.best)w.best=best;});
     save();updateStats();
     if(lastWin&&lastWin.best===best&&!$('banner').hidden&&$('chalAgain').hidden)winBanner(lastWin);
-    if(openOv===$('winsOv')&&!replayArm)renderWins();
+    if(openOv===$('winsOv')&&!replayArm&&!watchTimer)renderWins(); // not while a solution plays on the picture
   });
 }
 function bestLine(w){
@@ -1375,11 +1375,11 @@ const winDay=(t,yr=true)=>{const d=new Date(t);return d.toLocaleDateString(undef
 // medal and Expert icons, the same size so they line up; an empty medal or star is drawn black with an outline
 const medalIcon=m=>`<svg class="wico" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8" ${m?`fill="var(--${m})" stroke="rgba(0,0,0,.35)"`:'fill="#07080b" stroke="var(--muted)"'} stroke-width="1.5"/></svg>`;
 const starIcon=on=>`<svg class="wico" viewBox="0 0 20 20" aria-hidden="true"><path d="M10 1.6l2.5 5.4 5.9.6-4.4 4 1.2 5.8L10 14.5l-5.2 2.9 1.2-5.8-4.4-4 5.9-.6z" ${on?'fill="var(--expert)" stroke="var(--expert)"':'fill="#07080b" stroke="var(--muted)"'} stroke-width="1.3" stroke-linejoin="round"/></svg>`;
-let winOpen=-1,replayArm=null,watchTimer=null;
+let winOpen=-1,replayArm=null,watchTimer=null,picTurn=null;
 const startPics={}; // the starting mix drawn as a little cube, kept per mix
 const startPic=st=>st?(startPics[st]=startPics[st]||(cubePic(applyAll(solvedState(),tokens(st)),null,'','').match(/<svg[\s\S]*?<\/svg>/)||[''])[0].replace('aria-label=""','aria-hidden="true"')):'';
 function renderWins(){
-  const w=record.wins;replayArm=null;clearTimeout(watchTimer);watchTimer=null;
+  const w=record.wins;replayArm=null;clearTimeout(watchTimer);watchTimer=null;stopPicTurn();
   $('winsList').innerHTML=w.map((g,i)=>{const m=winMedal(g),open=i===winOpen;
     return `<li class="${open?'open':''}"><button type="button" class="winrow" data-win="${i}" aria-expanded="${open}" aria-label="Game ${i+1}: ${pl(g.moves)}${settings.timer==='on'?' in '+fmt(g.ms):''}${m?', '+m+' medal':', no medal'}${g.expert?', expert':''}. ${open?'Hide':'Show'} details."><span class="thumb">${startPic(g.start)}</span><span class="rk">${i+1}</span>${medalIcon(m)}${starIcon(g.expert)}<span class="mv">${pl(g.moves)}</span><span class="tm">${settings.timer==='on'?fmt(g.ms):''}</span><span class="dt">${winDay(g.at)}</span><span class="chev" aria-hidden="true">${open?'▴':'▾'}</span></button>${open?winDetail(g):''}</li>`;}).join('');
   $('winsList').querySelectorAll('[data-win]').forEach(b=>b.onclick=()=>{if(!pointerOk(b))return;const i=+b.dataset.win;winOpen=winOpen===i?-1:i;renderWins();
@@ -1414,7 +1414,7 @@ function winDetail(w){
 // play the best solution on the little start picture, one chip at a time
 function watchOnPic(w,d,btn){
   const lbl=btn.querySelector('.lbl'),g=btn.querySelector('.g');
-  if(watchTimer){clearTimeout(watchTimer);watchTimer=null;lbl.textContent='Play solution';g.textContent='⏵';return;}
+  if(watchTimer){clearTimeout(watchTimer);watchTimer=null;stopPicTurn();lbl.textContent='Play solution';g.textContent='⏵';return;}
   const toks=tokens(w.best.sol),chips=d.querySelectorAll('.chip'),pic=d.querySelector('.winpic'),cs=applyAll(solvedState(),tokens(w.start));
   const draw=()=>{pic.querySelector('svg').outerHTML=(cubePic(cs,null,'','').match(/<svg[\s\S]*?<\/svg>/)||[''])[0].replace('aria-label=""','aria-hidden="true"');};
   chips.forEach(c=>c.classList.remove('cur','done'));draw();
@@ -1422,10 +1422,48 @@ function watchOnPic(w,d,btn){
   const step=()=>{
     if(i>0)chips[i-1].classList.replace('cur','done');
     if(i>=toks.length){watchTimer=null;lbl.textContent='Play again';g.textContent='⏵';say('Solved.');return;}
-    chips[i].classList.add('cur');quarterTurns(toks[i]).forEach(t=>applyTo(cs,t));draw();i++;
-    watchTimer=setTimeout(step,AUTO_GAP[settings.speed]||850);
+    chips[i].classList.add('cur');
+    const qs=quarterTurns(toks[i]),from=cloneState(cs),gap=AUTO_GAP[settings.speed]||850;qs.forEach(t=>applyTo(cs,t));i++;
+    // the turning layer swings round on the picture at the main cube's speed, then the picture settles on the new state
+    const reduce=window.matchMedia('(prefers-reduced-motion: reduce)').matches,q=SPEED[settings.speed];
+    turnPic(pic.querySelector('svg'),from,qs,reduce?0:Math.min(qs.length>1?q*1.5:q,gap-120),draw);
+    watchTimer=setTimeout(step,gap);
   };
   watchTimer=setTimeout(step,500);
+}
+// one move turning on the little picture: every piece is drawn as a small dark cube with its stickers, layer by layer
+// from the back, so the turning layer shows its inside edges like the big cube. All the turns in one move share an axis.
+function turnPic(svg,from,qs,dur,done){
+  stopPicTurn();
+  if(!svg||!dur){done();return;}
+  const ms=qs.map(parse),a=ms[0].k.findIndex(v=>v),ang=from.map(c=>ms.reduce((t,m)=>t+(m.f(c.p)?Math.asin(m.s)*m.k[a]:0),0));
+  const t0=performance.now();svg.style.overflow='visible';
+  const frame=now=>{
+    const t=Math.min(1,(now-t0)/dur),e=t<.5?2*t*t:1-2*(1-t)*(1-t);
+    if(t>=1){picTurn=null;done();return;}
+    svg.innerHTML=picFrame(from,a,ang.map(v=>v*e));
+    picTurn.raf=requestAnimationFrame(frame);
+  };
+  picTurn={raf:requestAnimationFrame(frame),done};
+}
+function stopPicTurn(){if(!picTurn)return;cancelAnimationFrame(picTurn.raf);const d=picTurn.done;picTurn=null;d();}
+function picFrame(cs,a,ang){
+  const K=[0,0,0];K[a]=1;
+  const R=(v,f)=>{if(!f)return v;const c=Math.cos(f),s=Math.sin(f),x=[K[1]*v[2]-K[2]*v[1],K[2]*v[0]-K[0]*v[2],K[0]*v[1]-K[1]*v[0]];return v.map((w,j)=>w*c+x[j]*s+K[j]*v[a]*(1-c));};
+  const shade=n=>{const w=n.map(v=>Math.max(v,0)),t=w[0]+w[1]+w[2]||1;return (w[0]*.72+w[1]+w[2]*.86)/t;};
+  const quad=(p,d,inset,f)=>{const c=[0,1,2].map(i=>p[i]+d[i]*.5),ax=[0,1,2].filter(i=>!d[i]);
+    return [[-1,-1],[1,-1],[1,1],[-1,1]].map(([u,v])=>{const q=c.slice();q[ax[0]]+=u*inset;q[ax[1]]+=v*inset;const r=ISO(...R(q,f));return f1(r.x)+','+f1(r.y);}).join(' ');};
+  let out='';
+  // slabs across the turning axis, farthest first (the picture looks down the 1,1,1 diagonal); inside a slab, farthest piece first
+  [-1,0,1].forEach(v=>cs.map((c,i)=>({c,f:ang[i]})).filter(o=>o.c.p[a]===v)
+    .sort((x,y)=>R(x.c.p,x.f).reduce((s,w)=>s+w,0)-R(y.c.p,y.f).reduce((s,w)=>s+w,0))
+    .forEach(({c,f})=>DIRS.forEach(d=>{
+      const n=R(d,f);if(n[0]+n[1]+n[2]<1e-6)return;
+      out+=`<polygon points="${quad(c.p,d,.5,f)}" fill="#07080b" stroke="#07080b" stroke-width=".6"/>`;
+      const col=c.s[key(d)];
+      if(col)out+=`<polygon points="${quad(c.p,d,.44,f)}" fill="${COLORS[col]}" fill-opacity="${shade(n).toFixed(3)}" stroke="#07080b" stroke-width="1.2"/>`;
+    })));
+  return out;
 }
 // start a new game from a won game's mix, to try for a better score; it counts as a new win
 function replayWin(w,btn){
@@ -1512,7 +1550,7 @@ function announce(t){say(DESC[t].replace(/<[^>]+>/g,''));}
 // ---------- overlays ----------
 let openOv=null,lastFocus=null;
 function openOverlay(id){closeOverlay();renderKeys();openOv=$(id);lastFocus=document.activeElement;openOv.hidden=false;openOv.querySelector('[data-close]').focus({preventScroll:true});openOv.querySelector('.sheet').scrollTop=0;}
-function closeOverlay(){if(!openOv)return;clearTimeout(watchTimer);watchTimer=null;capture=null;openOv.hidden=true;openOv=null;if(lastFocus)lastFocus.focus();}
+function closeOverlay(){if(!openOv)return;clearTimeout(watchTimer);watchTimer=null;stopPicTurn();capture=null;openOv.hidden=true;openOv=null;if(lastFocus)lastFocus.focus();}
 $('helpBtn').onclick=()=>openOverlay('helpOv');
 $('setBtn').onclick=()=>openOverlay('setOv');
 document.querySelectorAll('[data-close]').forEach(b=>b.onclick=closeOverlay);
